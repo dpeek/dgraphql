@@ -1,0 +1,27 @@
+{
+  "name": "dgraphql",
+  "version": "0.1.0",
+  "description": "Generate graphql schema for dgraph.",
+  "main": "index.js",
+  "repository": "http://github.com/dpeek/dgraphql.git",
+  "author": "David Peek",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "build": "babel src --optional runtime --ignore __tests__ --out-dir dist/",
+    "start": "babel-node example"
+  },
+  "dependencies": {
+    "graphql": "^0.9.6",
+    "graphql-relay": "^0.5.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "express": "^4.15.3",
+    "express-graphql": "^0.6.5",
+    "flow-bin": "^0.46.0",
+    "jest": "^20.0.4"
+  }
+}

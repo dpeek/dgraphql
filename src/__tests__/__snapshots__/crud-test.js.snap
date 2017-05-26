@@ -1,0 +1,88 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`creates node 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "name": "Tim",
+    },
+  },
+}
+`;
+
+exports[`creates node linked to existing nodes 1`] = `
+Object {
+  "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "name": "David",
+        "parents": Array [
+          Object {
+            "name": "Linda",
+          },
+          Object {
+            "name": "Matthew",
+          },
+        ],
+      },
+    },
+  },
+}
+`;
+
+exports[`creates node with nested node 1`] = `
+Object {
+  "data": Object {
+    "partner": Object {
+      "name": "Bob",
+    },
+    "person": Object {
+      "name": "Tim",
+    },
+  },
+}
+`;
+
+exports[`deletes node 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "name": null,
+    },
+  },
+}
+`;
+
+exports[`returns fields for created node 1`] = `
+Object {
+  "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`returns fields on updated node 1`] = `
+Object {
+  "data": Object {
+    "updatePerson": Object {
+      "person": Object {
+        "name": "Jim",
+      },
+    },
+  },
+}
+`;
+
+exports[`updates node 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "name": "Jim",
+    },
+  },
+}
+`;

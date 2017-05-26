@@ -1,0 +1,193 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`queries aliased field 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "test": "Tim",
+    },
+  },
+}
+`;
+
+exports[`queries nested field 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "name": "Tim",
+      "partner": Object {
+        "name": "Bob",
+      },
+    },
+  },
+}
+`;
+
+exports[`queries node field 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "name": "Tim",
+    },
+  },
+}
+`;
+
+exports[`queries node fields 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "active": true,
+      "name": "Tim",
+    },
+  },
+}
+`;
+
+exports[`querying edges filters by int equal to 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "age": 19,
+        "name": "Catherine Harrison",
+      },
+    ],
+  },
+}
+`;
+
+exports[`querying edges filters by int greater than or equal to 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "age": 19,
+        "name": "Catherine Harrison",
+      },
+      Object {
+        "age": 20,
+        "name": "Aaron Whitman",
+      },
+    ],
+  },
+}
+`;
+
+exports[`querying edges filters by int greater than to 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "age": 20,
+        "name": "Aaron Whitman",
+      },
+    ],
+  },
+}
+`;
+
+exports[`querying edges filters by int less than 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "age": 16,
+        "name": "Bobby Whitman",
+      },
+    ],
+  },
+}
+`;
+
+exports[`querying edges filters by int less than or equal to 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "age": 16,
+        "name": "Bobby Whitman",
+      },
+      Object {
+        "age": 19,
+        "name": "Catherine Harrison",
+      },
+    ],
+  },
+}
+`;
+
+exports[`querying edges filters by string equal to 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "name": "Catherine Harrison",
+      },
+    ],
+  },
+}
+`;
+
+exports[`querying edges filters by string with all terms 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "name": "Aaron Whitman",
+      },
+    ],
+  },
+}
+`;
+
+exports[`querying edges filters by string with any of terms 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "name": "Aaron Whitman",
+      },
+      Object {
+        "name": "Catherine Harrison",
+      },
+    ],
+  },
+}
+`;
+
+exports[`querying edges order edges by string ascending 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "name": "Aaron Whitman",
+      },
+      Object {
+        "name": "Bobby Whitman",
+      },
+      Object {
+        "name": "Catherine Harrison",
+      },
+    ],
+  },
+}
+`;
+
+exports[`querying edges order edges by string descending 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "name": "Catherine Harrison",
+      },
+      Object {
+        "name": "Bobby Whitman",
+      },
+      Object {
+        "name": "Aaron Whitman",
+      },
+    ],
+  },
+}
+`;

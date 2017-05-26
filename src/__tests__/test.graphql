@@ -1,0 +1,14 @@
+type Person {
+  id: ID!
+  name: String
+  active: Boolean
+  partner: Person
+  children: [Person!]!
+  parents: [Person!]! @dgraph(predicate: "~children")
+  time: Int
+  age: Int
+}
+
+type Query {
+  temp: String
+}

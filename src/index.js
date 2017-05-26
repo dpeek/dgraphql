@@ -1,0 +1,1 @@
+export { buildSchema } from './schema'

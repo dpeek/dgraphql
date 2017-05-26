@@ -1,0 +1,12 @@
+type Person {
+  id: ID!
+  name: String
+  age: Int
+  parents: [Person!]! @dgraph(predicate: "~children")
+  children: [Person!]!
+}
+
+# Sorry, required for now.
+type Query {
+  placeholder: String
+}
