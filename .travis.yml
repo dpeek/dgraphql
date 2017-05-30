@@ -12,4 +12,4 @@ services:
 
 before_install:
   - docker pull dgraph/dgraph
-  - docker run -it -p 8080:8080 --name dgraph dgraph/dgraph dgraph --bindall=true
+  - docker run -d -p 8080:8080 --name dgraph dgraph/dgraph dgraph --bindall=true
