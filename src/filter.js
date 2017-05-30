@@ -2,12 +2,7 @@
 
 import invariant from 'invariant'
 
-import {
-  GraphQLNonNull,
-  GraphQLObjectType,
-  GraphQLInputObjectType,
-  isLeafType
-} from 'graphql'
+import { GraphQLObjectType, GraphQLInputObjectType, isLeafType } from 'graphql'
 
 import type {
   GraphQLOutputType,
@@ -17,7 +12,7 @@ import type {
 } from 'graphql'
 
 import type { Client } from './client'
-import { getFields, getValue, quoteValue } from './utils'
+import { unwrapNonNull, getFields, getValue, quoteValue } from './utils'
 
 type Filter = {
   active: (type: GraphQLOutputType) => boolean,
@@ -91,17 +86,12 @@ const filters = [
   greaterThanOrEqual
 ]
 
-function unwrap (type: GraphQLOutputType): GraphQLOutputType {
-  if (type instanceof GraphQLNonNull) return type.ofType
-  return type
-}
-
 function filtersForField (field: GraphQLField<*, *>): Array<FilterField> {
   return filters
-    .filter(filter => filter.active(unwrap(field.type)))
+    .filter(filter => filter.active(unwrapNonNull(field.type)))
     .map(filter =>
       Object.assign({}, filter, {
-        type: unwrap(field.type),
+        type: unwrapNonNull(field.type),
         name: `${field.name}${filter.name}`,
         description: `${field.name} ${filter.description}`
       })

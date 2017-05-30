@@ -48,8 +48,14 @@ function getInputFields (
     const field = fields[fieldName]
     const fieldType = unwrapNonNull(field.type)
     if (fieldType instanceof GraphQLList) {
-      inputFields[fieldName] = {
-        type: new GraphQLList(getInputType(client, fieldType.ofType))
+      if (fieldType.ofType instanceof GraphQLObjectType) {
+        inputFields[fieldName] = {
+          type: new GraphQLList(getInputType(client, fieldType.ofType))
+        }
+      } else {
+        inputFields[fieldName] = {
+          type: new GraphQLList(fieldType.ofType)
+        }
       }
     } else if (fieldType instanceof GraphQLObjectType) {
       inputFields[fieldName] = { type: getInputType(client, fieldType) }
@@ -266,9 +272,18 @@ async function createOrUpdate (
     'id:' + (id || res.uids.node)
   )
   return client.fetchQuery(query).then(res => {
-    const selections =
-      info.operation.selectionSet.selections[0].selectionSet.selections
-    processSelections(client, info, selections, info.schema.getQueryType(), res)
+    const selection = info.operation.selectionSet.selections[0]
+    invariant(
+      !!selection && selection.kind === 'Field' && selection.selectionSet,
+      'Selection not found'
+    )
+    processSelections(
+      client,
+      info,
+      selection.selectionSet.selections,
+      info.schema.getQueryType(),
+      res
+    )
     return res
   })
 }

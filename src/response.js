@@ -5,7 +5,6 @@ import invariant from 'invariant'
 import { GraphQLList, GraphQLObjectType, GraphQLInterfaceType } from 'graphql'
 
 import type {
-  GraphQLNamedType,
   GraphQLResolveInfo,
   SelectionNode,
   FragmentSpreadNode,
@@ -74,7 +73,7 @@ function processList (
   return nodes
 }
 
-function assertObjectType (type: ?GraphQLNamedType): GraphQLObjectType {
+function assertObjectType (type: any): GraphQLObjectType {
   invariant(
     type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType,
     `Expected ${String(type)} to be instance of GraphQLObjectType or GraphQLInterfaceType.`
@@ -153,7 +152,7 @@ function processField (
   let selections = selection.selectionSet
     ? selection.selectionSet.selections
     : []
-  if (isConnection(fieldType)) {
+  if (fieldType instanceof GraphQLObjectType && isConnection(fieldType)) {
     selections = flattenSelections(selections, info)
     selections = findSelections(selections, 'edges')
     selections = findSelections(selections, 'node')
@@ -170,7 +169,7 @@ function processField (
       client,
       info,
       selections,
-      assertObjectType(getConnectionType(fieldType)),
+      getConnectionType(fieldType),
       value[alias] || [],
       getArguments(info, selection),
       count
@@ -180,7 +179,7 @@ function processField (
       client,
       info,
       selections,
-      unwrap(fieldType),
+      assertObjectType(unwrap(fieldType)),
       value[alias] || [],
       getArguments(info, selection)
     )
@@ -196,7 +195,7 @@ function processField (
   }
 }
 
-function getArguments (info: GraphQLResolveInfo, selection: FieldNode): {} {
+function getArguments (info: GraphQLResolveInfo, selection: FieldNode): any {
   const args = {}
   if (selection.arguments) {
     selection.arguments.forEach(arg => {

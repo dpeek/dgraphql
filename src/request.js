@@ -8,7 +8,8 @@ import type {
   GraphQLResolveInfo,
   ArgumentNode,
   FieldNode,
-  SelectionNode
+  SelectionNode,
+  GraphQLField
 } from 'graphql'
 
 import {
@@ -99,7 +100,7 @@ function getSelection (
   info: GraphQLResolveInfo,
   selection: FieldNode,
   type: GraphQLObjectType,
-  field,
+  field: GraphQLField<*, *>,
   indent: string,
   isRoot: boolean,
   map: Set<string>
@@ -119,6 +120,10 @@ function getSelection (
     selections = flattenSelections(selections, info)
     selections = findSelections(selections, 'edges')
     selections = findSelections(selections, 'node')
+    invariant(
+      fieldType instanceof GraphQLObjectType,
+      'Field is not object type'
+    )
     fieldType = getConnectionType(fieldType)
   }
   let alias = name === fieldName ? '' : name + ':'
@@ -131,29 +136,31 @@ function getSelection (
       query += indent + alias + fieldName
     }
   }
-  let args = getArguments(client, info, selection, fieldType, isRoot, false)
-  query += args
-  if (selections) {
-    query += ' {\n'
-    query += `${indent}  _uid_\n`
-    query += `${indent}  __typename\n`
-    query += getSelections(
-      client,
-      info,
-      selections,
-      fieldType,
-      indent + '  ',
-      false,
-      null
-    )
-    query += indent + '}'
-  }
-  if (!isRoot && connection) {
-    query += `\n${indent}count(${fieldName}${args})`
-  }
-  if (isRoot && connection) {
-    args = getArguments(client, info, selection, fieldType, isRoot, true)
-    query += `\n${indent}_count_${fieldName}_${args} { count() }`
+  if (fieldType instanceof GraphQLObjectType) {
+    let args = getArguments(client, info, selection, fieldType, isRoot, false)
+    query += args
+    if (selections) {
+      query += ' {\n'
+      query += `${indent}  _uid_\n`
+      query += `${indent}  __typename\n`
+      query += getSelections(
+        client,
+        info,
+        selections,
+        fieldType,
+        indent + '  ',
+        false,
+        null
+      )
+      query += indent + '}'
+    }
+    if (!isRoot && connection) {
+      query += `\n${indent}count(${fieldName}${args})`
+    }
+    if (isRoot && connection) {
+      args = getArguments(client, info, selection, fieldType, isRoot, true)
+      query += `\n${indent}_count_${fieldName}_${args} { count() }`
+    }
   }
   return query + '\n'
 }
@@ -230,14 +237,17 @@ function getQuery (client: Client, info: GraphQLResolveInfo) {
 }
 
 export function resolveQuery (client: Client, info: GraphQLResolveInfo): mixed {
+  // $FlowFixMe
   let req = info.operation.req
   if (!req) {
     const query = getQuery(client, info)
+    // $FlowFixMe
     req = info.operation.req = client.fetchQuery(query).then(res => {
       return processResponse(client, info, res)
     })
   }
   return req.then(res => {
+    invariant(!!info.path, 'No path defined')
     return res[info.path.key]
   })
 }

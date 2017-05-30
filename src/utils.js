@@ -7,25 +7,24 @@ import type {
   SelectionNode,
   GraphQLNullableType,
   GraphQLResolveInfo,
+  GraphQLOutputType,
   ValueNode
 } from 'graphql'
 
 import invariant from 'invariant'
 
-export function unwrap (type: GraphQLType): GraphQLType {
+export function unwrap (type: GraphQLOutputType): GraphQLOutputType {
   if (type instanceof GraphQLNonNull) {
-    return unwrap((type: GraphQLNonNull<GraphQLNullableType>).ofType)
+    return unwrap(type.ofType)
   }
   if (type instanceof GraphQLList) {
-    return unwrap((type: GraphQLList<GraphQLType>).ofType)
+    return unwrap(type.ofType)
   }
   return type
 }
 
-export function unwrapNonNull (type: GraphQLType): GraphQLType {
-  if (type instanceof GraphQLNonNull) {
-    return (type: GraphQLNonNull<GraphQLNullableType>).ofType
-  }
+export function unwrapNonNull (type: GraphQLOutputType): GraphQLOutputType {
+  if (type instanceof GraphQLNonNull) return type.ofType
   return type
 }
 

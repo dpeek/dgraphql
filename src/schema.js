@@ -31,7 +31,7 @@ import { getConnectionType } from './connection'
 import { Client } from './client'
 import type { ClientConfig } from './client'
 
-const pluralize: (input: string) => string = require('pluralize')
+import pluralize from 'pluralize'
 
 function getConnectionField (
   client: Client,
@@ -78,6 +78,7 @@ function getQueryField (
 }
 
 function transformType (client: Client, type: GraphQLObjectType) {
+  // $FlowFixMe
   const typeFields = type._typeConfig.fields()
   type._typeConfig.fields = typeFields
   Object.keys(typeFields).forEach(key => {
@@ -91,6 +92,7 @@ function transformType (client: Client, type: GraphQLObjectType) {
       }
     }
   })
+  // $FlowFixMe
   type._fields = null
   return type
 }
@@ -114,6 +116,7 @@ export function buildSchema (
             argument.value.kind === 'StringValue' &&
             argument.name.value === 'predicate'
           ) {
+            // $FlowFixMe
             predicates[definition.name.value + '.' + field.name.value] =
               argument.value.value
           }
