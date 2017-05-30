@@ -2,6 +2,9 @@
 
 Generate [graphql.js](https://github.com/graphql/graphql-js) schema for [dgraph](https://github.com/dgraph-io/dgraph).
 
+[![Build Status](https://travis-ci.org/dpeek/dgraphql.svg?branch=master)](https://travis-ci.org/dpeek/dgraphql?branch=master)
+[![Coverage Status](https://coveralls.io/repos/dpeek/dgraphql/badge.svg?branch=master)](https://coveralls.io/r/dpeek/dgraphql?branch=master)
+
 ## Usage
 
 Install dgraph:
