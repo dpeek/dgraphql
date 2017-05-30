@@ -43,8 +43,9 @@ export function findSelections (
   const selection = selections.find(selection => {
     return selection.kind === 'Field' && selection.name.value === name
   })
+  if (!selection) return []
   invariant(
-    selection && selection.kind === 'Field' && selection.selectionSet,
+    selection.kind === 'Field' && selection.selectionSet,
     'Selection should be of kind Field with a selectionSet'
   )
   return selection.selectionSet.selections

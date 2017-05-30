@@ -269,7 +269,7 @@ describe('querying edges', () => {
     const queryResult = await graphql(schema, query)
     expect(queryResult).toMatchSnapshot()
   })
-  test('filters by int greater than to', async () => {
+  test('filters by int greater than or equal to', async () => {
     const query = `query {
       people(
         order: age_asc,

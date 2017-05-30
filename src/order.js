@@ -13,7 +13,8 @@ export const orders = [
 
 export function getOrderType (type: GraphQLObjectType): ?GraphQLEnumType {
   const name = `${type.name}Order`
-  if (!cache.has(name)) {
+  let orderType = cache.get(name)
+  if (!orderType) {
     const fields = getFields(type).filter(
       field =>
         unwrap(field.type) instanceof GraphQLScalarType && field.name !== 'id'
@@ -26,10 +27,11 @@ export function getOrderType (type: GraphQLObjectType): ?GraphQLEnumType {
           values[value] = { value: value }
         })
       })
-      cache.set(name, new GraphQLEnumType({ name, values }))
+      orderType = new GraphQLEnumType({ name, values })
     } else {
-      cache.set(name, null)
+      orderType = null
     }
+    cache.set(name, orderType)
   }
-  return cache.get(name)
+  return orderType
 }

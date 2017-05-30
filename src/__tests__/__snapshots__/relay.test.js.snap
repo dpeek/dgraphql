@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`querying connection edge node fields 1`] = `
+Object {
+  "data": Object {
+    "people": Object {
+      "edges": Array [
+        Object {
+          "node": Object {
+            "name": "Catherine Harrison",
+          },
+        },
+        Object {
+          "node": Object {
+            "name": "Bobby Whitman",
+          },
+        },
+        Object {
+          "node": Object {
+            "name": "Aaron Whitman",
+          },
+        },
+      ],
+    },
+  },
+}
+`;

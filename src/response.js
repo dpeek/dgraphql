@@ -2,12 +2,7 @@
 
 import invariant from 'invariant'
 
-import {
-  GraphQLList,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  isLeafType
-} from 'graphql'
+import { GraphQLList, GraphQLObjectType, GraphQLInterfaceType } from 'graphql'
 
 import type {
   GraphQLNamedType,
@@ -24,7 +19,8 @@ import {
   isConnection,
   findSelections,
   getConnectionType,
-  flattenSelections
+  flattenSelections,
+  getValue
 } from './utils'
 
 import type { DgraphQLOptions } from './schema'
@@ -35,25 +31,28 @@ function processConnection (
   selections: Array<SelectionNode>,
   type: GraphQLObjectType,
   nodes: Array<any>,
-  args: { first: number }
+  args: { first?: number, after?: string },
+  count: number
 ) {
-  let count = 0
+  let first = args.first || 0
+  let hasPreviousPage = !!args.after
   let hasNextPage = false
-  nodes = nodes ? nodes.slice() : []
-  if (nodes.length && nodes[nodes.length - 1].count > 0) {
-    count = nodes.pop().count
-  }
-  if (args.first && nodes.length > args.first) {
-    nodes = nodes.slice(0, args.first)
-    hasNextPage = true
-  }
-  nodes.forEach(node =>
-    processSelections(options, info, selections, type, node)
-  )
-  const edges = nodes.map(node => ({
-    node,
-    cursor: node.id
-  }))
+  let edges = []
+  nodes.forEach(node => {
+    if (node.count) {
+      count = node.count
+    } else {
+      processSelections(options, info, selections, type, node)
+      if (first && edges.length >= first) {
+        hasNextPage = true
+        return
+      }
+      edges.push({
+        node,
+        cursor: node.id
+      })
+    }
+  })
   const firstEdge = edges[0]
   const lastEdge = edges[edges.length - 1]
   return {
@@ -62,7 +61,7 @@ function processConnection (
     pageInfo: {
       startCursor: firstEdge ? firstEdge.cursor : null,
       endCursor: lastEdge ? lastEdge.cursor : null,
-      hasPreviousPage: Boolean(args.after),
+      hasPreviousPage,
       hasNextPage
     }
   }
@@ -171,13 +170,23 @@ function processField (
     selections = flattenSelections(selections, info)
     selections = findSelections(selections, 'edges')
     selections = findSelections(selections, 'node')
+    let count = 0
+    let countKey = `_count_${alias}_`
+    if (value[countKey]) {
+      count = value[countKey][0].count
+    }
+    countKey = `count(${alias})`
+    if (value[countKey]) {
+      count = value[countKey]
+    }
     value[alias] = processConnection(
       options,
       info,
       selections,
       assertObjectType(getConnectionType(fieldType)),
       value[alias] || [],
-      getArguments(info, selection)
+      getArguments(info, selection),
+      count
     )
   } else if (fieldType instanceof GraphQLList) {
     value[alias] = processList(
@@ -204,26 +213,7 @@ function getArguments (info: GraphQLResolveInfo, selection: FieldNode): {} {
   const args = {}
   if (selection.arguments) {
     selection.arguments.forEach(arg => {
-      switch (arg.value.kind) {
-        case 'IntValue':
-          args[arg.name.value] = parseInt(arg.value.value, 10)
-          break
-        case 'FloatValue':
-          args[arg.name.value] = parseFloat(arg.value.value)
-          break
-        case 'BooleanValue':
-          args[arg.name.value] = arg.value.value
-          break
-        case 'NullValue':
-          args[arg.name.value] = null
-          break
-        case 'StringValue':
-          args[arg.name.value] = null
-          break
-        case 'Variable':
-          args[arg.name.value] = info.variableValues[arg.value.name.value]
-          break
-      }
+      args[arg.name.value] = getValue(info, arg.value)
     })
   }
   return args
@@ -244,7 +234,7 @@ export function processSelections (
     delete value._uid_
   }
   selections.forEach(selection => {
-    processSelection(options, info, selection, unwrap(type), value)
+    processSelection(options, info, selection, type, value)
   })
 }
 

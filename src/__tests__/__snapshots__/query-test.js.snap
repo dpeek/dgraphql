@@ -74,10 +74,14 @@ Object {
 }
 `;
 
-exports[`querying edges filters by int greater than to 1`] = `
+exports[`querying edges filters by int greater than or equal to 2`] = `
 Object {
   "data": Object {
     "people": Array [
+      Object {
+        "age": 19,
+        "name": "Catherine Harrison",
+      },
       Object {
         "age": 20,
         "name": "Aaron Whitman",
@@ -94,6 +98,10 @@ Object {
       Object {
         "age": 16,
         "name": "Bobby Whitman",
+      },
+      Object {
+        "age": 19,
+        "name": "Catherine Harrison",
       },
     ],
   },

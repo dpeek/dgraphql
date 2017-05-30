@@ -52,9 +52,10 @@ const cache: Map<string, GraphQLObjectType> = new Map()
 
 export function getConnectionType (type: GraphQLObjectType): GraphQLObjectType {
   const name = `${type.name}Connection`
-  if (!cache.has(name)) {
+  let connectionType = cache.get(name)
+  if (!connectionType) {
     const edgeType = getEdgeType(type)
-    const connectionType = new GraphQLObjectType({
+    connectionType = new GraphQLObjectType({
       name,
       description: 'A connection to a list of items.',
       fields: {
@@ -74,5 +75,5 @@ export function getConnectionType (type: GraphQLObjectType): GraphQLObjectType {
     })
     cache.set(name, connectionType)
   }
-  return cache.get(name)
+  return connectionType
 }

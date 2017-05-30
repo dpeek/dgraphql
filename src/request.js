@@ -85,11 +85,18 @@ function getArguments (
   info: GraphQLResolveInfo,
   selection: FieldNode,
   type: GraphQLObjectType,
-  isRoot: boolean
+  isRoot: boolean,
+  isCount: boolean
 ) {
-  const args = selection.arguments || []
+  let args = selection.arguments || []
   const hasId = args.find(arg => arg.name.value === 'id')
   let query = ''
+  if (isCount) {
+    args = args.filter(argument => {
+      const name = argument.name.value
+      return name !== 'first' && name !== ' after'
+    })
+  }
   const queryArgs = args
     .filter(argument => {
       return argument.name.value !== 'filter'
@@ -169,12 +176,12 @@ function getSelection (
       query += indent + alias + fieldName
     }
   }
-  const args = getArguments(options, info, selection, fieldType, isRoot)
+  let args = getArguments(options, info, selection, fieldType, isRoot, false)
   query += args
   if (selections) {
     query += ' {\n'
-    query += indent + '  _uid_\n'
-    query += indent + '  __typename\n'
+    query += `${indent}  _uid_\n`
+    query += `${indent}  __typename\n`
     query += getSelections(
       options,
       info,
@@ -186,8 +193,12 @@ function getSelection (
     )
     query += indent + '}'
   }
-  if (connection && !isRoot) {
+  if (!isRoot && connection) {
     query += `\n${indent}count(${fieldName}${args})`
+  }
+  if (isRoot && connection) {
+    args = getArguments(options, info, selection, fieldType, isRoot, true)
+    query += `\n${indent}_count_${fieldName}_${args} { count() }`
   }
   return query + '\n'
 }

@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "graphql": "^0.9.6",
-    "graphql-relay": "^0.5.1"
+    "graphql-relay": "^0.5.1",
+    "isomorphic-fetch": "^2.2.1"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",

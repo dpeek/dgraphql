@@ -3,7 +3,6 @@
 import {
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLScalarType,
   GraphQLInputObjectType,
   isLeafType
 } from 'graphql'
@@ -111,7 +110,8 @@ export function getFilterType (
   type: GraphQLObjectType
 ): ?GraphQLInputObjectType {
   const name = `${type.name}Filter`
-  if (!cache.has(name)) {
+  let filterType = cache.get(name)
+  if (!filterType) {
     const filters = filtersForType(type)
     if (filters.length > 0) {
       const fields = {}
@@ -121,10 +121,11 @@ export function getFilterType (
           description: filter.description
         }
       })
-      cache.set(name, new GraphQLInputObjectType({ name, fields }))
+      filterType = new GraphQLInputObjectType({ name, fields })
     } else {
-      cache.set(name, null)
+      filterType = null
     }
+    cache.set(name, filterType)
   }
-  return cache.get(name)
+  return filterType
 }
