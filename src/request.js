@@ -2,7 +2,7 @@
 
 import invariant from 'invariant'
 
-import { GraphQLObjectType } from 'graphql'
+import { GraphQLObjectType, GraphQLInterfaceType } from 'graphql'
 
 import type {
   GraphQLResolveInfo,
@@ -136,7 +136,10 @@ function getSelection (
       query += indent + alias + fieldName
     }
   }
-  if (fieldType instanceof GraphQLObjectType) {
+  if (
+    fieldType instanceof GraphQLObjectType ||
+    fieldType instanceof GraphQLInterfaceType
+  ) {
     let args = getArguments(client, info, selection, fieldType, isRoot, false)
     query += args
     if (selections) {

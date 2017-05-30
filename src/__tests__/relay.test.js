@@ -20,6 +20,49 @@ beforeAll(async () => {
   await client.query(fs.readFileSync(dgraphSchemaPath).toString())
 })
 
+test('queries node with fragment', async () => {
+  const mutation = `mutation {
+    createPerson(input: {
+      name: "John Snow"
+    }) {
+      person { id }
+    }
+  }`
+  const mutationResult = await graphql(schema, mutation)
+  const id = mutationResult.data.createPerson.person.id
+  const query = `query {
+    node(id: "${id}") {
+      ... on Person {
+        name
+      }
+    }
+  }`
+  const queryResult = await graphql(schema, query)
+  expect(queryResult).toMatchSnapshot()
+})
+
+test('queries node with inline fragment', async () => {
+  const mutation = `mutation {
+    createPerson(input: {
+      name: "John Snow"
+    }) {
+      person { id }
+    }
+  }`
+  const mutationResult = await graphql(schema, mutation)
+  const id = mutationResult.data.createPerson.person.id
+  const query = `query {
+    node(id: "${id}") {
+      ... personFields
+    }
+  }
+  fragment personFields on Person {
+    name
+  }`
+  const queryResult = await graphql(schema, query)
+  expect(queryResult).toMatchSnapshot()
+})
+
 describe('querying connection', () => {
   let time = 0
   beforeAll(() => {

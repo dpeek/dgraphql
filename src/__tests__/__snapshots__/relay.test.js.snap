@@ -1,5 +1,25 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`queries node with fragment 1`] = `
+Object {
+  "data": Object {
+    "node": Object {
+      "name": "John Snow",
+    },
+  },
+}
+`;
+
+exports[`queries node with inline fragment 1`] = `
+Object {
+  "data": Object {
+    "node": Object {
+      "name": "John Snow",
+    },
+  },
+}
+`;
+
 exports[`querying connection edge node fields 1`] = `
 Object {
   "data": Object {

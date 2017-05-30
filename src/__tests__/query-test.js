@@ -66,6 +66,28 @@ test('queries node fields', async () => {
   expect(queryResult).toMatchSnapshot()
 })
 
+test('queries type name', async () => {
+  const create = `mutation {
+    createPerson(input: {
+      name: "Tim"
+    }) {
+      person {
+        id
+      }
+    }
+  }`
+  const createResult = await graphql(schema, create)
+  const id = createResult.data.createPerson.person.id
+
+  const query = `query {
+    person(id: "${id}") {
+      __typename
+    }
+  }`
+  const queryResult = await graphql(schema, query)
+  expect(queryResult.data.person.__typename).toEqual('Person')
+})
+
 test('queries aliased field', async () => {
   const create = `mutation {
     createPerson(input: {
