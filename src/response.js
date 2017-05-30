@@ -23,10 +23,10 @@ import {
   getValue
 } from './utils'
 
-import type { DgraphQLOptions } from './schema'
+import type { Client } from './client'
 
 function processConnection (
-  options: DgraphQLOptions,
+  client: Client,
   info: GraphQLResolveInfo,
   selections: Array<SelectionNode>,
   type: GraphQLObjectType,
@@ -42,7 +42,7 @@ function processConnection (
     hasNextPage = true
   }
   const edges = nodes.map(node => {
-    processSelections(options, info, selections, type, node)
+    processSelections(client, info, selections, type, node)
     return {
       node,
       cursor: node.id
@@ -63,16 +63,14 @@ function processConnection (
 }
 
 function processList (
-  options: DgraphQLOptions,
+  client: Client,
   info: GraphQLResolveInfo,
   selections: Array<SelectionNode>,
   type: GraphQLObjectType,
   nodes: Array<any>,
   args: any
 ) {
-  nodes.forEach(node =>
-    processSelections(options, info, selections, type, node)
-  )
+  nodes.forEach(node => processSelections(client, info, selections, type, node))
   return nodes
 }
 
@@ -85,7 +83,7 @@ function assertObjectType (type: ?GraphQLNamedType): GraphQLObjectType {
 }
 
 function processSelection (
-  options: DgraphQLOptions,
+  client: Client,
   info: GraphQLResolveInfo,
   selection: SelectionNode,
   type: GraphQLObjectType,
@@ -93,19 +91,19 @@ function processSelection (
 ) {
   switch (selection.kind) {
     case 'FragmentSpread':
-      processFragmentSpread(options, info, selection, value)
+      processFragmentSpread(client, info, selection, value)
       break
     case 'InlineFragment':
-      processInlineFragment(options, info, selection, value)
+      processInlineFragment(client, info, selection, value)
       break
     case 'Field':
-      processField(options, info, selection, type, value)
+      processField(client, info, selection, type, value)
       break
   }
 }
 
 function processFragmentSpread (
-  options: DgraphQLOptions,
+  client: Client,
   info: GraphQLResolveInfo,
   selection: FragmentSpreadNode,
   value: any
@@ -114,17 +112,11 @@ function processFragmentSpread (
   const type = assertObjectType(
     info.schema.getType(fragment.typeCondition.name.value)
   )
-  processSelections(
-    options,
-    info,
-    fragment.selectionSet.selections,
-    type,
-    value
-  )
+  processSelections(client, info, fragment.selectionSet.selections, type, value)
 }
 
 function processInlineFragment (
-  options: DgraphQLOptions,
+  client: Client,
   info: GraphQLResolveInfo,
   selection: InlineFragmentNode,
   value: any
@@ -134,7 +126,7 @@ function processInlineFragment (
       info.schema.getType(selection.typeCondition.name.value)
     )
     processSelections(
-      options,
+      client,
       info,
       selection.selectionSet.selections,
       type,
@@ -144,7 +136,7 @@ function processInlineFragment (
 }
 
 function processField (
-  options: DgraphQLOptions,
+  client: Client,
   info: GraphQLResolveInfo,
   selection: FieldNode,
   type: GraphQLObjectType,
@@ -175,7 +167,7 @@ function processField (
       count = value[countKey]
     }
     value[alias] = processConnection(
-      options,
+      client,
       info,
       selections,
       assertObjectType(getConnectionType(fieldType)),
@@ -185,7 +177,7 @@ function processField (
     )
   } else if (fieldType instanceof GraphQLList) {
     value[alias] = processList(
-      options,
+      client,
       info,
       selections,
       unwrap(fieldType),
@@ -195,7 +187,7 @@ function processField (
   } else if (value[alias] && selection.selectionSet) {
     value[alias] = value[alias][0]
     processSelections(
-      options,
+      client,
       info,
       selections,
       assertObjectType(fieldType),
@@ -215,7 +207,7 @@ function getArguments (info: GraphQLResolveInfo, selection: FieldNode): {} {
 }
 
 export function processSelections (
-  options: DgraphQLOptions,
+  client: Client,
   info: GraphQLResolveInfo,
   selections: Array<SelectionNode>,
   type: GraphQLObjectType,
@@ -229,19 +221,19 @@ export function processSelections (
     delete value._uid_
   }
   selections.forEach(selection => {
-    processSelection(options, info, selection, type, value)
+    processSelection(client, info, selection, type, value)
   })
 }
 
 export function processResponse (
-  options: DgraphQLOptions,
+  client: Client,
   info: GraphQLResolveInfo,
   response: {}
 ): any {
   console.log('-- dgraph response')
   console.log(JSON.stringify(response, null, '  '))
   processSelections(
-    options,
+    client,
     info,
     info.operation.selectionSet.selections,
     info.schema.getQueryType(),

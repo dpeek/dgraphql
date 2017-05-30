@@ -1,5 +1,7 @@
 /* @flow */
 
+import invariant from 'invariant'
+
 import {
   GraphQLNonNull,
   GraphQLObjectType,
@@ -14,8 +16,7 @@ import type {
   ArgumentNode
 } from 'graphql'
 
-import invariant from 'invariant'
-
+import type { Client } from './client'
 import { getFields, getValue, quoteValue } from './utils'
 
 type Filter = {
@@ -137,16 +138,8 @@ export function getFilterType (
   return filterType
 }
 
-const language = 'en'
-const localizedFields: Set<string> = new Set(['name', 'description'])
-function localizeField (field) {
-  if (localizedFields.has(field)) {
-    return `${field}@${language}`
-  }
-  return field
-}
-
 export function getFilterQuery (
+  client: Client,
   info: GraphQLResolveInfo,
   argument: ArgumentNode
 ) {
@@ -162,7 +155,7 @@ export function getFilterQuery (
       `There was no filter matching the field name ${name}`
     )
     name = name.substr(0, name.length - filter.name.length)
-    name = localizeField(name)
+    name = client.localizePredicate(name)
     let value = quoteValue(getValue(info, field.value))
     return `${filter.operation}(${name}, ${value})`
   })

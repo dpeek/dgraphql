@@ -4,7 +4,7 @@ import { GraphQLObjectType, GraphQLEnumType, GraphQLScalarType } from 'graphql'
 
 import { getFields, unwrap } from './utils'
 
-const cache: Map<string, ?GraphQLEnumType> = new Map()
+const orderTypes: Map<string, ?GraphQLEnumType> = new Map()
 
 export const orders = [
   { name: '_asc', operation: 'orderasc' },
@@ -13,7 +13,7 @@ export const orders = [
 
 export function getOrderType (type: GraphQLObjectType): ?GraphQLEnumType {
   const name = `${type.name}Order`
-  let orderType = cache.get(name)
+  let orderType = orderTypes.get(name)
   if (!orderType) {
     const fields = getFields(type).filter(
       field =>
@@ -31,7 +31,7 @@ export function getOrderType (type: GraphQLObjectType): ?GraphQLEnumType {
     } else {
       orderType = null
     }
-    cache.set(name, orderType)
+    orderTypes.set(name, orderType)
   }
   return orderType
 }

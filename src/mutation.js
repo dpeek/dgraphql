@@ -1,5 +1,7 @@
 /* @flow */
 
+import invariant from 'invariant'
+
 import {
   GraphQLObjectType,
   GraphQLInputObjectType,
@@ -9,37 +11,34 @@ import {
   isLeafType
 } from 'graphql'
 
+import type { GraphQLResolveInfo } from 'graphql'
 import { mutationWithClientMutationId } from 'graphql-relay'
 
-import type { DgraphQLOptions } from './schema'
+import { getSelections } from './request'
+import { processSelections } from './response'
+import type { Client } from './client'
 import { unwrap, unwrapNonNull, lowerCamelCase } from './utils'
 
-import {
-  createAndGetPayload,
-  updateAndGetPayload,
-  deleteAndGetPayload
-} from './request'
-
-const inputTypeCache = new Map()
+const inputTypes = new Map()
 function getInputType (
-  options: DgraphQLOptions,
+  client: Client,
   type: GraphQLObjectType
 ): GraphQLInputObjectType {
   const name = type.name + 'Input'
 
-  let inputType = inputTypeCache.get(name)
+  let inputType = inputTypes.get(name)
   if (inputType) return inputType
 
   inputType = new GraphQLInputObjectType({
     name: name,
-    fields: () => getInputFields(options, type, false)
+    fields: () => getInputFields(client, type, false)
   })
-  inputTypeCache.set(name, inputType)
+  inputTypes.set(name, inputType)
   return inputType
 }
 
 function getInputFields (
-  options: DgraphQLOptions,
+  client: Client,
   type: GraphQLObjectType,
   excludeId: boolean
 ) {
@@ -50,10 +49,10 @@ function getInputFields (
     const fieldType = unwrapNonNull(field.type)
     if (fieldType instanceof GraphQLList) {
       inputFields[fieldName] = {
-        type: new GraphQLList(getInputType(options, fieldType.ofType))
+        type: new GraphQLList(getInputType(client, fieldType.ofType))
       }
     } else if (fieldType instanceof GraphQLObjectType) {
-      inputFields[fieldName] = { type: getInputType(options, fieldType) }
+      inputFields[fieldName] = { type: getInputType(client, fieldType) }
     } else if (isLeafType(fieldType)) {
       if (excludeId && fieldName === 'id') return
       inputFields[fieldName] = { type: fieldType }
@@ -62,10 +61,7 @@ function getInputFields (
   return inputFields
 }
 
-export function getDeleteMutation (
-  options: DgraphQLOptions,
-  type: GraphQLObjectType
-) {
+export function getDeleteMutation (client: Client, type: GraphQLObjectType) {
   return mutationWithClientMutationId({
     name: `Delete${type.name}Mutation`,
     inputFields: {
@@ -77,15 +73,12 @@ export function getDeleteMutation (
       }
     },
     mutateAndGetPayload: (input, context, info) => {
-      return deleteAndGetPayload(options, info, type, input)
+      return deleteAndGetPayload(client, info, type, input)
     }
   })
 }
 
-export function getUpdateMutation (
-  options: DgraphQLOptions,
-  type: GraphQLObjectType
-) {
+export function getUpdateMutation (client: Client, type: GraphQLObjectType) {
   const name = type.name
   const fields = type.getFields()
   const inputFields = {}
@@ -109,17 +102,44 @@ export function getUpdateMutation (
       }
     },
     mutateAndGetPayload: (input, context, info) => {
-      return updateAndGetPayload(options, info, type, input)
+      return updateAndGetPayload(client, info, type, input)
     }
   })
 }
 
-export function getCreateMutation (
-  options: DgraphQLOptions,
-  type: GraphQLObjectType
-) {
+function getMutation (client: Client, info: GraphQLResolveInfo) {
+  const mutationType = info.schema.getMutationType()
+  invariant(mutationType, 'No mutation type defined in schema')
+  const fields = mutationType.getFields()
+  const selection = info.operation.selectionSet.selections[0]
+  invariant(
+    selection.kind === 'Field',
+    'Mutation selection must be of kind field'
+  )
+  const type = fields[selection.name.value].type
+  invariant(
+    type instanceof GraphQLObjectType,
+    'Mutation field type must be GraphQLObjectType'
+  )
+  invariant(
+    selection.selectionSet,
+    'Mutation field type must have selectionSet'
+  )
+  let query = 'query {\n'
+  query += getSelections(
+    client,
+    info,
+    selection.selectionSet.selections,
+    type,
+    '  ',
+    true
+  )
+  return query + '}'
+}
+
+export function getCreateMutation (client: Client, type: GraphQLObjectType) {
   const name = type.name
-  const inputFields = getInputFields(options, type, true)
+  const inputFields = getInputFields(client, type, true)
   return mutationWithClientMutationId({
     name: `Create${name}Mutation`,
     inputFields,
@@ -129,7 +149,126 @@ export function getCreateMutation (
       }
     },
     mutateAndGetPayload: (input, context, info) => {
-      return createAndGetPayload(options, info, type, input)
+      return createAndGetPayload(client, info, type, input)
     }
+  })
+}
+
+async function deleteAndGetPayload (
+  client: Client,
+  info: GraphQLResolveInfo,
+  type: GraphQLObjectType,
+  input: { id: string }
+) {
+  const typeName = type.name
+  const typeField = lowerCamelCase(typeName)
+  let query = 'mutation { delete {'
+  query += `  <${input.id}> * * .`
+  query += '}}'
+  await client.fetchQuery(query)
+  return {
+    [typeField]: {
+      id: input.id
+    }
+  }
+}
+
+async function updateAndGetPayload (
+  client: Client,
+  info: GraphQLResolveInfo,
+  type: GraphQLObjectType,
+  input: { id: string }
+) {
+  return createOrUpdate(client, info, type, input, input.id)
+}
+
+function createAndGetPayload (
+  client: Client,
+  info: GraphQLResolveInfo,
+  type: GraphQLObjectType,
+  input: {}
+) {
+  return createOrUpdate(client, info, type, input)
+}
+
+function getMutationFields (
+  client: Client,
+  info: GraphQLResolveInfo,
+  type: GraphQLObjectType,
+  input: {},
+  ident: string,
+  count: number
+) {
+  let query = ''
+  if (ident.indexOf('node') !== -1) {
+    query += `  ${ident} <__typename> "${type.name}" .\n`
+  }
+  const fields = type.getFields()
+  Object.keys(input).forEach(key => {
+    if (key === 'id') return
+    let fieldType = fields[key].type
+    if (
+      fieldType instanceof GraphQLObjectType ||
+      fieldType instanceof GraphQLList
+    ) {
+      let nodes = []
+      if (fieldType instanceof GraphQLList) {
+        nodes = input[key]
+        fieldType = fieldType.ofType
+      } else {
+        nodes = [input[key]]
+      }
+      nodes.forEach(node => {
+        count++
+        let nodeIdent = node.id ? `<${node.id}>` : `_:node${count}`
+        let child = getMutationFields(
+          client,
+          info,
+          fieldType,
+          node,
+          nodeIdent,
+          count
+        )
+        query = child + query
+        let predicate = client.getPredicate(type.name, key)
+        if (predicate.indexOf('~') === 0) {
+          predicate = predicate.substr(1)
+          query += `  ${nodeIdent} <${predicate}> ${ident} .\n`
+        } else {
+          query += `  ${ident} <${predicate}> ${nodeIdent} .\n`
+        }
+      })
+    } else {
+      const value = client.localizeValue(input[key], key)
+      query += `  ${ident} <${key}> ${value} .\n`
+    }
+  })
+  return query
+}
+
+async function createOrUpdate (
+  client: Client,
+  info: GraphQLResolveInfo,
+  type: GraphQLObjectType,
+  input: {},
+  id?: string
+) {
+  const isCreate = typeof id === 'undefined'
+  let ident = isCreate ? '_:node' : '<' + String(id) + '>'
+  let query = 'mutation { set {\n'
+  query += getMutationFields(client, info, type, input, ident, 0)
+  query += '}}'
+  const res = await client.fetchQuery(query)
+  query = getMutation(client, info)
+  // TODO: good god lemmon
+  query = query.replace(
+    /func:eq\(__typename,[^)]+\)/m,
+    'id:' + (id || res.uids.node)
+  )
+  return client.fetchQuery(query).then(res => {
+    const selections =
+      info.operation.selectionSet.selections[0].selectionSet.selections
+    processSelections(client, info, selections, info.schema.getQueryType(), res)
+    return res
   })
 }

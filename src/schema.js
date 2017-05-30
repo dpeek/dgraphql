@@ -12,7 +12,7 @@ import {
   Source
 } from 'graphql'
 
-import type { GraphQLFieldConfig, GraphQLResolveInfo } from 'graphql'
+import type { GraphQLFieldConfig } from 'graphql'
 
 import { nodeDefinitions } from 'graphql-relay'
 
@@ -28,23 +28,20 @@ import {
 import { getFilterType } from './filter'
 import { getOrderType } from './order'
 import { getConnectionType } from './connection'
+import { Client } from './client'
+import type { ClientConfig } from './client'
 
 const pluralize: (input: string) => string = require('pluralize')
 
-export type DgraphQLOptions = {
-  relay: boolean,
-  predicateMap: { [string]: string }
-}
-
 function getConnectionField (
-  options: DgraphQLOptions,
+  client: Client,
   type: GraphQLObjectType,
   isRoot: boolean
 ): GraphQLFieldConfig<{}, {}> {
   const filterType = getFilterType(type)
   const orderType = getOrderType(type)
   return {
-    type: options.relay ? getConnectionType(type) : new GraphQLList(type),
+    type: client.relay ? getConnectionType(type) : new GraphQLList(type),
     description: `Get filtered, ordered, paginated ${pluralize(type.name)}`,
     args: {
       first: {
@@ -57,7 +54,7 @@ function getConnectionField (
       ...(orderType && { order: { type: orderType } })
     },
     resolve: (obj, args, context, info) => {
-      if (isRoot) return resolveQuery(options, info)
+      if (isRoot) return resolveQuery(client, info)
       if (info.path) return obj[info.path.key]
       return null
     }
@@ -65,7 +62,7 @@ function getConnectionField (
 }
 
 function getQueryField (
-  options: DgraphQLOptions,
+  client: Client,
   type: GraphQLObjectType
 ): GraphQLFieldConfig<{}, {}> {
   return {
@@ -76,11 +73,11 @@ function getQueryField (
         type: new GraphQLNonNull(GraphQLID)
       }
     },
-    resolve: (obj, args, context, info) => resolveQuery(options, info)
+    resolve: (obj, args, context, info) => resolveQuery(client, info)
   }
 }
 
-function transformType (options: DgraphQLOptions, type: GraphQLObjectType) {
+function transformType (client: Client, type: GraphQLObjectType) {
   const typeFields = type._typeConfig.fields()
   type._typeConfig.fields = typeFields
   Object.keys(typeFields).forEach(key => {
@@ -89,7 +86,7 @@ function transformType (options: DgraphQLOptions, type: GraphQLObjectType) {
     if (fieldType instanceof GraphQLList) {
       const nodeType = unwrapNonNull(fieldType.ofType)
       if (nodeType instanceof GraphQLObjectType) {
-        const newField = getConnectionField(options, nodeType, false)
+        const newField = getConnectionField(client, nodeType, false)
         type._typeConfig.fields[key] = newField
       }
     }
@@ -100,9 +97,9 @@ function transformType (options: DgraphQLOptions, type: GraphQLObjectType) {
 
 export function buildSchema (
   graphql: string,
-  options: DgraphQLOptions
+  config: ClientConfig
 ): GraphQLSchema {
-  const predicateMap = {}
+  const predicates = {}
   const ast = parse(new Source(graphql))
 
   ast.definitions.forEach(definition => {
@@ -117,21 +114,21 @@ export function buildSchema (
             argument.value.kind === 'StringValue' &&
             argument.name.value === 'predicate'
           ) {
-            predicateMap[definition.name.value + '.' + field.name.value] =
+            predicates[definition.name.value + '.' + field.name.value] =
               argument.value.value
           }
         })
       })
     })
   })
-  options.predicateMap = predicateMap
+  const client = new Client(config, predicates)
   const schema = buildASTSchema(ast)
   const queries = {}
   const mutations = {}
   const typeMap = schema.getTypeMap()
 
   const node = nodeDefinitions(
-    (id, context, info) => resolveQuery(options, info),
+    (id, context, info) => resolveQuery(client, info),
     (value, context, info) => info.schema.getType(value.__typename)
   )
 
@@ -140,16 +137,16 @@ export function buildSchema (
     let type = typeMap[name]
     if (!(type instanceof GraphQLObjectType)) return
 
-    type = transformType(options, type)
+    type = transformType(client, type)
     type._interfaces.push(node.nodeInterface)
 
     let singular = lowerCamelCase(name)
-    queries[singular] = getQueryField(options, type)
-    queries[pluralize(singular)] = getConnectionField(options, type, true)
+    queries[singular] = getQueryField(client, type)
+    queries[pluralize(singular)] = getConnectionField(client, type, true)
 
-    mutations['create' + name] = getCreateMutation(options, type)
-    mutations['update' + name] = getUpdateMutation(options, type)
-    mutations['delete' + name] = getDeleteMutation(options, type)
+    mutations['create' + name] = getCreateMutation(client, type)
+    mutations['update' + name] = getUpdateMutation(client, type)
+    mutations['delete' + name] = getDeleteMutation(client, type)
 
     queries['node'] = node.nodeField
   })

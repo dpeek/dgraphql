@@ -11,7 +11,7 @@ client.query(fs.readFileSync(dgraphPath).toString())
 
 const graphqlPath = path.resolve(__dirname, 'schema.graphql')
 const graphqlSchema = fs.readFileSync(graphqlPath).toString()
-const schema = buildSchema(graphqlSchema, { relay: false })
+const schema = buildSchema(graphqlSchema, {})
 
 var app = express()
 app.use('/', graphqlHTTP({ schema: schema, graphiql: true }))

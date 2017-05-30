@@ -48,11 +48,11 @@ function getEdgeType (type: GraphQLObjectType): GraphQLObjectType {
   })
 }
 
-const cache: Map<string, GraphQLObjectType> = new Map()
+const connectionTypes: Map<string, GraphQLObjectType> = new Map()
 
 export function getConnectionType (type: GraphQLObjectType): GraphQLObjectType {
   const name = `${type.name}Connection`
-  let connectionType = cache.get(name)
+  let connectionType = connectionTypes.get(name)
   if (!connectionType) {
     const edgeType = getEdgeType(type)
     connectionType = new GraphQLObjectType({
@@ -73,7 +73,7 @@ export function getConnectionType (type: GraphQLObjectType): GraphQLObjectType {
         }
       }
     })
-    cache.set(name, connectionType)
+    connectionTypes.set(name, connectionType)
   }
   return connectionType
 }
