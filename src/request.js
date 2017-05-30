@@ -21,36 +21,13 @@ import {
 
 import invariant from 'invariant'
 import { processResponse, processSelections } from './response'
-import { filters } from './filter'
+import { getFilterQuery } from './filter'
 import { orders } from './order'
 import { connect } from './dgraph'
 
 import type { DgraphQLOptions } from './schema'
 
 const client = connect('http://localhost:8080')
-
-function getFilterQuery (
-  options: DgraphQLOptions,
-  info: GraphQLResolveInfo,
-  argument: ArgumentNode,
-  type: GraphQLObjectType
-) {
-  const filter = argument.value
-  if (filter.kind !== 'ObjectValue') {
-    return ''
-  }
-  const args = filter.fields.map(field => {
-    let name = field.name.value
-    let filter = filters.find(filter => name.endsWith(filter.name))
-    if (!filter) return
-    name = name.substr(0, name.length - filter.name.length)
-    name = mapField(options, type.toString(), name)
-    let value = getValue(info, field.value)
-    if (typeof value === 'string') value = `"${value}"`
-    return `${filter.operation}(${name}, ${String(value)})`
-  })
-  return '@filter(' + args.join(' AND ') + ')'
-}
 
 function getArgument (
   options: DgraphQLOptions,
@@ -115,7 +92,7 @@ function getArguments (
     return argument.name.value === 'filter'
   })
   if (filter) {
-    query += ' ' + getFilterQuery(options, info, filter, type)
+    query += ' ' + getFilterQuery(info, filter, type)
   }
   return query
 }

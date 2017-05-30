@@ -12,7 +12,7 @@ import {
   Source
 } from 'graphql'
 
-import type { GraphQLFieldConfig } from 'graphql'
+import type { GraphQLFieldConfig, GraphQLResolveInfo } from 'graphql'
 
 import { nodeDefinitions } from 'graphql-relay'
 

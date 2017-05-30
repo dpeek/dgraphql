@@ -51,24 +51,18 @@ export function findSelections (
   return selection.selectionSet.selections
 }
 
-export function findSelection (
-  selections: Array<SelectionNode>,
-  name: string
-): ?SelectionNode {
-  return selections.find(selection => {
-    return selection.kind === 'Field' && selection.name.value === name
-  })
-}
-
 export function getConnectionType (type: GraphQLObjectType): GraphQLObjectType {
-  if (type instanceof GraphQLObjectType) {
-    const edgeType = unwrap(type.getFields()['edges'].type)
-    if (edgeType instanceof GraphQLObjectType) {
-      const node = edgeType.getFields()['node'].type
-      if (node instanceof GraphQLObjectType) return node
-    }
-  }
-  throw new Error('Invalid connection!')
+  const edgeType = unwrap(type.getFields()['edges'].type)
+  invariant(
+    edgeType instanceof GraphQLObjectType,
+    'Edge type is not an object type.'
+  )
+  const nodeType = edgeType.getFields()['node'].type
+  invariant(
+    nodeType instanceof GraphQLObjectType,
+    'Node type is not an object type.'
+  )
+  return nodeType
 }
 
 export function flattenSelections (
@@ -116,11 +110,16 @@ export function getValue (info: GraphQLResolveInfo, node: ValueNode): mixed {
         object[field.name.value] = getValue(info, field.value)
       })
       return object
-    default:
-      return null
   }
 }
 
 export function lowerCamelCase (str: string): string {
   return str[0].toLowerCase() + str.substr(1)
+}
+
+export function quoteValue (value: mixed) {
+  if (typeof value === 'string') {
+    return `"${value}"`
+  }
+  return String(value)
 }

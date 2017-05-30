@@ -9,19 +9,21 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "build": "babel src --optional runtime --ignore __tests__ --out-dir dist/",
+    "test:coverage": "jest --coverage",
+    "build": "babel src --optional runtime --ignore __tests__ --out-dir lib/",
     "start": "babel-node example"
   },
   "dependencies": {
-    "graphql": "^0.9.6",
+    "graphql": "^0.10.1",
     "graphql-relay": "^0.5.1",
     "isomorphic-fetch": "^2.2.1"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
+    "coveralls": "^2.13.1",
     "express": "^4.15.3",
-    "express-graphql": "^0.6.5",
+    "express-graphql": "^0.6.6",
     "flow-bin": "^0.46.0",
     "jest": "^20.0.4"
   }

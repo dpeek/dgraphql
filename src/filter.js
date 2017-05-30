@@ -7,9 +7,16 @@ import {
   isLeafType
 } from 'graphql'
 
-import type { GraphQLOutputType, GraphQLField } from 'graphql'
+import type {
+  GraphQLOutputType,
+  GraphQLField,
+  GraphQLResolveInfo,
+  ArgumentNode
+} from 'graphql'
 
-import { getFields } from './utils'
+import invariant from 'invariant'
+
+import { getFields, getValue, quoteValue } from './utils'
 
 type Filter = {
   active: (type: GraphQLOutputType) => boolean,
@@ -73,7 +80,7 @@ const greaterThanOrEqual: Filter = {
   operation: 'ge'
 }
 
-export const filters = [
+const filters = [
   allOf,
   anyOf,
   equal,
@@ -104,13 +111,13 @@ function filtersForType (type: GraphQLObjectType): Array<FilterField> {
   return getFields(type).map(filtersForField).reduce((a, b) => a.concat(b), [])
 }
 
-const cache: Map<string, ?GraphQLInputObjectType> = new Map()
+const filterTypes: Map<string, ?GraphQLInputObjectType> = new Map()
 
 export function getFilterType (
   type: GraphQLObjectType
 ): ?GraphQLInputObjectType {
   const name = `${type.name}Filter`
-  let filterType = cache.get(name)
+  let filterType = filterTypes.get(name)
   if (!filterType) {
     const filters = filtersForType(type)
     if (filters.length > 0) {
@@ -125,7 +132,39 @@ export function getFilterType (
     } else {
       filterType = null
     }
-    cache.set(name, filterType)
+    filterTypes.set(name, filterType)
   }
   return filterType
+}
+
+const language = 'en'
+const localizedFields: Set<string> = new Set(['name', 'description'])
+function localizeField (field) {
+  if (localizedFields.has(field)) {
+    return `${field}@${language}`
+  }
+  return field
+}
+
+export function getFilterQuery (
+  info: GraphQLResolveInfo,
+  argument: ArgumentNode
+) {
+  invariant(
+    argument.value.kind === 'ObjectValue',
+    'Provided filter value is not an object'
+  )
+  const args = argument.value.fields.map(field => {
+    let name = field.name.value
+    let filter = filters.find(filter => name.endsWith(filter.name))
+    invariant(
+      typeof filter !== 'undefined',
+      `There was no filter matching the field name ${name}`
+    )
+    name = name.substr(0, name.length - filter.name.length)
+    name = localizeField(name)
+    let value = quoteValue(getValue(info, field.value))
+    return `${filter.operation}(${name}, ${value})`
+  })
+  return `@filter(${args.join(' AND ')})`
 }

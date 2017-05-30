@@ -37,20 +37,15 @@ function processConnection (
   let first = args.first || 0
   let hasPreviousPage = !!args.after
   let hasNextPage = false
-  let edges = []
-  nodes.forEach(node => {
-    if (node.count) {
-      count = node.count
-    } else {
-      processSelections(options, info, selections, type, node)
-      if (first && edges.length >= first) {
-        hasNextPage = true
-        return
-      }
-      edges.push({
-        node,
-        cursor: node.id
-      })
+  if (first && nodes.length > first) {
+    nodes = nodes.slice(0, nodes.length - 1)
+    hasNextPage = true
+  }
+  const edges = nodes.map(node => {
+    processSelections(options, info, selections, type, node)
+    return {
+      node,
+      cursor: node.id
     }
   })
   const firstEdge = edges[0]
