@@ -7,9 +7,8 @@
   "author": "David Peek",
   "license": "MIT",
   "scripts": {
-    "test": "jest",
+    "test": "jest --coverage",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
     "build": "babel src --optional runtime --ignore __tests__ --out-dir lib/",
     "start": "babel-node example"
   },
