@@ -6,7 +6,6 @@ import { GraphQLObjectType, GraphQLInterfaceType } from 'graphql'
 
 import type {
   GraphQLResolveInfo,
-  ArgumentNode,
   FieldNode,
   SelectionNode,
   GraphQLField
@@ -18,45 +17,14 @@ import {
   getConnectionType,
   flattenSelections,
   findSelections,
-  getValue,
-  getArguments
+  getArguments,
+  quoteValue
 } from './utils'
 
 import { processResponse } from './response'
-import { getFilterQuery } from './filter'
-import { orders } from './order'
-
 import type { Client } from './client'
 
-function getArgument (
-  client: Client,
-  info: GraphQLResolveInfo,
-  argument: ArgumentNode,
-  type: GraphQLObjectType
-) {
-  let name = argument.name.value
-  let value = getValue(info, argument.value)
-  if (value === null) {
-    return null
-  }
-  switch (name) {
-    case 'order':
-      let field = String(value)
-      let order = orders.find(order => {
-        return field.endsWith(order.name)
-      })
-      if (!order) return ''
-      name = order.operation
-      value = field.substr(0, field.length - order.name.length)
-      break
-    case 'first':
-      value = parseInt(value, 10) + (client.relay ? 1 : 0)
-      break
-  }
-  return name + ': ' + String(value)
-}
-
-function getArgumentsQuery (
+function getParams (
   client: Client,
   info: GraphQLResolveInfo,
   selection: FieldNode,
@@ -64,34 +32,42 @@ function getArgumentsQuery (
   isRoot: boolean,
   isCount: boolean
 ) {
-  let args = selection.arguments || []
-  const hasId = args.find(arg => arg.name.value === 'id')
+  const args = getArguments(info, selection)
+  if (args.id) {
+    // if we have an id we can bail early
+    return `(id: ${args.id})`
+  }
   let query = ''
-  if (isCount) {
-    args = args.filter(argument => {
-      const name = argument.name.value
-      return name !== 'first' && name !== ' after'
-    })
+  let params = []
+  if (isRoot) {
+    // root queries in dgraph query everything, so specify __typename
+    params.push(`func:eq(__typename, "${type.name}")`)
   }
-  const queryArgs = args
-    .filter(argument => {
-      return argument.name.value !== 'filter'
-    })
-    .map(arg => {
-      return getArgument(client, info, arg, type)
-    })
-    .filter(arg => arg !== null)
-  if (isRoot && !hasId && type.name !== 'Node') {
-    queryArgs.unshift(`func:eq(__typename, "${type.name}")`)
+  if (!isCount) {
+    if (args.first) {
+      // overfetch by one in relay so that we can determine hasNextPage
+      params.push(`first: ${args.first + (client.relay ? 1 : 0)}`)
+    }
+    if (args.after) {
+      params.push(`after: "${args.after}"`)
+    }
   }
-  if (queryArgs.length) {
-    query += `(${queryArgs.join(', ')})`
+  if (args.order) {
+    const order = args.order
+    const index = order.indexOf('_')
+    params.push(`order${order.substr(index + 1)}: ${order.substr(0, index)}`)
   }
-  const filter = args.find(argument => {
-    return argument.name.value === 'filter'
-  })
+  query += params.length ? `(${params.join(', ')})` : ''
+  const filter = args.filter
   if (filter) {
-    query += ' ' + getFilterQuery(client, info, filter, type)
+    // filters are specified as a directive, so process those last
+    const params = Object.keys(filter).reduce((filters, key) => {
+      const i = key.indexOf('_')
+      const value = quoteValue(filter[key])
+      filters.push(`${key.substr(i + 1)}(${key.substr(0, i)}, ${value})`)
+      return filters
+    }, [])
+    query += ` @filter(${params.join(' AND ')})`
   }
   return query
 }
@@ -141,14 +117,7 @@ function getSelection (
     fieldType instanceof GraphQLObjectType ||
     fieldType instanceof GraphQLInterfaceType
   ) {
-    let args = getArgumentsQuery(
-      client,
-      info,
-      selection,
-      fieldType,
-      isRoot,
-      false
-    )
+    let args = getParams(client, info, selection, fieldType, isRoot, false)
     query += args
     if (selections) {
       query += ' {\n'
@@ -169,7 +138,7 @@ function getSelection (
       query += `\n${indent}count(${fieldName}${args})`
     }
     if (isRoot && connection) {
-      args = getArgumentsQuery(client, info, selection, fieldType, isRoot, true)
+      args = getParams(client, info, selection, fieldType, isRoot, true)
       query += `\n${indent}_count_${fieldName}_${args} { count() }`
     }
   }

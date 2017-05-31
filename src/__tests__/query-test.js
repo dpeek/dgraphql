@@ -204,7 +204,7 @@ describe('querying edges', () => {
         order: name_asc,
         filter: {
           time_eq: ${time},
-          name_allOf: "Aaron Whitman"
+          name_allofterms: "Aaron Whitman"
         }
       ) {
         name
@@ -219,7 +219,7 @@ describe('querying edges', () => {
         order: name_asc,
         filter: {
           time_eq: ${time},
-          name_anyOf: "Aaron Catherine"
+          name_anyofterms: "Aaron Catherine"
         }
       ) {
         name

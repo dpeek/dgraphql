@@ -17,8 +17,7 @@ import { unwrapNonNull, getFields, getValue, quoteValue } from './utils'
 type Filter = {
   active: (type: GraphQLOutputType) => boolean,
   name: string,
-  description: string,
-  operation: string
+  description: string
 }
 
 type FilterField = {
@@ -29,51 +28,44 @@ type FilterField = {
 
 const allOf: Filter = {
   active: type => String(type) === 'String',
-  name: '_allOf',
-  description: 'contains all of the terms',
-  operation: 'allofterms'
+  name: '_allofterms',
+  description: 'contains all of the terms'
 }
 
 const anyOf: Filter = {
   active: type => String(type) === 'String',
-  name: '_anyOf',
-  description: 'contains any of the terms',
-  operation: 'anyofterms'
+  name: '_anyofterms',
+  description: 'contains any of the terms'
 }
 
 const equal: Filter = {
   active: type => isLeafType(type),
   name: '_eq',
-  description: 'is equal to',
-  operation: 'eq'
+  description: 'is equal to'
 }
 
 const lessThan: Filter = {
   active: type => String(type) === 'Int' || String(type) === 'Float',
   name: '_lt',
-  description: 'is less than',
-  operation: 'lt'
+  description: 'is less than'
 }
 
 const lessThanOrEqual: Filter = {
   active: type => String(type) === 'Int' || String(type) === 'Float',
   name: '_le',
-  description: 'is less than or equal to',
-  operation: 'le'
+  description: 'is less than or equal to'
 }
 
 const greaterThan: Filter = {
   active: type => String(type) === 'Int' || String(type) === 'Float',
   name: '_gt',
-  description: 'is greater than',
-  operation: 'gt'
+  description: 'is greater than'
 }
 
 const greaterThanOrEqual: Filter = {
   active: type => String(type) === 'Int' || String(type) === 'Float',
   name: '_ge',
-  description: 'is greater than or equal to',
-  operation: 'ge'
+  description: 'is greater than or equal to'
 }
 
 const filters = [
@@ -126,28 +118,4 @@ export function getFilterType (
     filterTypes.set(name, filterType)
   }
   return filterType
-}
-
-export function getFilterQuery (
-  client: Client,
-  info: GraphQLResolveInfo,
-  argument: ArgumentNode
-) {
-  invariant(
-    argument.value.kind === 'ObjectValue',
-    'Provided filter value is not an object'
-  )
-  const args = argument.value.fields.map(field => {
-    let name = field.name.value
-    let filter = filters.find(filter => name.endsWith(filter.name))
-    invariant(
-      typeof filter !== 'undefined',
-      `There was no filter matching the field name ${name}`
-    )
-    name = name.substr(0, name.length - filter.name.length)
-    name = client.localizePredicate(name)
-    let value = quoteValue(getValue(info, field.value))
-    return `${filter.operation}(${name}, ${value})`
-  })
-  return `@filter(${args.join(' AND ')})`
 }
