@@ -19,7 +19,7 @@ import {
   findSelections,
   getConnectionType,
   flattenSelections,
-  getValue
+  getArguments
 } from './utils'
 
 import type { Client } from './client'
@@ -193,16 +193,6 @@ function processField (
       value[alias]
     )
   }
-}
-
-function getArguments (info: GraphQLResolveInfo, selection: FieldNode): any {
-  const args = {}
-  if (selection.arguments) {
-    selection.arguments.forEach(arg => {
-      args[arg.name.value] = getValue(info, arg.value)
-    })
-  }
-  return args
 }
 
 export function processSelections (

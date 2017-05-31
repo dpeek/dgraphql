@@ -5,10 +5,11 @@ import { GraphQLNonNull, GraphQLObjectType, GraphQLList } from 'graphql'
 import type {
   GraphQLType,
   SelectionNode,
-  GraphQLNullableType,
   GraphQLResolveInfo,
   GraphQLOutputType,
-  ValueNode
+  ValueNode,
+  FieldNode,
+  ArgumentNode
 } from 'graphql'
 
 import invariant from 'invariant'
@@ -121,4 +122,17 @@ export function quoteValue (value: mixed) {
     return `"${value}"`
   }
   return String(value)
+}
+
+export function getArguments (
+  info: GraphQLResolveInfo,
+  selection: FieldNode
+): any {
+  const args = {}
+  if (selection.arguments) {
+    selection.arguments.forEach(arg => {
+      args[arg.name.value] = getValue(info, arg.value)
+    })
+  }
+  return args
 }

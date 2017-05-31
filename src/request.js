@@ -18,7 +18,8 @@ import {
   getConnectionType,
   flattenSelections,
   findSelections,
-  getValue
+  getValue,
+  getArguments
 } from './utils'
 
 import { processResponse } from './response'
@@ -55,7 +56,7 @@ function getArgument (
   return name + ': ' + String(value)
 }
 
-function getArguments (
+function getArgumentsQuery (
   client: Client,
   info: GraphQLResolveInfo,
   selection: FieldNode,
@@ -140,7 +141,14 @@ function getSelection (
     fieldType instanceof GraphQLObjectType ||
     fieldType instanceof GraphQLInterfaceType
   ) {
-    let args = getArguments(client, info, selection, fieldType, isRoot, false)
+    let args = getArgumentsQuery(
+      client,
+      info,
+      selection,
+      fieldType,
+      isRoot,
+      false
+    )
     query += args
     if (selections) {
       query += ' {\n'
@@ -161,7 +169,7 @@ function getSelection (
       query += `\n${indent}count(${fieldName}${args})`
     }
     if (isRoot && connection) {
-      args = getArguments(client, info, selection, fieldType, isRoot, true)
+      args = getArgumentsQuery(client, info, selection, fieldType, isRoot, true)
       query += `\n${indent}_count_${fieldName}_${args} { count() }`
     }
   }
