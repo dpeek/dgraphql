@@ -1,18 +1,20 @@
 /* @flow */
 
-import { connect } from './dgraph'
+import fetch from 'isomorphic-fetch'
 
 export type ClientConfig = {
-  server: string,
+  server?: string,
   relay?: boolean,
-  language?: string
+  language?: string,
+  debug?: boolean
 }
 
 export class Client {
   _language: string
   _predicates: Map<string, string>
   _localized: Set<string>
-  _connection: any
+  _server: string
+  _debug: boolean
   relay: boolean
   constructor (config: ClientConfig, predicates: { [string]: string }) {
     this._language = config.language || 'en'
@@ -21,7 +23,8 @@ export class Client {
       this._predicates.set(key, predicates[key])
     )
     this._localized = new Set(['name', 'description'])
-    this._connection = connect(config.server || 'http://localhost:8080')
+    this._server = config.server || 'http://localhost:8080/query'
+    this._debug = config.debug || false
     this.relay = config.relay || false
   }
   getPredicate (type: string, field: string): string {
@@ -41,6 +44,18 @@ export class Client {
     return `"${String(value)}"`
   }
   fetchQuery (query: string) {
-    return this._connection.query(query)
+    if (this.debug) {
+      console.log('-- dgraph query')
+      console.log(query)
+    }
+    return fetch(this._server, { method: 'POST', body: query })
+      .then(res => res.text())
+      .then(res => {
+        try {
+          return JSON.parse(res)
+        } catch (error) {
+          throw new Error(res)
+        }
+      })
   }
 }

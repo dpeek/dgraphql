@@ -1,23 +1,10 @@
-import fs from 'fs'
-import path from 'path'
-
 import { graphql } from 'graphql'
-import { buildSchema } from '../schema'
-import { connect } from '../dgraph'
+import testSchema from '../testSchema'
 
-const client = connect('http://localhost:8080')
-
-function getSchema (options) {
-  const file = path.resolve(__dirname, 'test.graphql')
-  const input = fs.readFileSync(file).toString()
-  return buildSchema(input, options)
-}
-
-const schema = getSchema({ relay: true })
+let schema
 
 beforeAll(async () => {
-  let dgraphSchemaPath = path.resolve(__dirname, 'test.dgraph')
-  await client.query(fs.readFileSync(dgraphSchemaPath).toString())
+  schema = await testSchema('test.graphql', 'test.dgraph', { relay: true })
 })
 
 test('queries node with fragment', async () => {
