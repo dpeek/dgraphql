@@ -44,7 +44,7 @@ export class Client {
     return `"${String(value)}"`
   }
   fetchQuery (query: string) {
-    if (this.debug) {
+    if (this._debug) {
       console.log('-- dgraph query')
       console.log(query)
     }

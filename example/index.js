@@ -3,15 +3,20 @@ import fs from 'fs'
 import express from 'express'
 import graphqlHTTP from 'express-graphql'
 import { buildSchema } from '../src/index'
-import { connect } from '../src/dgraph'
+import { Client } from '../src/client'
 
-const client = connect('http://localhost:8080')
+const config = {
+  server: 'http://localhost:8080/query',
+  relay: false,
+  debug: true
+}
+const client = new Client(config, {})
 const dgraphPath = path.resolve(__dirname, 'schema.dgraph')
-client.query(fs.readFileSync(dgraphPath).toString())
+client.fetchQuery(fs.readFileSync(dgraphPath).toString())
 
 const graphqlPath = path.resolve(__dirname, 'schema.graphql')
 const graphqlSchema = fs.readFileSync(graphqlPath).toString()
-const schema = buildSchema(graphqlSchema, {})
+const schema = buildSchema(graphqlSchema, config)
 
 var app = express()
 app.use('/', graphqlHTTP({ schema: schema, graphiql: true }))
