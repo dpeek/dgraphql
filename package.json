@@ -9,13 +9,15 @@
   "scripts": {
     "test": "jest --coverage",
     "test:watch": "jest --watch",
+    "check": "flow",
+    "lint": "eslint",
     "build": "babel src --optional runtime --ignore __tests__ --out-dir lib/",
     "start": "babel-node example",
     "dgraph": "docker rm dgraphql; docker run -it -p 8080:8080 --name dgraphql dgraph/dgraph dgraph --bindall=true"
   },
   "dependencies": {
     "graphql": "^0.10.1",
-    "graphql-relay": "^0.5.1",
+    "graphql-relay": "^0.5.2",
     "isomorphic-fetch": "^2.2.1",
     "pluralize": "^5.0.0"
   },
