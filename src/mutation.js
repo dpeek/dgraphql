@@ -16,8 +16,10 @@ import { mutationWithClientMutationId } from 'graphql-relay'
 
 import { getSelections } from './request'
 import { processSelections } from './response'
-import type { Client } from './client'
 import { unwrap, unwrapNonNull, lowerCamelCase } from './utils'
+
+import type { Client } from './client'
+import type { Context } from './schema'
 
 const inputTypes = new Map()
 function getInputType (
@@ -79,7 +81,7 @@ export function getDeleteMutation (client: Client, type: GraphQLObjectType) {
       }
     },
     mutateAndGetPayload: (input, context, info) => {
-      return deleteAndGetPayload(client, info, type, input)
+      return deleteAndGetPayload(client, info, context, type, input)
     }
   })
 }
@@ -108,12 +110,16 @@ export function getUpdateMutation (client: Client, type: GraphQLObjectType) {
       }
     },
     mutateAndGetPayload: (input, context, info) => {
-      return updateAndGetPayload(client, info, type, input)
+      return updateAndGetPayload(client, info, context, type, input)
     }
   })
 }
 
-function getMutation (client: Client, info: GraphQLResolveInfo) {
+function getMutation (
+  client: Client,
+  info: GraphQLResolveInfo,
+  context: Context
+) {
   const mutationType = info.schema.getMutationType()
   invariant(mutationType, 'No mutation type defined in schema')
   const fields = mutationType.getFields()
@@ -135,6 +141,7 @@ function getMutation (client: Client, info: GraphQLResolveInfo) {
   query += getSelections(
     client,
     info,
+    context,
     selection.selectionSet.selections,
     type,
     '  ',
@@ -155,7 +162,7 @@ export function getCreateMutation (client: Client, type: GraphQLObjectType) {
       }
     },
     mutateAndGetPayload: (input, context, info) => {
-      return createAndGetPayload(client, info, type, input)
+      return createAndGetPayload(client, info, context, type, input)
     }
   })
 }
@@ -163,6 +170,7 @@ export function getCreateMutation (client: Client, type: GraphQLObjectType) {
 async function deleteAndGetPayload (
   client: Client,
   info: GraphQLResolveInfo,
+  context: Context,
   type: GraphQLObjectType,
   input: { id: string }
 ) {
@@ -182,24 +190,27 @@ async function deleteAndGetPayload (
 async function updateAndGetPayload (
   client: Client,
   info: GraphQLResolveInfo,
+  context: Context,
   type: GraphQLObjectType,
   input: { id: string }
 ) {
-  return createOrUpdate(client, info, type, input, input.id)
+  return createOrUpdate(client, info, context, type, input, input.id)
 }
 
 function createAndGetPayload (
   client: Client,
   info: GraphQLResolveInfo,
+  context: Context,
   type: GraphQLObjectType,
   input: {}
 ) {
-  return createOrUpdate(client, info, type, input)
+  return createOrUpdate(client, info, context, type, input)
 }
 
 function getMutationFields (
   client: Client,
   info: GraphQLResolveInfo,
+  context: Context,
   type: GraphQLObjectType,
   input: {},
   ident: string,
@@ -209,6 +220,7 @@ function getMutationFields (
   if (ident.indexOf('node') !== -1) {
     query += `  ${ident} <__typename> "${type.name}" .\n`
   }
+  console.log(type)
   const fields = type.getFields()
   Object.keys(input).forEach(key => {
     if (key === 'id') return
@@ -230,22 +242,21 @@ function getMutationFields (
         let child = getMutationFields(
           client,
           info,
+          context,
           fieldType,
           node,
           nodeIdent,
           count
         )
         query = child + query
-        let predicate = client.getPredicate(type.name, key)
-        if (predicate.indexOf('~') === 0) {
-          predicate = predicate.substr(1)
-          query += `  ${nodeIdent} <${predicate}> ${ident} .\n`
-        } else {
-          query += `  ${ident} <${predicate}> ${nodeIdent} .\n`
+        query += `  ${ident} <${key}> ${nodeIdent} .\n`
+        let reverse = client.getReversePredicate(key)
+        if (reverse) {
+          query += `  ${nodeIdent} <${reverse}> ${ident} .\n`
         }
       })
     } else {
-      const value = client.localizeValue(input[key], key)
+      const value = client.localizeValue(input[key], key, context.language)
       query += `  ${ident} <${key}> ${value} .\n`
     }
   })
@@ -255,6 +266,7 @@ function getMutationFields (
 async function createOrUpdate (
   client: Client,
   info: GraphQLResolveInfo,
+  context: Context,
   type: GraphQLObjectType,
   input: {},
   id?: string
@@ -262,10 +274,10 @@ async function createOrUpdate (
   const isCreate = typeof id === 'undefined'
   let ident = isCreate ? '_:node' : '<' + String(id) + '>'
   let query = 'mutation { set {\n'
-  query += getMutationFields(client, info, type, input, ident, 0)
+  query += getMutationFields(client, info, context, type, input, ident, 0)
   query += '}}'
   const res = await client.fetchQuery(query)
-  query = getMutation(client, info)
+  query = getMutation(client, info, context)
   // TODO: good god lemmon
   query = query.replace(
     /func:eq\(__typename,[^)]+\)/m,

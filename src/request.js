@@ -23,12 +23,13 @@ import {
 
 import { processResponse } from './response'
 import type { Client } from './client'
+import type { Context } from './schema'
 
 function getParams (
   client: Client,
   info: GraphQLResolveInfo,
   selection: FieldNode,
-  type: GraphQLObjectType,
+  typeName: string,
   isRoot: boolean,
   isCount: boolean
 ) {
@@ -41,7 +42,7 @@ function getParams (
   let params = []
   if (isRoot) {
     // root queries in dgraph query everything, so specify __typename
-    params.push(`func:eq(__typename, "${type.name}")`)
+    params.push(`func:eq(__typename, "${typeName}")`)
   }
   if (!isCount) {
     if (args.first) {
@@ -75,23 +76,23 @@ function getParams (
 function getSelection (
   client: Client,
   info: GraphQLResolveInfo,
+  context: Context,
   selection: FieldNode,
-  type: GraphQLObjectType,
+  type: GraphQLObjectType | GraphQLInterfaceType,
   field: GraphQLField<*, *>,
   indent: string,
   isRoot: boolean,
   map: Set<string>
 ) {
-  let query = ''
   const name = selection.name.value
-  if (name.indexOf('__') === 0) {
+  if (name === 'id' || name.indexOf('__') === 0) {
     return ''
   }
   let fieldType = unwrap(field.type)
   let selections = selection.selectionSet
     ? selection.selectionSet.selections
     : null
-  const fieldName = client.getPredicate(type.toString(), name)
+  const fieldName = client.localizePredicate(name, context.language)
   const connection = isConnection(fieldType)
   if (connection && selections) {
     selections = flattenSelections(selections, info)
@@ -103,13 +104,14 @@ function getSelection (
     )
     fieldType = getConnectionType(fieldType)
   }
-  let alias = name === fieldName ? '' : name + ':'
+  let query = ''
   if (isRoot || !map.has(fieldName)) {
     map.add(fieldName)
     if (isRoot) {
       if (selection.alias) query += indent + selection.alias.value
       else query += indent + name
     } else {
+      let alias = name === fieldName ? '' : name + ':'
       query += indent + alias + fieldName
     }
   }
@@ -117,7 +119,7 @@ function getSelection (
     fieldType instanceof GraphQLObjectType ||
     fieldType instanceof GraphQLInterfaceType
   ) {
-    let args = getParams(client, info, selection, fieldType, isRoot, false)
+    let args = getParams(client, info, selection, fieldType.name, isRoot, false)
     query += args
     if (selections) {
       query += ' {\n'
@@ -126,6 +128,7 @@ function getSelection (
       query += getSelections(
         client,
         info,
+        context,
         selections,
         fieldType,
         indent + '  ',
@@ -138,7 +141,7 @@ function getSelection (
       query += `\n${indent}count(${fieldName}${args})`
     }
     if (isRoot && connection) {
-      args = getParams(client, info, selection, fieldType, isRoot, true)
+      args = getParams(client, info, selection, fieldType.name, isRoot, true)
       query += `\n${indent}_count_${fieldName}_${args} { count() }`
     }
   }
@@ -148,8 +151,9 @@ function getSelection (
 export function getSelections (
   client: Client,
   info: GraphQLResolveInfo,
+  context: Context,
   selections: Array<SelectionNode>,
-  type: GraphQLObjectType,
+  type: GraphQLObjectType | GraphQLInterfaceType,
   indent: string,
   isRoot: boolean,
   map: ?Set<string>
@@ -159,16 +163,13 @@ export function getSelections (
   const fields = type.getFields()
   selections.forEach(selection => {
     if (selection.kind === 'Field') {
-      const fieldName = selection.name.value
-      if (fieldName === 'id') {
-        return
-      }
       query += getSelection(
         client,
         info,
+        context,
         selection,
         type,
-        fields[fieldName],
+        fields[selection.name.value],
         indent,
         isRoot,
         nextMap
@@ -192,6 +193,7 @@ export function getSelections (
       query += getSelections(
         client,
         info,
+        context,
         fragment.selectionSet.selections,
         fragmentType,
         indent,
@@ -203,11 +205,12 @@ export function getSelections (
   return query
 }
 
-function getQuery (client: Client, info: GraphQLResolveInfo) {
+function getQuery (client: Client, info: GraphQLResolveInfo, context: Context) {
   let query = 'query {\n'
   query += getSelections(
     client,
     info,
+    context,
     info.operation.selectionSet.selections,
     info.schema.getQueryType(),
     '  ',
@@ -216,11 +219,15 @@ function getQuery (client: Client, info: GraphQLResolveInfo) {
   return query + '}'
 }
 
-export function resolveQuery (client: Client, info: GraphQLResolveInfo): mixed {
+export function resolveQuery (
+  client: Client,
+  info: GraphQLResolveInfo,
+  context: Context
+): mixed {
   // $FlowFixMe
   let req = info.operation.req
   if (!req) {
-    const query = getQuery(client, info)
+    const query = getQuery(client, info, context)
     // $FlowFixMe
     req = info.operation.req = client.fetchQuery(query).then(res => {
       return processResponse(client, info, res)

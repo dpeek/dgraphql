@@ -1,10 +1,18 @@
-import { graphql } from 'graphql'
+import { graphql as graphql2 } from 'graphql'
 import testSchema from '../testSchema'
+
+function graphql (schema, query) {
+  return graphql2({
+    schema: schema,
+    source: query,
+    contextValue: { language: 'en' }
+  })
+}
 
 let schema
 
 beforeAll(async () => {
-  schema = await testSchema('test.graphql', 'test.dgraph', {})
+  schema = await testSchema('test.graphql', {})
 })
 
 test('queries node field', async () => {

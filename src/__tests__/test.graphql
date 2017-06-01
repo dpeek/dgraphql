@@ -1,14 +1,11 @@
 type Person {
   id: ID!
-  name: String
+  name: String @index(type: "exact") @index(type: "term")
   active: Boolean
   partner: Person
-  children: [Person!]!
-  parents: [Person!]! @dgraph(predicate: "~children")
-  time: Int
-  age: Int
-}
-
-type Query {
-  temp: String
+  children: [Person!]! @reverse(name: "parents")
+  parents: [Person!]! @reverse(name: "children")
+  time: Int @index(type: "int")
+  age: Int @index(type: "int")
+  height: Float @index(type: "float")
 }

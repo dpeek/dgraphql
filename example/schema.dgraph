@@ -1,8 +1,0 @@
-mutation {
-  schema {
-    __typename: string @index(exact) .
-    name: string @index(term, exact) .
-    age: int @index(int) .
-    children: uid @reverse .
-  }
-}

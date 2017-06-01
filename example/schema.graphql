@@ -1,12 +1,8 @@
 type Person {
   id: ID!
-  name: String
-  age: Int
-  parents: [Person!]! @dgraph(predicate: "~children")
-  children: [Person!]!
-}
-
-# Sorry, required for now.
-type Query {
-  placeholder: String
+  name: String @index(type: "exact") @index(type: "term")
+  title: String @localize
+  age: Int @index(type: "int")
+  parents: [Person!]! @reverse(name: "children")
+  children: [Person!]! @reverse(name: "parents")
 }

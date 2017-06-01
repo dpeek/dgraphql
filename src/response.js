@@ -219,8 +219,6 @@ export function processResponse (
   info: GraphQLResolveInfo,
   response: {}
 ): any {
-  console.log('-- dgraph response')
-  console.log(JSON.stringify(response, null, '  '))
   processSelections(
     client,
     info,

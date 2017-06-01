@@ -9,37 +9,52 @@ export type ClientConfig = {
   debug?: boolean
 }
 
+type PredicateInfo = {
+  type: string,
+  reverse: ?string,
+  localize: boolean,
+  indexes: Set<string>
+}
+
 export class Client {
-  _language: string
-  _predicates: Map<string, string>
-  _localized: Set<string>
+  _predicates: Map<string, PredicateInfo>
   _server: string
   _debug: boolean
+  _updateSchema: Promise<any>
   relay: boolean
-  constructor (config: ClientConfig, predicates: { [string]: string }) {
-    this._language = config.language || 'en'
-    this._predicates = new Map()
-    Object.keys(predicates).forEach(key =>
-      this._predicates.set(key, predicates[key])
-    )
-    this._localized = new Set(['name', 'description'])
+  constructor (config: ClientConfig, predicates: Map<string, PredicateInfo>) {
+    this._predicates = predicates
     this._server = config.server || 'http://localhost:8080/query'
     this._debug = config.debug || false
     this.relay = config.relay || false
+
+    let query = 'mutation { schema {\n'
+    for (var [key, value] of predicates) {
+      if (key === 'id') continue
+      query += '  ' + key + ': ' + value.type
+      if (value.indexes.size) {
+        query += ' @index(' + [...value.indexes].join(',') + ')'
+      }
+      query += ' .\n'
+    }
+    query += '}}'
+    this._updateSchema = this.fetchQuery(query)
   }
-  getPredicate (type: string, field: string): string {
-    const key = `${type}.${field}`
-    return this.localizePredicate(this._predicates.get(key) || field)
+  getReversePredicate (predicate: string): ?string {
+    const info = this._predicates.get(predicate)
+    return info ? info.reverse : null
   }
-  localizePredicate (predicate: string): string {
-    if (this._localized.has(predicate)) {
-      return `${predicate}@${this._language}`
+  localizePredicate (predicate: string, language: string): string {
+    const info = this._predicates.get(predicate)
+    if (info && info.localize) {
+      return `${predicate}@${language}`
     }
     return predicate
   }
-  localizeValue (value: mixed, predicate: string): string {
-    if (this._localized.has(predicate)) {
-      return `"${String(value)}"@${this._language}`
+  localizeValue (value: mixed, predicate: string, language: string): string {
+    const info = this._predicates.get(predicate)
+    if (info && info.localize) {
+      return `"${String(value)}"@${language}`
     }
     return `"${String(value)}"`
   }
@@ -48,11 +63,19 @@ export class Client {
       console.log('-- dgraph query')
       console.log(query)
     }
-    return fetch(this._server, { method: 'POST', body: query })
+    return (this._updateSchema || Promise.resolve())
+      .then(res => {
+        return fetch(this._server, { method: 'POST', body: query })
+      })
       .then(res => res.text())
       .then(res => {
         try {
-          return JSON.parse(res)
+          let json = JSON.parse(res)
+          if (this._debug) {
+            console.log('--dgraph response')
+            console.log(JSON.stringify(json, null, '  '))
+          }
+          return json
         } catch (error) {
           throw new Error(res)
         }
