@@ -1,10 +1,46 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`edge node fields 1`] = `
+Object {
+  "data": Object {
+    "people": Object {
+      "edges": Array [
+        Object {
+          "node": Object {
+            "name": "Olivia Peek",
+          },
+        },
+        Object {
+          "node": Object {
+            "name": "Matthew Peek",
+          },
+        },
+        Object {
+          "node": Object {
+            "name": "Linda Peek",
+          },
+        },
+        Object {
+          "node": Object {
+            "name": "David Peek",
+          },
+        },
+        Object {
+          "node": Object {
+            "name": "Amy Winter",
+          },
+        },
+      ],
+    },
+  },
+}
+`;
+
 exports[`queries node with fragment 1`] = `
 Object {
   "data": Object {
     "node": Object {
-      "name": "John Snow",
+      "name": "David Peek",
     },
   },
 }
@@ -14,33 +50,7 @@ exports[`queries node with inline fragment 1`] = `
 Object {
   "data": Object {
     "node": Object {
-      "name": "John Snow",
-    },
-  },
-}
-`;
-
-exports[`querying connection edge node fields 1`] = `
-Object {
-  "data": Object {
-    "people": Object {
-      "edges": Array [
-        Object {
-          "node": Object {
-            "name": "Catherine Harrison",
-          },
-        },
-        Object {
-          "node": Object {
-            "name": "Bobby Whitman",
-          },
-        },
-        Object {
-          "node": Object {
-            "name": "Aaron Whitman",
-          },
-        },
-      ],
+      "name": "David Peek",
     },
   },
 }

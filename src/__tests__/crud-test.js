@@ -1,18 +1,9 @@
-import { graphql as graphql2 } from 'graphql'
-import testSchema from '../testSchema'
+import { init } from '../harness'
 
-function graphql (schema, query) {
-  return graphql2({
-    schema: schema,
-    source: query,
-    contextValue: { language: 'en' }
-  })
-}
-
-let schema
+var graphql
 
 beforeAll(async () => {
-  schema = await testSchema('test.graphql', { debug: true })
+  graphql = await init({ debug: true })
 })
 
 test('creates node', async () => {
@@ -25,7 +16,7 @@ test('creates node', async () => {
       }
     }
   }`
-  const createResult = await graphql(schema, create)
+  const createResult = await graphql(create)
   const id = createResult.data.createPerson.person.id
 
   const query = `query {
@@ -33,7 +24,7 @@ test('creates node', async () => {
       name
     }
   }`
-  const queryResult = await graphql(schema, query)
+  const queryResult = await graphql(query)
   expect(queryResult).toMatchSnapshot()
 })
 
@@ -47,7 +38,7 @@ test('returns fields for created node', async () => {
       }
     }
   }`
-  const createResult = await graphql(schema, create)
+  const createResult = await graphql(create)
   expect(createResult).toMatchSnapshot()
 })
 
@@ -61,7 +52,7 @@ test('updates node', async () => {
       }
     }
   }`
-  const createResult = await graphql(schema, create)
+  const createResult = await graphql(create)
   const id = createResult.data.createPerson.person.id
 
   const update = `mutation {
@@ -71,14 +62,14 @@ test('updates node', async () => {
       }
     }
   }`
-  await graphql(schema, update)
+  await graphql(update)
 
   const query = `query {
     person(id: "${id}") {
       name
     }
   }`
-  const queryResult = await graphql(schema, query)
+  const queryResult = await graphql(query)
   expect(queryResult).toMatchSnapshot()
 })
 
@@ -92,7 +83,7 @@ test('returns fields on updated node', async () => {
       }
     }
   }`
-  const createResult = await graphql(schema, create)
+  const createResult = await graphql(create)
   const id = createResult.data.createPerson.person.id
 
   const update = `mutation {
@@ -102,7 +93,7 @@ test('returns fields on updated node', async () => {
       }
     }
   }`
-  const updateResult = await graphql(schema, update)
+  const updateResult = await graphql(update)
   expect(updateResult).toMatchSnapshot()
 })
 
@@ -116,7 +107,7 @@ test('deletes node', async () => {
       }
     }
   }`
-  const createResult = await graphql(schema, create)
+  const createResult = await graphql(create)
   const id = createResult.data.createPerson.person.id
 
   const deletes = `mutation {
@@ -126,14 +117,14 @@ test('deletes node', async () => {
       }
     }
   }`
-  await graphql(schema, deletes)
+  await graphql(deletes)
 
   const query = `query {
     person(id: "${id}") {
       name
     }
   }`
-  const queryResult = await graphql(schema, query)
+  const queryResult = await graphql(query)
   expect(queryResult).toMatchSnapshot()
 })
 
@@ -153,7 +144,7 @@ test('creates node with nested node', async () => {
       }
     }
   }`
-  const createResult = await graphql(schema, create)
+  const createResult = await graphql(create)
   const personId = createResult.data.createPerson.person.id
   const partnerId = createResult.data.createPerson.person.partner.id
 
@@ -165,7 +156,7 @@ test('creates node with nested node', async () => {
       name
     }
   }`
-  const queryResult = await graphql(schema, query)
+  const queryResult = await graphql(query)
   expect(queryResult).toMatchSnapshot()
 })
 
@@ -182,7 +173,7 @@ test('creates node linked to existing nodes', async () => {
       }
     }
   }`
-  const createResult = await graphql(schema, create)
+  const createResult = await graphql(create)
   const mumId = createResult.data.mum.person.id
   const dadId = createResult.data.dad.person.id
 
@@ -205,6 +196,6 @@ test('creates node linked to existing nodes', async () => {
     }
   }`
 
-  const createLinkedResult = await graphql(schema, createLinked)
+  const createLinkedResult = await graphql(createLinked)
   expect(createLinkedResult).toMatchSnapshot()
 })

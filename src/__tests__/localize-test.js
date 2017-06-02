@@ -1,21 +1,9 @@
-import fs from 'fs'
-import path from 'path'
+import { init } from '../harness'
 
-import { graphql as graphql2 } from 'graphql'
-import testSchema from '../testSchema'
-
-let schema
-
-function graphql (schema, source, language) {
-  return graphql2({
-    schema,
-    source,
-    contextValue: { language: language }
-  })
-}
+var graphql
 
 beforeAll(async () => {
-  schema = await testSchema('test.graphql', { debug: true })
+  graphql = await init({ debug: true, relay: true })
 })
 
 test('queries node field', async () => {
@@ -29,7 +17,7 @@ test('queries node field', async () => {
       }
     }
   }`
-  const createResult = await graphql(schema, create, 'en')
+  const createResult = await graphql(create, {}, 'en')
   const id = createResult.data.createPerson.person.id
 
   const update = `mutation {
@@ -43,7 +31,7 @@ test('queries node field', async () => {
       }
     }
   }`
-  await graphql(schema, update, 'es')
+  await graphql(update, {}, 'es')
 
   let query = `query {
     person(id: "${id}") {
@@ -51,9 +39,9 @@ test('queries node field', async () => {
       title
     }
   }`
-  let queryResult = await graphql(schema, query, 'en')
+  let queryResult = await graphql(query, {}, 'en')
   expect(queryResult).toMatchSnapshot()
 
-  queryResult = await graphql(schema, query, 'es')
+  queryResult = await graphql(query, {}, 'es')
   expect(queryResult).toMatchSnapshot()
 })

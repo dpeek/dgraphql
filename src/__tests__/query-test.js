@@ -1,149 +1,67 @@
-import fs from 'fs'
-import path from 'path'
+import { init } from '../harness'
 
-import { graphql as graphql2 } from 'graphql'
-import testSchema from '../testSchema'
-
-let schema
-let time = String(new Date().getTime() - 1495660000000)
-
-function graphql (schema, source, variableValues) {
-  return graphql2({
-    schema,
-    source,
-    variableValues: { time, ...variableValues },
-    contextValue: { language: 'en' }
-  })
-}
+var graphql
 
 beforeAll(async () => {
-  schema = await testSchema('test.graphql', { debug: true })
-  let source = fs
-    .readFileSync(path.resolve(__dirname, 'data.graphql'))
-    .toString()
-  await graphql(schema, source, { time })
+  graphql = await init({ debug: true })
 })
 
 test('queries node field', async () => {
-  const create = `mutation {
-    createPerson(input: {
-      name: "Tim"
-    }) {
-      person {
-        id
-      }
-    }
-  }`
-  const createResult = await graphql(schema, create)
-  const id = createResult.data.createPerson.person.id
-
-  const query = `query {
-    person(id: "${id}") {
+  const source = `query TestQuery($david: ID!) {
+    person(id: $david) {
       name
     }
   }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('queries node fields', async () => {
-  const create = `mutation {
-    createPerson(input: {
-      name: "Tim",
-      employed: true
-    }) {
-      person {
-        id
-      }
-    }
-  }`
-  const createResult = await graphql(schema, create)
-  const id = createResult.data.createPerson.person.id
-
-  const query = `query {
-    person(id: "${id}") {
+  const source = `query TestQuery($david: ID!) {
+    person(id: $david) {
       name
       employed
     }
   }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('queries type name', async () => {
-  const create = `mutation {
-    createPerson(input: {
-      name: "Tim"
-    }) {
-      person {
-        id
-      }
-    }
-  }`
-  const createResult = await graphql(schema, create)
-  const id = createResult.data.createPerson.person.id
-
-  const query = `query {
-    person(id: "${id}") {
+  const source = `query TestQuery($david: ID!) {
+    person(id: $david) {
       __typename
     }
   }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult.data.person.__typename).toEqual('Person')
+  const result = await graphql(source)
+  expect(result.data.person.__typename).toEqual('Person')
 })
 
 test('queries aliased field', async () => {
-  const create = `mutation {
-    createPerson(input: {
-      name: "Tim"
-    }) {
-      person {
-        id
-      }
-    }
-  }`
-  const createResult = await graphql(schema, create)
-  const id = createResult.data.createPerson.person.id
-
-  const query = `query {
-    person(id: "${id}") {
+  const source = `query TestQuery($david: ID!) {
+    person(id: $david) {
       test: name
     }
   }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('queries nested field', async () => {
-  const create = `mutation {
-    createPerson(input: {
-      name: "Tim",
-      partner: {
-        name: "Bob"
-      }
-    }) {
-      person {
-        id
-      }
-    }
-  }`
-  const createResult = await graphql(schema, create)
-  const id = createResult.data.createPerson.person.id
-
-  const query = `query {
-    person(id: "${id}") {
+  const source = `query TestQuery($david: ID!) {
+    person(id: $david) {
       name
       partner {
         name
       }
     }
   }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('order edges by string ascending', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: name_asc,
         filter: {
@@ -153,12 +71,12 @@ test('order edges by string ascending', async () => {
         name
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('order edges by string descending', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: name_desc,
         filter: {
@@ -168,12 +86,12 @@ test('order edges by string descending', async () => {
         name
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('filters by string with all terms', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: name_asc,
         filter: {
@@ -184,12 +102,12 @@ test('filters by string with all terms', async () => {
         name
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('filters by string with any of terms', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: name_asc,
         filter: {
@@ -200,12 +118,12 @@ test('filters by string with any of terms', async () => {
         name
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('filters by string equal to', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: name_asc,
         filter: {
@@ -216,12 +134,12 @@ test('filters by string equal to', async () => {
         name
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('filters by boolean equal to', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: name_asc,
         filter: {
@@ -233,12 +151,12 @@ test('filters by boolean equal to', async () => {
         employed
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('filters by int equal to', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: age_asc,
         filter: {
@@ -250,11 +168,11 @@ test('filters by int equal to', async () => {
         age
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 test('filters by int less than', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: age_asc,
         filter: {
@@ -266,12 +184,12 @@ test('filters by int less than', async () => {
         age
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('filters by int less than or equal to', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: age_asc,
         filter: {
@@ -283,12 +201,12 @@ test('filters by int less than or equal to', async () => {
         age
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('filters by int greater than', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: age_asc,
         filter: {
@@ -300,12 +218,12 @@ test('filters by int greater than', async () => {
         age
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('filters by int greater than or equal to', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: age_asc,
         filter: {
@@ -317,12 +235,12 @@ test('filters by int greater than or equal to', async () => {
         age
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('filters by float equal to', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: height_asc,
         filter: {
@@ -334,12 +252,12 @@ test('filters by float equal to', async () => {
         height
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('filters by float less than', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: height_asc,
         filter: {
@@ -351,12 +269,12 @@ test('filters by float less than', async () => {
         height
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('filters by float less than or equal to', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: height_asc,
         filter: {
@@ -368,12 +286,12 @@ test('filters by float less than or equal to', async () => {
         height
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('filters by float greater than', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: height_asc,
         filter: {
@@ -385,12 +303,12 @@ test('filters by float greater than', async () => {
         height
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })
 
 test('filters by float greater than or equal to', async () => {
-  const query = `query TestQuery($time: Int) {
+  const source = `query TestQuery($time: Int) {
       people(
         order: height_asc,
         filter: {
@@ -402,6 +320,6 @@ test('filters by float greater than or equal to', async () => {
         height
       }
     }`
-  const queryResult = await graphql(schema, query)
-  expect(queryResult).toMatchSnapshot()
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
 })

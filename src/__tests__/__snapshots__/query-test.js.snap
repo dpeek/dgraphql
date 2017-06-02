@@ -294,7 +294,7 @@ exports[`queries aliased field 1`] = `
 Object {
   "data": Object {
     "person": Object {
-      "test": "Tim",
+      "test": "David Peek",
     },
   },
 }
@@ -304,9 +304,9 @@ exports[`queries nested field 1`] = `
 Object {
   "data": Object {
     "person": Object {
-      "name": "Tim",
+      "name": "David Peek",
       "partner": Object {
-        "name": "Bob",
+        "name": "Amy Winter",
       },
     },
   },
@@ -317,7 +317,7 @@ exports[`queries node field 1`] = `
 Object {
   "data": Object {
     "person": Object {
-      "name": "Tim",
+      "name": "David Peek",
     },
   },
 }
@@ -328,7 +328,7 @@ Object {
   "data": Object {
     "person": Object {
       "employed": true,
-      "name": "Tim",
+      "name": "David Peek",
     },
   },
 }
