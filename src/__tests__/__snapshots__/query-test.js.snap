@@ -1,5 +1,295 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`filters by boolean equal to 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "employed": true,
+        "name": "Amy Winter",
+      },
+      Object {
+        "employed": true,
+        "name": "David Peek",
+      },
+    ],
+  },
+}
+`;
+
+exports[`filters by float equal to 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "height": 1.7,
+        "name": "Amy Winter",
+      },
+    ],
+  },
+}
+`;
+
+exports[`filters by float greater than 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "height": 1.8,
+        "name": "Matthew Peek",
+      },
+      Object {
+        "height": 1.99,
+        "name": "David Peek",
+      },
+    ],
+  },
+}
+`;
+
+exports[`filters by float greater than or equal to 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "height": 1.7,
+        "name": "Amy Winter",
+      },
+      Object {
+        "height": 1.8,
+        "name": "Matthew Peek",
+      },
+      Object {
+        "height": 1.99,
+        "name": "David Peek",
+      },
+    ],
+  },
+}
+`;
+
+exports[`filters by float less than 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "height": 1.12,
+        "name": "Olivia Peek",
+      },
+      Object {
+        "height": 1.6,
+        "name": "Linda Peek",
+      },
+    ],
+  },
+}
+`;
+
+exports[`filters by float less than or equal to 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "height": 1.12,
+        "name": "Olivia Peek",
+      },
+      Object {
+        "height": 1.6,
+        "name": "Linda Peek",
+      },
+      Object {
+        "height": 1.7,
+        "name": "Amy Winter",
+      },
+    ],
+  },
+}
+`;
+
+exports[`filters by int equal to 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "age": 37,
+        "name": "Amy Winter",
+      },
+    ],
+  },
+}
+`;
+
+exports[`filters by int greater than 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "age": 37,
+        "name": "Amy Winter",
+      },
+      Object {
+        "age": 65,
+        "name": "Linda Peek",
+      },
+      Object {
+        "age": 70,
+        "name": "Matthew Peek",
+      },
+    ],
+  },
+}
+`;
+
+exports[`filters by int greater than or equal to 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "age": 37,
+        "name": "Amy Winter",
+      },
+      Object {
+        "age": 65,
+        "name": "Linda Peek",
+      },
+      Object {
+        "age": 70,
+        "name": "Matthew Peek",
+      },
+    ],
+  },
+}
+`;
+
+exports[`filters by int less than 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "age": 3,
+        "name": "Olivia Peek",
+      },
+      Object {
+        "age": 35,
+        "name": "David Peek",
+      },
+      Object {
+        "age": 37,
+        "name": "Amy Winter",
+      },
+    ],
+  },
+}
+`;
+
+exports[`filters by int less than or equal to 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "age": 3,
+        "name": "Olivia Peek",
+      },
+      Object {
+        "age": 35,
+        "name": "David Peek",
+      },
+      Object {
+        "age": 37,
+        "name": "Amy Winter",
+      },
+    ],
+  },
+}
+`;
+
+exports[`filters by string equal to 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "name": "Olivia Peek",
+      },
+    ],
+  },
+}
+`;
+
+exports[`filters by string with all terms 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "name": "David Peek",
+      },
+    ],
+  },
+}
+`;
+
+exports[`filters by string with any of terms 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "name": "David Peek",
+      },
+      Object {
+        "name": "Olivia Peek",
+      },
+    ],
+  },
+}
+`;
+
+exports[`order edges by string ascending 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "name": "Amy Winter",
+      },
+      Object {
+        "name": "David Peek",
+      },
+      Object {
+        "name": "Linda Peek",
+      },
+      Object {
+        "name": "Matthew Peek",
+      },
+      Object {
+        "name": "Olivia Peek",
+      },
+    ],
+  },
+}
+`;
+
+exports[`order edges by string descending 1`] = `
+Object {
+  "data": Object {
+    "people": Array [
+      Object {
+        "name": "Olivia Peek",
+      },
+      Object {
+        "name": "Matthew Peek",
+      },
+      Object {
+        "name": "Linda Peek",
+      },
+      Object {
+        "name": "David Peek",
+      },
+      Object {
+        "name": "Amy Winter",
+      },
+    ],
+  },
+}
+`;
+
 exports[`queries aliased field 1`] = `
 Object {
   "data": Object {
@@ -37,165 +327,9 @@ exports[`queries node fields 1`] = `
 Object {
   "data": Object {
     "person": Object {
-      "active": true,
+      "employed": true,
       "name": "Tim",
     },
-  },
-}
-`;
-
-exports[`querying edges filters by int equal to 1`] = `
-Object {
-  "data": Object {
-    "people": Array [
-      Object {
-        "age": 19,
-        "name": "Catherine Harrison",
-      },
-    ],
-  },
-}
-`;
-
-exports[`querying edges filters by int greater than or equal to 1`] = `
-Object {
-  "data": Object {
-    "people": Array [
-      Object {
-        "age": 19,
-        "name": "Catherine Harrison",
-      },
-      Object {
-        "age": 20,
-        "name": "Aaron Whitman",
-      },
-    ],
-  },
-}
-`;
-
-exports[`querying edges filters by int greater than or equal to 2`] = `
-Object {
-  "data": Object {
-    "people": Array [
-      Object {
-        "age": 19,
-        "name": "Catherine Harrison",
-      },
-      Object {
-        "age": 20,
-        "name": "Aaron Whitman",
-      },
-    ],
-  },
-}
-`;
-
-exports[`querying edges filters by int less than 1`] = `
-Object {
-  "data": Object {
-    "people": Array [
-      Object {
-        "age": 16,
-        "name": "Bobby Whitman",
-      },
-      Object {
-        "age": 19,
-        "name": "Catherine Harrison",
-      },
-    ],
-  },
-}
-`;
-
-exports[`querying edges filters by int less than or equal to 1`] = `
-Object {
-  "data": Object {
-    "people": Array [
-      Object {
-        "age": 16,
-        "name": "Bobby Whitman",
-      },
-      Object {
-        "age": 19,
-        "name": "Catherine Harrison",
-      },
-    ],
-  },
-}
-`;
-
-exports[`querying edges filters by string equal to 1`] = `
-Object {
-  "data": Object {
-    "people": Array [
-      Object {
-        "name": "Catherine Harrison",
-      },
-    ],
-  },
-}
-`;
-
-exports[`querying edges filters by string with all terms 1`] = `
-Object {
-  "data": Object {
-    "people": Array [
-      Object {
-        "name": "Aaron Whitman",
-      },
-    ],
-  },
-}
-`;
-
-exports[`querying edges filters by string with any of terms 1`] = `
-Object {
-  "data": Object {
-    "people": Array [
-      Object {
-        "name": "Aaron Whitman",
-      },
-      Object {
-        "name": "Catherine Harrison",
-      },
-    ],
-  },
-}
-`;
-
-exports[`querying edges order edges by string ascending 1`] = `
-Object {
-  "data": Object {
-    "people": Array [
-      Object {
-        "name": "Aaron Whitman",
-      },
-      Object {
-        "name": "Bobby Whitman",
-      },
-      Object {
-        "name": "Catherine Harrison",
-      },
-    ],
-  },
-}
-`;
-
-exports[`querying edges order edges by string descending 1`] = `
-Object {
-  "data": Object {
-    "people": Array [
-      Object {
-        "name": "Catherine Harrison",
-      },
-      Object {
-        "name": "Bobby Whitman",
-      },
-      Object {
-        "name": "Aaron Whitman",
-      },
-    ],
   },
 }
 `;

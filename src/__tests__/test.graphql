@@ -1,11 +1,12 @@
 type Person {
   id: ID!
   name: String @index(type: "exact") @index(type: "term")
-  active: Boolean
-  partner: Person
-  children: [Person!]! @reverse(name: "parents")
-  parents: [Person!]! @reverse(name: "children")
+  title: String @localize @index(type: "exact")
+  employed: Boolean @index(type: "bool")
   time: Int @index(type: "int")
   age: Int @index(type: "int")
   height: Float @index(type: "float")
+  partner: Person @reverse(name: "partner")
+  children: [Person!]! @reverse(name: "parents")
+  parents: [Person!]! @reverse(name: "children")
 }

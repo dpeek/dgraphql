@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`queries node field 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "name": "Tim",
+      "title": "Mister",
+    },
+  },
+}
+`;
+
+exports[`queries node field 2`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "name": "Tim",
+      "title": "Señor",
+    },
+  },
+}
+`;

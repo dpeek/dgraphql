@@ -12,7 +12,7 @@ function graphql (schema, query) {
 let schema
 
 beforeAll(async () => {
-  schema = await testSchema('test.graphql', {})
+  schema = await testSchema('test.graphql', { debug: true })
 })
 
 test('creates node', async () => {

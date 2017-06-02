@@ -12,7 +12,7 @@ function graphql (schema, query) {
 let schema
 
 beforeAll(async () => {
-  schema = await testSchema('test.graphql', { relay: true })
+  schema = await testSchema('test.graphql', { relay: true, debug: true })
 })
 
 test('queries node with fragment', async () => {
@@ -65,7 +65,7 @@ describe('querying connection', () => {
     const create = `mutation {
       aaron: createPerson(input: {
         name: "Aaron Whitman",
-        active: true,
+        employed: true,
         age:20,
         time: ${time}
       }) {
@@ -73,7 +73,7 @@ describe('querying connection', () => {
       }
       bobby: createPerson(input: {
         name: "Bobby Whitman",
-        active: false,
+        employed: false,
         age: 16,
         time: ${time}
       }) {
@@ -81,7 +81,7 @@ describe('querying connection', () => {
       }
       catherine: createPerson(input: {
         name: "Catherine Harrison",
-        active: true,
+        employed: true,
         age: 19,
         time: ${time}
       }) {
