@@ -2,16 +2,23 @@
   "name": "dgraphql",
   "version": "0.1.0",
   "description": "Generate graphql schema for dgraph.",
-  "main": "index.js",
-  "repository": "http://github.com/dpeek/dgraphql.git",
+  "main": "lib/index.js",
+  "homepage": "https://github.com/dpeek/dgraphql",
+  "bugs": {
+    "url": "https://github.com/dpeek/dgraphql/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/dpeek/dgraphql.git"
+  },
   "author": "David Peek",
-  "license": "MIT",
+  "license": "BSD-2-Clause",
   "scripts": {
     "test": "jest --coverage",
     "test:watch": "jest --watch",
     "check": "flow",
     "lint": "eslint",
-    "build": "babel src --optional runtime --ignore __tests__ --out-dir lib/",
+    "prepublish": "babel src --optional runtime --ignore __tests__ --out-dir lib/",
     "start": "babel-node example",
     "dgraph": "docker rm dgraphql; docker run -it -p 8080:8080 --name dgraphql dgraph/dgraph dgraph --bindall=true"
   },
