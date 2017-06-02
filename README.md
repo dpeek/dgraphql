@@ -5,10 +5,6 @@ Generate [graphql.js](https://github.com/graphql/graphql-js) schema for [dgraph]
 [![Build Status](https://travis-ci.org/dpeek/dgraphql.svg?branch=master)](https://travis-ci.org/dpeek/dgraphql?branch=master)
 [![Coverage Status](https://coveralls.io/repos/dpeek/dgraphql/badge.svg?branch=master)](https://coveralls.io/r/dpeek/dgraphql?branch=master)
 
-> Please note that this is a proof of concept and very far from ready for any
-> kind of real-world use. There are some coding atrocities in here, committed
-> in the interest of getting things working. Please forgive me.
-
 ## Usage
 
 First, install dependencies:
