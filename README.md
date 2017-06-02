@@ -2,7 +2,7 @@
 
 Generate [graphql.js](https://github.com/graphql/graphql-js) schema for [dgraph](https://github.com/dgraph-io/dgraph).
 
-[![NPM Version](https://badge.fury.io/js/graphql.svg)](http://badge.fury.io/js/graphql)
+[![NPM Version](https://badge.fury.io/js/dgraphql.svg)](http://badge.fury.io/js/dgraphql)
 [![Build Status](https://travis-ci.org/dpeek/dgraphql.svg?branch=master)](https://travis-ci.org/dpeek/dgraphql?branch=master)
 [![Coverage Status](https://coveralls.io/repos/dpeek/dgraphql/badge.svg?branch=master)](https://coveralls.io/r/dpeek/dgraphql?branch=master)
 
