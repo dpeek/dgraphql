@@ -220,7 +220,6 @@ function getMutationFields (
   if (ident.indexOf('node') !== -1) {
     query += `  ${ident} <__typename> "${type.name}" .\n`
   }
-  console.log(type)
   const fields = type.getFields()
   Object.keys(input).forEach(key => {
     if (key === 'id') return
