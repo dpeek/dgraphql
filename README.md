@@ -1,6 +1,6 @@
 # DGraphQL
 
-Generate [graphql.js](https://github.com/graphql/graphql-js) schema for [dgraph](https://github.com/dgraph-io/dgraph).
+Create a Relay compatible GraphQL server from a schema using [Dgraph](https://github.com/dgraph-io/dgraph)
 
 [![NPM Version](https://badge.fury.io/js/dgraphql.svg)](http://badge.fury.io/js/dgraphql)
 [![Build Status](https://travis-ci.org/dpeek/dgraphql.svg?branch=master)](https://travis-ci.org/dpeek/dgraphql?branch=master)
