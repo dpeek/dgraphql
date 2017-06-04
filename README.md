@@ -6,42 +6,118 @@ Generate [graphql.js](https://github.com/graphql/graphql-js) schema for [dgraph]
 [![Build Status](https://travis-ci.org/dpeek/dgraphql.svg?branch=master)](https://travis-ci.org/dpeek/dgraphql?branch=master)
 [![Coverage Status](https://coveralls.io/repos/dpeek/dgraphql/badge.svg?branch=master)](https://coveralls.io/r/dpeek/dgraphql?branch=master)
 
-## Usage
+Dgraph is a distributed, highly available graph database that uses a language
+similar to GraphQL to query and mutate data. Unlike GraphQL, Dgraph only defines
+schema for predicates (properties) within the graph; there is no concept of
+complex types or groups of properties. Because of this it is straight forward to
+store any GraphQL schema in Dgraph provided a few restrictions are met.
 
-First, install dependencies:
+Given a GraphQL schema, DgraphQL can do four things:
 
-`yarn install`
+1. Generate a GraphQL-JS schema that maps GraphQL queries to Dgraph queries
+2. Transform Dgraph responses into GraphQL responses (including support for the
+   relay connection specification)
+3. Generate defaults for create/update/delete/query operations (with filtering,
+   ordering and nested create/update mutations)
+4. Configure Dgraph's schema with types and indexes each property.
 
-The example and test suite expect a Dgraph instance that you don't mind filling
-with junk running at <http://localhost:8080>. You can either [install  Dgraph](https://docs.dgraph.io/v0.7.7/get-started#system-installation) or
-run it in Docker:
+## Getting Started
+
+The example describes basic usage. First, install dependencies:
+
+```sh
+yarn install
+```
+
+The example and expects a Dgraph instance that you don't mind filling with junk
+running at <http://localhost:8080>. You can either [install Dgraph](https://docs.dgraph.io/v0.7.7/get-started#system-installation)
+or (much better) run it in Docker:
 
 Install the Dgraph Docker image:
 
-`docker pull dgraph/dgraph`
+```sh
+docker pull dgraph/dgraph
+```
 
 And run Dgraph:
 
-`yarn run dgraph`
+```sh
+yarn run dgraph
+```
 
 Run the example (in another terminal):
 
-`yarn start`
+```sh
+yarn start
+```
 
 Or run the test suite:
 
-`yarn test`
+```sh
+yarn test
+```
+
+## Using DgraphQL
+
+Install DgraphQL from npm
+
+With yarn:
+
+```sh
+yarn add dgraphql
+```
+
+The entry point to the library is `buildSchema`
+
+```javascript
+import { graphql } from 'graphql'
+import { buildSchema } from 'dgraphql'
+
+const config = {
+  server: 'http://localhost:8080/query'
+}
+
+const source = `
+type Person {
+  id: ID!
+  name: String @index(type: "exact")
+  children: [Person!]! @reverse(name: "parents")
+  parents: [Person!]! @reverse(name: "children")
+}`
+
+const schema = buildSchema(source, config)
+
+const mutation = `
+mutation {
+  createPerson(input: { name: "David" }) {
+    person {
+      id
+    }
+  }
+}`
+
+graphql(schema, mutation).then(result => {
+  console.log(result);
+})
+```
+
+## Directives
+
+The following directives can be applied to type properties to
+customize behavior:
+
+- `@index(type: "type")` adds a [Dgraph index](https://docs.dgraph.io/v0.7.7/query-language/#indexing)
+to the property.
+- `@localize` creates a [localized property](https://docs.dgraph.io/v0.7.7/query-language/#language):
+the locale is decided by the language property of the graphql-js context (see `example/index.js`)
+- `@reverse` specifies the reverse edge to create when the relation is created
 
 ## Notes
 
-You can run in relay mode by passing in `{relay: true}` to `buildSchema`. This
-turns one-to-many edges into connections with pagination etc.
+`buildSchema` currently updates the schema of the configured Dgraph instance
+based on the input schema (without even asking – how rude).
 
-You can specify the Dgraph predicate for an edge using a directive. This is
-useful when doing `@reverse` relationships:
+Dgraph requires indexes on properties on which filtering/ordering operations are
+performed. Eventually the available operations will be driven by the indexes.
 
-```graphql
-type SomeType {
-  someField: [AnotherType!]! @dgraph(predicate: "~predicateName")
-}
-```
+Relay mode turns one to many edges into connections with pagination etc.
