@@ -226,7 +226,5 @@ export function processResponse (
     info.schema.getQueryType(),
     response
   )
-  console.log('-- processed response')
-  console.log(JSON.stringify(response, null, '  '))
   return response
 }
