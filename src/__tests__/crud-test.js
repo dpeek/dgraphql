@@ -128,6 +128,88 @@ test('deletes node', async () => {
   expect(queryResult).toMatchSnapshot()
 })
 
+test('deletes reverse edge to deleted node', async () => {
+  const create = `mutation {
+    createPerson(input: {
+      name: "Tim",
+      partner: {
+        name: "Bob"
+      }
+    }) {
+      person {
+        id
+        partner {
+          id
+        }
+      }
+    }
+  }`
+  const createResult = await graphql(create)
+  const tim = createResult.data.createPerson.person.id
+  const bob = createResult.data.createPerson.person.partner.id
+
+  const deletes = `mutation {
+    deletePerson(input: {id: "${tim}"}) {
+      person {
+        id
+      }
+    }
+  }`
+  await graphql(deletes)
+
+  const query = `query {
+    person(id: "${bob}") {
+      partner {
+        name
+      }
+    }
+  }`
+  const queryResult = await graphql(query)
+  expect(queryResult).toMatchSnapshot()
+})
+
+test.only('deletes reverse edges to deleted node', async () => {
+  const create = `mutation {
+    createPerson(input: {
+      name: "Tim",
+      children: [{
+        name: "Sarah"
+      }, {
+        name: "James"
+      }]
+    }) {
+      person {
+        id
+        children {
+          id
+        }
+      }
+    }
+  }`
+  const createResult = await graphql(create)
+  const tim = createResult.data.createPerson.person.id
+  const sarah = createResult.data.createPerson.person.children[0].id
+
+  const deletes = `mutation {
+    deletePerson(input: {id: "${tim}"}) {
+      person {
+        id
+      }
+    }
+  }`
+  await graphql(deletes)
+
+  const query = `query {
+    person(id: "${sarah}") {
+      parents {
+        name
+      }
+    }
+  }`
+  const queryResult = await graphql(query)
+  expect(queryResult).toMatchSnapshot()
+})
+
 test('creates node with nested node', async () => {
   const create = `mutation {
     createPerson(input: {

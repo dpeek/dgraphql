@@ -47,7 +47,27 @@ exports[`deletes node 1`] = `
 Object {
   "data": Object {
     "person": Object {
-      "name": null,
+      "name": "Tim",
+    },
+  },
+}
+`;
+
+exports[`deletes reverse edge to deleted node 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "partner": null,
+    },
+  },
+}
+`;
+
+exports[`deletes reverse edges to deleted node 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "parents": Array [],
     },
   },
 }
