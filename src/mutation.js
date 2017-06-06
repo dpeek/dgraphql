@@ -124,19 +124,6 @@ function getMutationPayload (
   invariant(mutationType, 'No mutation type defined in schema')
   const fields = mutationType.getFields()
   const selection = info.operation.selectionSet.selections[0]
-  const selection2 = selection.selectionSet.selections[0]
-  const type2 = fields[selection.name.value].type
-  console.log(
-    getSelections(
-      client,
-      info,
-      context,
-      selection2.selectionSet.selections,
-      type2,
-      '  ',
-      true
-    )
-  )
   invariant(
     selection.kind === 'Field',
     'Mutation selection must be of kind field'
