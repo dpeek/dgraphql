@@ -185,6 +185,10 @@ function processField (
     )
   } else if (value[alias] && selection.selectionSet) {
     value[alias] = value[alias][0]
+    if (!value[alias].__typename) {
+      value[alias] = null
+      return
+    }
     processSelections(
       client,
       info,
