@@ -38,5 +38,23 @@
     "express-graphql": "^0.6.6",
     "flow-bin": "^0.46.0",
     "jest": "^20.0.4"
+  },
+  "babel": {
+    "presets": [
+      "es2015",
+      "stage-0",
+      "flow"
+    ]
+  },
+  "eslintConfig" : {
+    "extends": ["standard", "standard-flow"],
+    "parser": "babel-eslint",
+    "plugins": [
+      "babel",
+      "jest"
+    ],
+    "env": {
+      "jest/globals": true
+    }
   }
 }

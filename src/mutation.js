@@ -110,12 +110,12 @@ export function getUpdateMutation (client: Client, type: GraphQLObjectType) {
       }
     },
     mutateAndGetPayload: (input, context, info) => {
-      return updateAndGetPayload(client, info, context, type, input)
+      return createOrUpdate(client, info, context, type, input, input.id)
     }
   })
 }
 
-function getMutation (
+function getMutationPayload (
   client: Client,
   info: GraphQLResolveInfo,
   context: Context
@@ -124,6 +124,19 @@ function getMutation (
   invariant(mutationType, 'No mutation type defined in schema')
   const fields = mutationType.getFields()
   const selection = info.operation.selectionSet.selections[0]
+  const selection2 = selection.selectionSet.selections[0]
+  const type2 = fields[selection.name.value].type
+  console.log(
+    getSelections(
+      client,
+      info,
+      context,
+      selection2.selectionSet.selections,
+      type2,
+      '  ',
+      true
+    )
+  )
   invariant(
     selection.kind === 'Field',
     'Mutation selection must be of kind field'
@@ -162,7 +175,7 @@ export function getCreateMutation (client: Client, type: GraphQLObjectType) {
       }
     },
     mutateAndGetPayload: (input, context, info) => {
-      return createAndGetPayload(client, info, context, type, input)
+      return createOrUpdate(client, info, context, type, input)
     }
   })
 }
@@ -174,37 +187,17 @@ async function deleteAndGetPayload (
   type: GraphQLObjectType,
   input: { id: string }
 ) {
-  const typeName = type.name
-  const typeField = lowerCamelCase(typeName)
+  // delete all reverse predicates
+  // delete all one way incoming edges
   let query = 'mutation { delete {'
   query += `  <${input.id}> * * .`
   query += '}}'
   await client.fetchQuery(query)
   return {
-    [typeField]: {
+    [lowerCamelCase(type.name)]: {
       id: input.id
     }
   }
-}
-
-async function updateAndGetPayload (
-  client: Client,
-  info: GraphQLResolveInfo,
-  context: Context,
-  type: GraphQLObjectType,
-  input: { id: string }
-) {
-  return createOrUpdate(client, info, context, type, input, input.id)
-}
-
-function createAndGetPayload (
-  client: Client,
-  info: GraphQLResolveInfo,
-  context: Context,
-  type: GraphQLObjectType,
-  input: {}
-) {
-  return createOrUpdate(client, info, context, type, input)
 }
 
 function getMutationFields (
@@ -276,7 +269,7 @@ async function createOrUpdate (
   query += getMutationFields(client, info, context, type, input, ident, 0)
   query += '}}'
   const res = await client.fetchQuery(query)
-  query = getMutation(client, info, context)
+  query = getMutationPayload(client, info, context)
   // TODO: good god lemmon
   query = query.replace(
     /func:eq\(__typename,[^)]+\)/m,
