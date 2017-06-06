@@ -11,7 +11,7 @@ import {
   isLeafType
 } from 'graphql'
 
-import type { GraphQLResolveInfo } from 'graphql'
+import type { GraphQLResolveInfo, FieldNode } from 'graphql'
 import { mutationWithClientMutationId } from 'graphql-relay'
 
 import { getSelections } from './request'
@@ -115,41 +115,6 @@ export function getUpdateMutation (client: Client, type: GraphQLObjectType) {
   })
 }
 
-function getMutationPayload (
-  client: Client,
-  info: GraphQLResolveInfo,
-  context: Context
-) {
-  const mutationType = info.schema.getMutationType()
-  invariant(mutationType, 'No mutation type defined in schema')
-  const fields = mutationType.getFields()
-  const selection = info.operation.selectionSet.selections[0]
-  invariant(
-    selection.kind === 'Field',
-    'Mutation selection must be of kind field'
-  )
-  const type = fields[selection.name.value].type
-  invariant(
-    type instanceof GraphQLObjectType,
-    'Mutation field type must be GraphQLObjectType'
-  )
-  invariant(
-    selection.selectionSet,
-    'Mutation field type must have selectionSet'
-  )
-  let query = 'query {\n'
-  query += getSelections(
-    client,
-    info,
-    context,
-    selection.selectionSet.selections,
-    type,
-    '  ',
-    true
-  )
-  return query + '}'
-}
-
 export function getCreateMutation (client: Client, type: GraphQLObjectType) {
   const name = type.name
   const inputFields = getInputFields(client, type, true)
@@ -193,12 +158,12 @@ function getMutationFields (
   context: Context,
   type: GraphQLObjectType,
   input: {},
-  ident: string,
+  subject: string,
   count: number
 ) {
   let query = ''
-  if (ident.indexOf('node') !== -1) {
-    query += `  ${ident} <__typename> "${type.name}" .\n`
+  if (subject.indexOf('node') !== -1) {
+    query += `  ${subject} <__typename> "${type.name}" .\n`
   }
   const fields = type.getFields()
   Object.keys(input).forEach(key => {
@@ -228,15 +193,15 @@ function getMutationFields (
           count
         )
         query = child + query
-        query += `  ${ident} <${key}> ${nodeIdent} .\n`
+        query += `  ${subject} <${key}> ${nodeIdent} .\n`
         let reverse = client.getReversePredicate(key)
         if (reverse) {
-          query += `  ${nodeIdent} <${reverse}> ${ident} .\n`
+          query += `  ${nodeIdent} <${reverse}> ${subject} .\n`
         }
       })
     } else {
       const value = client.localizeValue(input[key], key, context.language)
-      query += `  ${ident} <${key}> ${value} .\n`
+      query += `  ${subject} <${key}> ${value} .\n`
     }
   })
   return query
@@ -250,29 +215,51 @@ async function createOrUpdate (
   input: {},
   id?: string
 ) {
-  const isCreate = typeof id === 'undefined'
-  let ident = isCreate ? '_:node' : '<' + String(id) + '>'
+  let subject = id ? '<' + String(id) + '>' : '_:node'
   let query = 'mutation { set {\n'
-  query += getMutationFields(client, info, context, type, input, ident, 0)
+  query += getMutationFields(client, info, context, type, input, subject, 0)
   query += '}}'
   const res = await client.fetchQuery(query)
-  query = getMutationPayload(client, info, context)
-  // TODO: good god lemmon
-  query = query.replace(
-    /func:eq\(__typename,[^)]+\)/m,
-    'id:' + (id || res.uids.node)
+
+  const uid = id || res.uids.node
+  const mutation = info.operation.selectionSet.selections[0]
+  invariant(
+    !!mutation && mutation.kind === 'Field' && mutation.selectionSet,
+    'Selection not found'
   )
+  const payload = mutation.selectionSet.selections[0]
+  invariant(
+    !!payload && payload.kind === 'Field' && payload.selectionSet,
+    'Selection not found'
+  )
+  const payloadQuery: FieldNode = {
+    ...payload,
+    arguments: [
+      {
+        kind: 'Argument',
+        name: { kind: 'Name', value: 'id' },
+        value: { kind: 'StringValue', value: uid }
+      }
+    ]
+  }
+  const queryType = info.schema.getQueryType()
+  query = 'query {\n'
+  query += getSelections(
+    client,
+    info,
+    context,
+    [payloadQuery],
+    queryType,
+    '  ',
+    true
+  )
+  query += '}'
   return client.fetchQuery(query).then(res => {
-    const selection = info.operation.selectionSet.selections[0]
-    invariant(
-      !!selection && selection.kind === 'Field' && selection.selectionSet,
-      'Selection not found'
-    )
     processSelections(
       client,
       info,
-      selection.selectionSet.selections,
-      info.schema.getQueryType(),
+      mutation.selectionSet.selections,
+      queryType,
       res
     )
     return res
