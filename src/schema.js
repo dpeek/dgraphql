@@ -21,11 +21,9 @@ import { nodeDefinitions } from 'graphql-relay'
 import { unwrapNonNull, lowerCamelCase } from './utils'
 import { resolveQuery } from './request'
 
-import {
-  getDeleteMutation,
-  getCreateMutation,
-  getUpdateMutation
-} from './mutation'
+import getCreateMutation from './mutation/create'
+import getUpdateMutation from './mutation/update'
+import getDeleteMutation from './mutation/delete'
 
 import { getFilterType } from './filter'
 import { getOrderType } from './order'

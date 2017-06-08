@@ -6,20 +6,17 @@ import {
   GraphQLObjectType,
   GraphQLInputObjectType,
   GraphQLList,
-  GraphQLNonNull,
-  GraphQLID,
   isLeafType
 } from 'graphql'
 
 import type { GraphQLResolveInfo, FieldNode } from 'graphql'
-import { mutationWithClientMutationId } from 'graphql-relay'
 
-import { getSelections } from './request'
-import { processSelections } from './response'
-import { unwrap, unwrapNonNull, lowerCamelCase, getFields } from './utils'
+import { getSelections } from '../request'
+import { processSelections } from '../response'
+import { unwrapNonNull } from '../utils'
 
-import type { Client } from './client'
-import type { Context } from './schema'
+import type { Client } from '../client'
+import type { Context } from '../schema'
 
 const inputTypes = new Map()
 function getInputType (
@@ -39,7 +36,7 @@ function getInputType (
   return inputType
 }
 
-function getInputFields (
+export function getInputFields (
   client: Client,
   type: GraphQLObjectType,
   excludeId: boolean
@@ -67,111 +64,6 @@ function getInputFields (
     }
   })
   return inputFields
-}
-
-export function getDeleteMutation (client: Client, type: GraphQLObjectType) {
-  return mutationWithClientMutationId({
-    name: `Delete${type.name}Mutation`,
-    inputFields: {
-      id: { type: new GraphQLNonNull(GraphQLID) }
-    },
-    outputFields: {
-      [lowerCamelCase(type.name)]: {
-        type: type
-      }
-    },
-    mutateAndGetPayload: (input, context, info) => {
-      return deleteAndGetPayload(client, info, context, type, input.id)
-    }
-  })
-}
-
-async function deleteAndGetPayload (
-  client: Client,
-  info: GraphQLResolveInfo,
-  context: Context,
-  type: GraphQLObjectType,
-  id: string
-) {
-  // first we need to find all the incoming edges to the node
-  let edgeQuery = `query { node(id: ${id}) {\n`
-  getFields(type).forEach(field => {
-    const fieldType = unwrap(field.type)
-    if (
-      fieldType instanceof GraphQLObjectType ||
-      fieldType instanceof GraphQLList
-    ) {
-      edgeQuery += '  ' + field.name + ' { _uid_ }\n'
-    }
-  })
-  edgeQuery += '}}'
-
-  const edges = await client.fetchQuery(edgeQuery)
-  const subject = edges.node[0]
-  let query = 'mutation { delete {\n'
-  query += `  <${id}> * * .\n`
-  Object.keys(subject).forEach(key => {
-    const results = subject[key]
-    const reverse = client.getReversePredicate(key)
-    if (reverse) {
-      results.forEach(node => {
-        query += `  <${node._uid_}> <${reverse}> <${id}> .\n`
-      })
-    }
-  })
-  query += '}}'
-  await client.fetchQuery(query)
-  return {
-    [lowerCamelCase(type.name)]: {
-      id: id
-    }
-  }
-}
-
-export function getUpdateMutation (client: Client, type: GraphQLObjectType) {
-  const name = type.name
-  const fields = type.getFields()
-  const inputFields = {}
-  Object.keys(fields).forEach(fieldName => {
-    const field = fields[fieldName]
-    const fieldType = unwrap(field.type)
-    if (isLeafType(fieldType)) {
-      if (fieldName === 'id') {
-        inputFields[fieldName] = { type: new GraphQLNonNull(GraphQLID) }
-      } else {
-        inputFields[fieldName] = { type: fieldType }
-      }
-    }
-  })
-  return mutationWithClientMutationId({
-    name: `Update${name}Mutation`,
-    inputFields,
-    outputFields: {
-      [lowerCamelCase(name)]: {
-        type: type
-      }
-    },
-    mutateAndGetPayload: (input, context, info) => {
-      return createOrUpdate(client, info, context, type, input, input.id)
-    }
-  })
-}
-
-export function getCreateMutation (client: Client, type: GraphQLObjectType) {
-  const name = type.name
-  const inputFields = getInputFields(client, type, true)
-  return mutationWithClientMutationId({
-    name: `Create${name}Mutation`,
-    inputFields,
-    outputFields: {
-      [lowerCamelCase(name)]: {
-        type: type
-      }
-    },
-    mutateAndGetPayload: (input, context, info) => {
-      return createOrUpdate(client, info, context, type, input)
-    }
-  })
 }
 
 function getMutationFields (
@@ -229,7 +121,7 @@ function getMutationFields (
   return query
 }
 
-async function createOrUpdate (
+export async function createOrUpdate (
   client: Client,
   info: GraphQLResolveInfo,
   context: Context,

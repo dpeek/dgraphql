@@ -168,7 +168,7 @@ test('deletes reverse edge to deleted node', async () => {
   expect(queryResult).toMatchSnapshot()
 })
 
-test.only('deletes reverse edges to deleted node', async () => {
+test('deletes reverse edges to deleted node', async () => {
   const create = `mutation {
     createPerson(input: {
       name: "Tim",
