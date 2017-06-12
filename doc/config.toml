@@ -1,0 +1,12 @@
+siteTitle="DgraphQL"
+baseColor = "#29464b"
+linkPrefix = "/dgraphql"
+docPages = [
+  "/docs/",
+  "/docs/getting-started/",
+  "/docs/schema-directives/",
+  "/docs/querying-types/",
+  "/docs/mutating-types/",
+  "/docs/mutating-edges/",
+  "/docs/relay-mode/",
+]
