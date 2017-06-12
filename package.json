@@ -1,6 +1,6 @@
 {
   "name": "dgraphql",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Generate graphql schema for dgraph.",
   "main": "lib/index.js",
   "homepage": "https://github.com/dpeek/dgraphql",
@@ -46,8 +46,11 @@
       "flow"
     ]
   },
-  "eslintConfig" : {
-    "extends": ["standard", "standard-flow"],
+  "eslintConfig": {
+    "extends": [
+      "standard",
+      "standard-flow"
+    ],
     "parser": "babel-eslint",
     "plugins": [
       "babel",
