@@ -9,17 +9,67 @@ import {
   isLeafType
 } from 'graphql'
 
-import type { GraphQLResolveInfo, FieldNode } from 'graphql'
-
+import { unwrapNonNull } from '../utils'
 import { getSelections } from '../request'
 import { processSelections } from '../response'
-import { unwrapNonNull } from '../utils'
 
+import type { GraphQLResolveInfo, FieldNode } from 'graphql'
 import type { Client } from '../client'
 import type { Context } from '../schema'
 
+export function payloadQuery (
+  client: Client,
+  info: GraphQLResolveInfo,
+  context: Context,
+  id: string
+) {
+  const mutation = info.fieldNodes[0] // info.operation.selectionSet.selections[0]
+  invariant(
+    !!mutation && mutation.kind === 'Field' && mutation.selectionSet,
+    'Selection not found'
+  )
+  const payload = mutation.selectionSet.selections[0]
+  console.log(payload)
+  invariant(
+    !!payload && payload.kind === 'Field' && payload.selectionSet,
+    'Selection not found'
+  )
+  const payloadQuery: FieldNode = {
+    ...payload,
+    arguments: [
+      {
+        kind: 'Argument',
+        name: { kind: 'Name', value: 'id' },
+        value: { kind: 'StringValue', value: id }
+      }
+    ]
+  }
+  const queryType = info.schema.getQueryType()
+  let query = 'query {\n'
+  query += getSelections(
+    client,
+    info,
+    context,
+    [payloadQuery],
+    queryType,
+    '  ',
+    true
+  )
+  query += '}'
+  return client.fetchQuery(query).then(res => {
+    processSelections(
+      client,
+      info,
+      mutation.selectionSet.selections,
+      queryType,
+      res
+    )
+    return res
+  })
+}
+
 const inputTypes = new Map()
-function getInputType (
+export function getInputType (
   client: Client,
   type: GraphQLObjectType
 ): GraphQLInputObjectType {
@@ -66,7 +116,7 @@ export function getInputFields (
   return inputFields
 }
 
-function getMutationFields (
+export function getMutationFields (
   client: Client,
   info: GraphQLResolveInfo,
   context: Context,
@@ -119,63 +169,4 @@ function getMutationFields (
     }
   })
   return query
-}
-
-export async function createOrUpdate (
-  client: Client,
-  info: GraphQLResolveInfo,
-  context: Context,
-  type: GraphQLObjectType,
-  input: {},
-  id?: string
-) {
-  let subject = id ? '<' + String(id) + '>' : '_:node'
-  let query = 'mutation { set {\n'
-  query += getMutationFields(client, info, context, type, input, subject, 0)
-  query += '}}'
-  const res = await client.fetchQuery(query)
-
-  const uid = id || res.uids.node
-  const mutation = info.operation.selectionSet.selections[0]
-  invariant(
-    !!mutation && mutation.kind === 'Field' && mutation.selectionSet,
-    'Selection not found'
-  )
-  const payload = mutation.selectionSet.selections[0]
-  invariant(
-    !!payload && payload.kind === 'Field' && payload.selectionSet,
-    'Selection not found'
-  )
-  const payloadQuery: FieldNode = {
-    ...payload,
-    arguments: [
-      {
-        kind: 'Argument',
-        name: { kind: 'Name', value: 'id' },
-        value: { kind: 'StringValue', value: uid }
-      }
-    ]
-  }
-  const queryType = info.schema.getQueryType()
-  query = 'query {\n'
-  query += getSelections(
-    client,
-    info,
-    context,
-    [payloadQuery],
-    queryType,
-    '  ',
-    true
-  )
-  query += '}'
-  return client.fetchQuery(query).then(res => {
-    processSelections(
-      client,
-      info,
-      mutation.selectionSet.selections,
-      queryType,
-      res
-    )
-    return res
-  })
 }

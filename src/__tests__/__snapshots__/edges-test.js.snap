@@ -1,0 +1,249 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`adding edges does not remove existing edges 1`] = `
+Object {
+  "data": Object {
+    "addPersonChildren": Object {
+      "person": Object {
+        "children": Array [
+          Object {
+            "name": "John",
+            "parents": Array [
+              Object {
+                "name": "Tim",
+              },
+            ],
+          },
+          Object {
+            "name": "Olivia",
+            "parents": Array [
+              Object {
+                "name": "Tim",
+              },
+            ],
+          },
+        ],
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`adds edges to existing nodes 1`] = `
+Object {
+  "data": Object {
+    "addPersonChildren": Object {
+      "person": Object {
+        "children": Array [
+          Object {
+            "name": "Alice",
+            "parents": Array [
+              Object {
+                "name": "Tim",
+              },
+            ],
+          },
+          Object {
+            "name": "Paula",
+            "parents": Array [
+              Object {
+                "name": "Tim",
+              },
+            ],
+          },
+        ],
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`adds edges to new and existing nodes 1`] = `
+Object {
+  "data": Object {
+    "addPersonChildren": Object {
+      "person": Object {
+        "children": Array [
+          Object {
+            "name": "Eve",
+            "parents": Array [
+              Object {
+                "name": "Tim",
+              },
+            ],
+          },
+          Object {
+            "name": "Tom",
+            "parents": Array [
+              Object {
+                "name": "Tim",
+              },
+            ],
+          },
+        ],
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`adds edges to new nodes 1`] = `
+Object {
+  "data": Object {
+    "addPersonChildren": Object {
+      "person": Object {
+        "children": Array [
+          Object {
+            "name": "Jack",
+            "parents": Array [
+              Object {
+                "name": "Tim",
+              },
+            ],
+          },
+          Object {
+            "name": "John",
+            "parents": Array [
+              Object {
+                "name": "Tim",
+              },
+            ],
+          },
+        ],
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`removes edges removing reverse edges 1`] = `
+Object {
+  "data": Object {
+    "removePersonChildren": Object {
+      "person": Object {
+        "children": Array [
+          Object {
+            "name": "Olivia",
+          },
+        ],
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`removes edges removing reverse edges 2`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "name": "Jerry",
+      "parents": Array [],
+    },
+  },
+}
+`;
+
+exports[`sets node edge to existing node 1`] = `
+Object {
+  "data": Object {
+    "setPersonPartner": Object {
+      "person": Object {
+        "name": "Tim",
+        "partner": Object {
+          "name": "Alice",
+          "partner": Object {
+            "name": "Tim",
+          },
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`sets node edge to new node 1`] = `
+Object {
+  "data": Object {
+    "setPersonPartner": Object {
+      "person": Object {
+        "name": "Tim",
+        "partner": Object {
+          "name": "Wilma",
+          "partner": Object {
+            "name": "Tim",
+          },
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`setting node edge removes existing reverse edge from new value 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "name": "Sue",
+      "partner": null,
+    },
+  },
+}
+`;
+
+exports[`setting node edge removes reverse edge from existing value 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "name": "Sally",
+      "partner": null,
+    },
+  },
+}
+`;
+
+exports[`setting node edge to existing value has no effect 1`] = `
+Object {
+  "data": Object {
+    "setPersonPartner": Object {
+      "person": Object {
+        "name": "Tim",
+        "partner": Object {
+          "name": "Alice",
+          "partner": Object {
+            "name": "Tim",
+          },
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`unsets node edge 1`] = `
+Object {
+  "data": Object {
+    "unsetPersonPartner": Object {
+      "person": Object {
+        "name": "Tim",
+        "partner": null,
+      },
+    },
+  },
+}
+`;
+
+exports[`unsetting node edge removes reverse edge on value 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "name": "Joan",
+      "partner": null,
+    },
+  },
+}
+`;

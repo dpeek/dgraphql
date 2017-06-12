@@ -8,8 +8,7 @@ import type {
   GraphQLResolveInfo,
   GraphQLOutputType,
   ValueNode,
-  FieldNode,
-  ArgumentNode
+  FieldNode
 } from 'graphql'
 
 import invariant from 'invariant'
@@ -115,6 +114,10 @@ export function getValue (info: GraphQLResolveInfo, node: ValueNode): mixed {
 
 export function lowerCamelCase (str: string): string {
   return str[0].toLowerCase() + str.substr(1)
+}
+
+export function upperCamelCase (str: string): string {
+  return str[0].toUpperCase() + str.substr(1)
 }
 
 export function quoteValue (value: mixed) {

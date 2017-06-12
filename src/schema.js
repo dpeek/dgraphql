@@ -18,12 +18,11 @@ import type { GraphQLFieldConfig } from 'graphql'
 
 import { nodeDefinitions } from 'graphql-relay'
 
-import { unwrapNonNull, lowerCamelCase } from './utils'
+import { unwrapNonNull, lowerCamelCase, upperCamelCase } from './utils'
 import { resolveQuery } from './request'
 
-import getCreateMutation from './mutation/create'
-import getUpdateMutation from './mutation/update'
-import getDeleteMutation from './mutation/delete'
+import getTypeMutations from './mutation/type'
+import getFieldMutations from './mutation/field'
 
 import { getFilterType } from './filter'
 import { getOrderType } from './order'
@@ -81,13 +80,14 @@ function getQueryField (
   }
 }
 
-function transformType (client: Client, type: GraphQLObjectType) {
+function transformType (client: Client, type: GraphQLObjectType, mutation: {}) {
   // $FlowFixMe
   const typeFields = type._typeConfig.fields()
   type._typeConfig.fields = typeFields
   Object.keys(typeFields).forEach(key => {
     const field = typeFields[key]
     const fieldType = unwrapNonNull(field.type)
+    Object.assign(mutation, getFieldMutations(client, type, fieldType, key))
     if (fieldType instanceof GraphQLList) {
       const nodeType = unwrapNonNull(fieldType.ofType)
       if (nodeType instanceof GraphQLObjectType) {
@@ -197,16 +197,14 @@ export function buildSchema (
     let type = typeMap[name]
     if (!(type instanceof GraphQLObjectType)) return
 
-    type = transformType(client, type)
+    type = transformType(client, type, mutations)
     type._interfaces.push(node.nodeInterface)
 
     let singular = lowerCamelCase(name)
     queries[singular] = getQueryField(client, type)
     queries[pluralize(singular)] = getConnectionField(client, type, true)
 
-    mutations['create' + name] = getCreateMutation(client, type)
-    mutations['update' + name] = getUpdateMutation(client, type)
-    mutations['delete' + name] = getDeleteMutation(client, type)
+    Object.assign(mutations, getTypeMutations(client, type))
 
     queries['node'] = node.nodeField
   })
