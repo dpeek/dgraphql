@@ -1,6 +1,6 @@
 {
   "name": "dgraphql",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Generate graphql schema for dgraph.",
   "main": "lib/index.js",
   "homepage": "https://github.com/dpeek/dgraphql",
