@@ -1,1 +1,1 @@
-export { buildSchema } from './schema'
+export { Client } from './client'
