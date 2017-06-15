@@ -25,6 +25,7 @@
   "dependencies": {
     "graphql": "^0.10.1",
     "graphql-relay": "^0.5.2",
+    "graphql-tools": "^1.0.0",
     "isomorphic-fetch": "^2.2.1",
     "pluralize": "^5.0.0"
   },

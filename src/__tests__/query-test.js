@@ -3,7 +3,7 @@ import { init } from '../harness'
 var graphql
 
 beforeAll(async () => {
-  graphql = await init({ debug: true })
+  graphql = await init()
 })
 
 test('queries node field', async () => {
@@ -21,6 +21,40 @@ test('queries node fields', async () => {
     person(id: $david) {
       name
       employed
+    }
+  }`
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
+})
+
+test('returns null for node', async () => {
+  const source = `query {
+    person(id: "non-existing") {
+      name
+    }
+  }`
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
+})
+
+test('returns null for non-existing edge', async () => {
+  const source = `query TestQuery($linda: ID!) {
+    person(id: $linda) {
+      partner {
+        name
+      }
+    }
+  }`
+  const result = await graphql(source)
+  expect(result).toMatchSnapshot()
+})
+
+test('returns empty array for non-existing edges', async () => {
+  const source = `query TestQuery($linda: ID!) {
+    person(id: $linda) {
+      parents {
+        name
+      }
     }
   }`
   const result = await graphql(source)

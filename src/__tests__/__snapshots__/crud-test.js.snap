@@ -46,9 +46,7 @@ Object {
 exports[`deletes node 1`] = `
 Object {
   "data": Object {
-    "person": Object {
-      "name": "Tim",
-    },
+    "person": null,
   },
 }
 `;

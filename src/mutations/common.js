@@ -1,4 +1,4 @@
-/* @flow */
+// @flow
 
 import invariant from 'invariant'
 
@@ -10,20 +10,17 @@ import {
 } from 'graphql'
 
 import { unwrapNonNull } from '../utils'
-import { getSelections } from '../request'
-import { processSelections } from '../response'
+import getSelections from '../getSelections'
 
 import type { GraphQLResolveInfo, FieldNode } from 'graphql'
-import type { Client } from '../client'
-import type { Context } from '../schema'
+import type { Context } from '../context'
 
 export function payloadQuery (
-  client: Client,
   info: GraphQLResolveInfo,
   context: Context,
   id: string
 ) {
-  const mutation = info.fieldNodes[0] // info.operation.selectionSet.selections[0]
+  const mutation = info.fieldNodes[0]
   invariant(
     !!mutation && mutation.kind === 'Field' && mutation.selectionSet,
     'Selection not found'
@@ -46,33 +43,13 @@ export function payloadQuery (
   }
   const queryType = info.schema.getQueryType()
   let query = 'query {\n'
-  query += getSelections(
-    client,
-    info,
-    context,
-    [payloadQuery],
-    queryType,
-    '  ',
-    true
-  )
+  query += getSelections(info, context, [payloadQuery], queryType, '  ', true)
   query += '}'
-  return client.fetchQuery(query).then(res => {
-    processSelections(
-      client,
-      info,
-      mutation.selectionSet.selections,
-      queryType,
-      res
-    )
-    return res
-  })
+  return context.client.fetchQuery(query)
 }
 
 const inputTypes = new Map()
-export function getInputType (
-  client: Client,
-  type: GraphQLObjectType
-): GraphQLInputObjectType {
+export function getInputType (type: GraphQLObjectType): GraphQLInputObjectType {
   const name = type.name + 'Input'
 
   let inputType = inputTypes.get(name)
@@ -80,17 +57,13 @@ export function getInputType (
 
   inputType = new GraphQLInputObjectType({
     name: name,
-    fields: () => getInputFields(client, type, false)
+    fields: () => getInputFields(type, false)
   })
   inputTypes.set(name, inputType)
   return inputType
 }
 
-export function getInputFields (
-  client: Client,
-  type: GraphQLObjectType,
-  excludeId: boolean
-) {
+export function getInputFields (type: GraphQLObjectType, excludeId: boolean) {
   const inputFields = {}
   const fields = type.getFields()
   Object.keys(fields).forEach(fieldName => {
@@ -99,7 +72,7 @@ export function getInputFields (
     if (fieldType instanceof GraphQLList) {
       if (fieldType.ofType instanceof GraphQLObjectType) {
         inputFields[fieldName] = {
-          type: new GraphQLList(getInputType(client, fieldType.ofType))
+          type: new GraphQLList(getInputType(fieldType.ofType))
         }
       } else {
         inputFields[fieldName] = {
@@ -107,7 +80,7 @@ export function getInputFields (
         }
       }
     } else if (fieldType instanceof GraphQLObjectType) {
-      inputFields[fieldName] = { type: getInputType(client, fieldType) }
+      inputFields[fieldName] = { type: getInputType(fieldType) }
     } else if (isLeafType(fieldType)) {
       if (excludeId && fieldName === 'id') return
       inputFields[fieldName] = { type: fieldType }
@@ -117,7 +90,6 @@ export function getInputFields (
 }
 
 export function getMutationFields (
-  client: Client,
   info: GraphQLResolveInfo,
   context: Context,
   type: GraphQLObjectType,
@@ -148,7 +120,6 @@ export function getMutationFields (
         count++
         let nodeIdent = node.id ? `<${node.id}>` : `_:node${count}`
         let child = getMutationFields(
-          client,
           info,
           context,
           fieldType,
@@ -158,13 +129,17 @@ export function getMutationFields (
         )
         query = child + query
         query += `  ${subject} <${key}> ${nodeIdent} .\n`
-        let reverse = client.getReversePredicate(key)
+        let reverse = context.client.getReversePredicate(key)
         if (reverse) {
           query += `  ${nodeIdent} <${reverse}> ${subject} .\n`
         }
       })
     } else {
-      const value = client.localizeValue(input[key], key, context.language)
+      const value = context.client.localizeValue(
+        input[key],
+        key,
+        context.language
+      )
       query += `  ${subject} <${key}> ${value} .\n`
     }
   })

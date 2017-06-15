@@ -10,3 +10,7 @@ type Person {
   children: [Person!]! @reverse(name: "parents")
   parents: [Person!]! @reverse(name: "children")
 }
+
+type Empty {
+  id: ID!
+}

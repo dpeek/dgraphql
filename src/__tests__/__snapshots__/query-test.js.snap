@@ -333,3 +333,31 @@ Object {
   },
 }
 `;
+
+exports[`returns empty array for non-existing edges 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "parents": Array [],
+    },
+  },
+}
+`;
+
+exports[`returns null for node 1`] = `
+Object {
+  "data": Object {
+    "person": null,
+  },
+}
+`;
+
+exports[`returns null for non-existing edge 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "partner": null,
+    },
+  },
+}
+`;

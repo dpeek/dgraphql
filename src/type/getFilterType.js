@@ -1,18 +1,9 @@
-/* @flow */
-
-import invariant from 'invariant'
+// @flow
 
 import { GraphQLObjectType, GraphQLInputObjectType, isLeafType } from 'graphql'
+import { unwrapNonNull, getFields } from '../utils'
 
-import type {
-  GraphQLOutputType,
-  GraphQLField,
-  GraphQLResolveInfo,
-  ArgumentNode
-} from 'graphql'
-
-import type { Client } from './client'
-import { unwrapNonNull, getFields, getValue, quoteValue } from './utils'
+import type { GraphQLOutputType, GraphQLField } from 'graphql'
 
 type Filter = {
   active: (type: GraphQLOutputType) => boolean,
@@ -91,12 +82,15 @@ function filtersForField (field: GraphQLField<*, *>): Array<FilterField> {
 }
 
 function filtersForType (type: GraphQLObjectType): Array<FilterField> {
-  return getFields(type).map(filtersForField).reduce((a, b) => a.concat(b), [])
+  return getFields(type)
+    .filter(field => field.name !== 'id')
+    .map(filtersForField)
+    .reduce((a, b) => a.concat(b), [])
 }
 
 const filterTypes: Map<string, ?GraphQLInputObjectType> = new Map()
 
-export function getFilterType (
+export default function getFilterType (
   type: GraphQLObjectType
 ): ?GraphQLInputObjectType {
   const name = `${type.name}Filter`

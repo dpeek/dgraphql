@@ -1,46 +1,50 @@
+// @flow
+
 import fs from 'fs'
 import path from 'path'
 
 import { graphql } from 'graphql'
 
-import { buildSchema } from './schema'
+import { Client } from './client'
 
-import type { ClientConfig } from './client'
-
-export async function init (config: ClientConfig) {
+export async function init (relay?: boolean = false) {
   const schemaPath = path.resolve(__dirname, '__tests__/schema.graphql')
-  const sourcePath = path.resolve(__dirname, '__tests__/source.graphql')
+  const schema = fs.readFileSync(schemaPath).toString()
 
+  const sourcePath = path.resolve(__dirname, '__tests__/source.graphql')
   const source = fs.readFileSync(sourcePath).toString()
 
   const time = String(new Date().getTime() - 1495660000000)
   let commonVariables = { time }
 
-  // can't use the same schema as some tests are in relay mode, the query is not
-  const dataSchema = buildSchema(fs.readFileSync(schemaPath).toString(), {})
-  const data = await graphql({
-    schema: dataSchema,
+  // can't use the same client as some tests are in relay mode, the query is not
+  let client = new Client({ schema, debug: true })
+  const result = await graphql({
     source,
+    schema: client.schema,
     variableValues: commonVariables,
-    contextValue: { language: 'en' }
+    contextValue: client.getContext()
   })
+
   const walk = node => {
-    if (node.id && node.name) {
+    if (node && node.id && node.name && typeof node.name === 'string') {
       commonVariables[node.name.split(' ')[0].toLowerCase()] = node.id
     }
     Object.values(node).forEach(value => {
       if (typeof value === 'object') walk(value)
     })
   }
-  walk(data)
+  console.log(result)
+  if (result.data) walk(result.data)
+  else throw new Error(result.errors)
 
-  const schema = buildSchema(fs.readFileSync(schemaPath).toString(), config)
+  client = new Client({ schema, relay, debug: true })
   return (source, variables, language) => {
     return graphql({
-      schema,
       source,
+      schema: client.schema,
       variableValues: { ...commonVariables, ...(variables || {}) },
-      contextValue: { language: language || 'en' }
+      contextValue: client.getContext(language)
     })
   }
 }

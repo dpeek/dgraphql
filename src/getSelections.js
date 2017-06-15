@@ -1,15 +1,8 @@
-/* @flow */
+// @flow
 
 import invariant from 'invariant'
 
 import { GraphQLObjectType, GraphQLInterfaceType } from 'graphql'
-
-import type {
-  GraphQLResolveInfo,
-  FieldNode,
-  SelectionNode,
-  GraphQLField
-} from 'graphql'
 
 import {
   unwrap,
@@ -17,13 +10,31 @@ import {
   getConnectionType,
   flattenSelections,
   findSelections,
-  getArguments,
+  getValue,
   quoteValue
 } from './utils'
 
-import { processResponse } from './response'
+import type {
+  GraphQLResolveInfo,
+  FieldNode,
+  SelectionNode,
+  GraphQLField,
+  ArgumentNode
+} from 'graphql'
+
 import type { Client } from './client'
-import type { Context } from './schema'
+import type { Context } from './context'
+
+function getArguments (
+  info: GraphQLResolveInfo,
+  args: Array<ArgumentNode>
+): any {
+  const result = {}
+  args.forEach(arg => {
+    result[arg.name.value] = getValue(info, arg.value)
+  })
+  return result
+}
 
 function getParams (
   client: Client,
@@ -33,7 +44,7 @@ function getParams (
   isRoot: boolean,
   isCount: boolean
 ) {
-  const args = getArguments(info, selection)
+  const args = getArguments(info, selection.arguments || [])
   if (args.id) {
     // if we have an id we can bail early
     return `(id: ${args.id})`
@@ -74,7 +85,6 @@ function getParams (
 }
 
 function getSelection (
-  client: Client,
   info: GraphQLResolveInfo,
   context: Context,
   selection: FieldNode,
@@ -92,7 +102,7 @@ function getSelection (
   let selections = selection.selectionSet
     ? selection.selectionSet.selections
     : null
-  const fieldName = client.localizePredicate(name, context.language)
+  const fieldName = context.client.localizePredicate(name, context.language)
   const connection = isConnection(fieldType)
   if (connection && selections) {
     selections = flattenSelections(selections, info)
@@ -119,14 +129,20 @@ function getSelection (
     fieldType instanceof GraphQLObjectType ||
     fieldType instanceof GraphQLInterfaceType
   ) {
-    let args = getParams(client, info, selection, fieldType.name, isRoot, false)
+    let args = getParams(
+      context.client,
+      info,
+      selection,
+      fieldType.name,
+      isRoot,
+      false
+    )
     query += args
     if (selections) {
       query += ' {\n'
       query += `${indent}  _uid_\n`
       query += `${indent}  __typename\n`
       query += getSelections(
-        client,
         info,
         context,
         selections,
@@ -141,15 +157,21 @@ function getSelection (
       query += `\n${indent}count(${fieldName}${args})`
     }
     if (isRoot && connection) {
-      args = getParams(client, info, selection, fieldType.name, isRoot, true)
+      args = getParams(
+        context.client,
+        info,
+        selection,
+        fieldType.name,
+        isRoot,
+        true
+      )
       query += `\n${indent}_count_${fieldName}_${args} { count() }`
     }
   }
   return query + '\n'
 }
 
-export function getSelections (
-  client: Client,
+export default function getSelections (
   info: GraphQLResolveInfo,
   context: Context,
   selections: Array<SelectionNode>,
@@ -164,7 +186,6 @@ export function getSelections (
   selections.forEach(selection => {
     if (selection.kind === 'Field') {
       query += getSelection(
-        client,
         info,
         context,
         selection,
@@ -191,7 +212,6 @@ export function getSelections (
         'Fragment must be instance of GraphQLObjectType'
       )
       query += getSelections(
-        client,
         info,
         context,
         fragment.selectionSet.selections,
@@ -203,38 +223,4 @@ export function getSelections (
     }
   })
   return query
-}
-
-function getQuery (client: Client, info: GraphQLResolveInfo, context: Context) {
-  let query = 'query {\n'
-  query += getSelections(
-    client,
-    info,
-    context,
-    info.operation.selectionSet.selections,
-    info.schema.getQueryType(),
-    '  ',
-    true
-  )
-  return query + '}'
-}
-
-export function resolveQuery (
-  client: Client,
-  info: GraphQLResolveInfo,
-  context: Context
-): mixed {
-  // $FlowFixMe
-  let req = info.operation.req
-  if (!req) {
-    const query = getQuery(client, info, context)
-    // $FlowFixMe
-    req = info.operation.req = client.fetchQuery(query).then(res => {
-      return processResponse(client, info, res)
-    })
-  }
-  return req.then(res => {
-    invariant(!!info.path, 'No path defined')
-    return res[info.path.key]
-  })
 }

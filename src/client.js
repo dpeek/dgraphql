@@ -1,8 +1,13 @@
-/* @flow */
+// @flow
 
 import fetch from 'isomorphic-fetch'
+import { parse, GraphQLSchema, Source } from 'graphql'
+import buildSchema from './buildSchema'
+
+import type { Context } from './context'
 
 export type ClientConfig = {
+  schema: string,
   server?: string,
   relay?: boolean,
   language?: string,
@@ -21,16 +26,23 @@ export class Client {
   _server: string
   _debug: boolean
   _updateSchema: Promise<any>
+
+  schema: GraphQLSchema
   relay: boolean
-  constructor (config: ClientConfig, predicates: Map<string, PredicateInfo>) {
-    this._predicates = predicates
+
+  constructor (config: ClientConfig) {
+    const boiler = '\ntype Query { temp: String }'
+    const ast = parse(new Source(config.schema + boiler))
+    this._predicates = getPredicates(ast)
+
     this._server = config.server || 'http://localhost:8080/query'
     this._debug = config.debug || false
+
     this.relay = config.relay || false
+    this.schema = buildSchema(ast, this)
 
     let query = 'mutation { schema {\n'
-    for (var [key, value] of predicates) {
-      if (key === 'id') continue
+    for (var [key, value] of this._predicates) {
       query += '  ' + key + ': ' + value.type
       if (value.indexes.size) {
         query += ' @index(' + [...value.indexes].join(',') + ')'
@@ -80,5 +92,78 @@ export class Client {
           throw new Error(res)
         }
       })
+  }
+  getContext (language?: string = 'en'): Context {
+    return { client: this, language }
+  }
+}
+
+function getPredicates (ast) {
+  const info = new Map()
+  info.set('__typename', {
+    type: 'string',
+    indexes: new Set(['hash']),
+    localize: false,
+    reverse: ''
+  })
+
+  ast.definitions.forEach(definition => {
+    if (definition.kind !== 'ObjectTypeDefinition') return
+    definition.fields.forEach(field => {
+      if (field.name === 'id') return
+      if (!field.directives) return
+      field.directives.forEach(directive => {
+        const fieldName = field.name.value
+        var fieldInfo = info.get(fieldName)
+        if (!fieldInfo) {
+          fieldInfo = {
+            type: getType(field.type),
+            indexes: new Set(),
+            localize: false,
+            reverse: ''
+          }
+          info.set(fieldName, fieldInfo)
+        }
+        const directiveName = directive.name.value
+        if (!directive.arguments) return
+        if (directiveName === 'localize') {
+          fieldInfo.localize = true
+        }
+        directive.arguments.forEach(argument => {
+          if (!fieldInfo || argument.value.kind !== 'StringValue') return
+          const argumentName = argument.name.value
+          const argumentValue = argument.value.value
+          if (directiveName === 'reverse' && argumentName === 'name') {
+            fieldInfo.reverse = argumentValue
+          }
+          if (directiveName === 'index' && argumentName === 'type') {
+            fieldInfo.indexes.add(argumentValue)
+          }
+        })
+      })
+    })
+  })
+  return info
+}
+
+function getType (type) {
+  switch (type.kind) {
+    case 'NonNullType':
+      return getType(type.type)
+    case 'ListType':
+      return 'uid'
+    case 'NamedType':
+      switch (type.name.value) {
+        case 'Int':
+        case 'Float':
+        case 'String':
+          return String(type.name.value).toLowerCase()
+        case 'Boolean':
+          return 'bool'
+        case 'ID':
+          return 'string'
+        default:
+          return 'uid'
+      }
   }
 }

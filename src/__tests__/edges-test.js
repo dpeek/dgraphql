@@ -3,7 +3,7 @@ import { init } from '../harness'
 var graphql
 
 beforeAll(async () => {
-  graphql = await init({ debug: true })
+  graphql = await init()
 })
 
 test('sets node edge to existing node', async () => {

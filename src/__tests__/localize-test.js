@@ -3,7 +3,7 @@ import { init } from '../harness'
 var graphql
 
 beforeAll(async () => {
-  graphql = await init({ debug: true, relay: true })
+  graphql = await init(true)
 })
 
 test('queries node field', async () => {

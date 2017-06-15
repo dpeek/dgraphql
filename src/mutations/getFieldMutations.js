@@ -1,5 +1,7 @@
 // @flow
 
+import invariant from 'invariant'
+
 import {
   GraphQLObjectType,
   GraphQLNonNull,
@@ -13,11 +15,9 @@ import { getInputType, getMutationFields, payloadQuery } from './common'
 import { upperCamelCase, lowerCamelCase, unwrapNonNull } from '../utils'
 
 import type { GraphQLType, GraphQLResolveInfo } from 'graphql'
-import type { Client } from '../client'
-import type { Context } from '../schema'
+import type { Context } from '../context'
 
 async function setAndGetPayload (
-  client: Client,
   info: GraphQLResolveInfo,
   context: Context,
   type: GraphQLObjectType,
@@ -29,14 +29,14 @@ async function setAndGetPayload (
   const subject = input.id
   const payload = input[predicate]
   const value = payload && payload.id
-  const reversePredicate = client.getReversePredicate(predicate)
+  const reversePredicate = context.client.getReversePredicate(predicate)
   let query = 'query {\n'
   query += `  subject(id: ${subject}) { ${predicate} { _uid_ }}\n`
   if (value && reversePredicate) {
     query += `value(id: ${value}) { ${reversePredicate} { _uid_ }}`
   }
   query += '}'
-  edges = await client.fetchQuery(query)
+  edges = await context.client.fetchQuery(query)
 
   let subjectEdge = edges.subject && edges.subject[0][predicate][0]._uid_
   let valueEdge = edges.value && edges.value[0][reversePredicate][0]._uid_
@@ -59,25 +59,16 @@ async function setAndGetPayload (
 
   if (input[predicate]) {
     mutation += '  set {\n'
-    mutation += getMutationFields(
-      client,
-      info,
-      context,
-      type,
-      input,
-      `<${subject}>`,
-      0
-    )
+    mutation += getMutationFields(info, context, type, input, `<${subject}>`, 0)
     mutation += '  }\n'
   }
 
   mutation += '}'
-  await client.fetchQuery(mutation)
-  return payloadQuery(client, info, context, subject)
+  await context.client.fetchQuery(mutation)
+  return payloadQuery(info, context, subject)
 }
 
 function getObjectMutation (
-  client: Client,
   type: GraphQLObjectType,
   fieldType: GraphQLObjectType,
   predicate: string
@@ -86,7 +77,10 @@ function getObjectMutation (
   const typeField = lowerCamelCase(type.name)
   const outputFields = {
     [typeField]: {
-      type: type
+      type: type,
+      resolve: (source, args, context, info) => {
+        return source[info.path.key][0]
+      }
     }
   }
   return {
@@ -97,12 +91,12 @@ function getObjectMutation (
           type: new GraphQLNonNull(GraphQLID)
         },
         [predicate]: {
-          type: new GraphQLNonNull(getInputType(client, fieldType))
+          type: new GraphQLNonNull(getInputType(fieldType))
         }
       },
       outputFields,
       mutateAndGetPayload: (input, context, info) => {
-        return setAndGetPayload(client, info, context, type, input, predicate)
+        return setAndGetPayload(info, context, type, input, predicate)
       }
     }),
     [`unset${name}`]: mutationWithClientMutationId({
@@ -114,14 +108,13 @@ function getObjectMutation (
       },
       outputFields,
       mutateAndGetPayload: (input, context, info) => {
-        return setAndGetPayload(client, info, context, type, input, predicate)
+        return setAndGetPayload(info, context, type, input, predicate)
       }
     })
   }
 }
 
 async function addAndGetPayload (
-  client: Client,
   info: GraphQLResolveInfo,
   context: Context,
   type: GraphQLObjectType,
@@ -130,22 +123,13 @@ async function addAndGetPayload (
 ) {
   const subject = input.id
   let mutation = 'mutation { set {\n'
-  mutation += getMutationFields(
-    client,
-    info,
-    context,
-    type,
-    input,
-    `<${subject}>`,
-    0
-  )
+  mutation += getMutationFields(info, context, type, input, `<${subject}>`, 0)
   mutation += '}}'
-  await client.fetchQuery(mutation)
-  return payloadQuery(client, info, context, subject)
+  await context.client.fetchQuery(mutation)
+  return payloadQuery(info, context, subject)
 }
 
 async function removeAndGetPayload (
-  client: Client,
   info: GraphQLResolveInfo,
   context: Context,
   type: GraphQLObjectType,
@@ -154,7 +138,7 @@ async function removeAndGetPayload (
 ) {
   const subject = input.id
   const values = input[predicate].map(node => node.id)
-  const reversePredicate = client.getReversePredicate(predicate)
+  const reversePredicate = context.client.getReversePredicate(predicate)
   let mutation = 'mutation { delete {\n'
   values.forEach(id => {
     mutation += `  <${subject}> <${predicate}> <${id}> .\n`
@@ -163,16 +147,17 @@ async function removeAndGetPayload (
     }
   })
   mutation += '}}'
-  await client.fetchQuery(mutation)
-  return payloadQuery(client, info, context, subject)
+  await context.client.fetchQuery(mutation)
+  return payloadQuery(info, context, subject)
 }
 
 function getListMutation (
-  client: Client,
   type: GraphQLObjectType,
   fieldType: GraphQLList<*>,
   predicate: string
 ) {
+  const objectType = unwrapNonNull(fieldType.ofType)
+  invariant(objectType instanceof GraphQLObjectType, 'List item is not object')
   const name = type.name + upperCamelCase(predicate)
   const typeField = lowerCamelCase(type.name)
   const inputFields = {
@@ -180,14 +165,15 @@ function getListMutation (
       type: new GraphQLNonNull(GraphQLID)
     },
     [predicate]: {
-      type: new GraphQLList(
-        getInputType(client, unwrapNonNull(fieldType.ofType))
-      )
+      type: new GraphQLList(getInputType(objectType))
     }
   }
   const outputFields = {
     [typeField]: {
-      type: type
+      type: type,
+      resolve: (source, args, context, info) => {
+        return source[info.path.key][0]
+      }
     }
   }
   return {
@@ -196,7 +182,7 @@ function getListMutation (
       inputFields,
       outputFields,
       mutateAndGetPayload: (input, context, info) => {
-        return addAndGetPayload(client, info, context, type, input, predicate)
+        return addAndGetPayload(info, context, type, input, predicate)
       }
     }),
     [`remove${name}`]: mutationWithClientMutationId({
@@ -204,31 +190,23 @@ function getListMutation (
       inputFields,
       outputFields,
       mutateAndGetPayload: (input, context, info) => {
-        return removeAndGetPayload(
-          client,
-          info,
-          context,
-          type,
-          input,
-          predicate
-        )
+        return removeAndGetPayload(info, context, type, input, predicate)
       }
     })
   }
 }
 
-export default function getMutations (
-  client: Client,
+export default function getFieldMutations (
   type: GraphQLObjectType,
   fieldType: GraphQLType,
   predicate: string
 ) {
   return {
     ...(fieldType instanceof GraphQLObjectType
-      ? getObjectMutation(client, type, fieldType, predicate)
+      ? getObjectMutation(type, fieldType, predicate)
       : {}),
     ...(fieldType instanceof GraphQLList
-      ? getListMutation(client, type, fieldType, predicate)
+      ? getListMutation(type, fieldType, predicate)
       : {})
   }
 }
