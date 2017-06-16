@@ -104,32 +104,33 @@ function getConnectionField (
       ...(filterType && { filter: { type: filterType } }),
       ...(orderType && { order: { type: orderType } })
     },
-    resolve: async (source, args, context, info) => {
-      let nodes = await resolve(source, context, info)
-      let count = nodes.count || 0
-      let first = args.first || 0
-      let hasPreviousPage = !!args.after
-      let hasNextPage = false
-      if (first && nodes.length > first) {
-        nodes = nodes.slice(0, nodes.length - 1)
-        hasNextPage = true
-      }
-      const edges = nodes.map(node => ({
-        node,
-        cursor: node._uid_
-      }))
-      const firstEdge = edges[0]
-      const lastEdge = edges[edges.length - 1]
-      return {
-        edges,
-        count: count,
-        pageInfo: {
-          startCursor: firstEdge ? firstEdge.cursor : null,
-          endCursor: lastEdge ? lastEdge.cursor : null,
-          hasPreviousPage,
-          hasNextPage
+    resolve: (source, args, context, info) => {
+      return resolve(source, context, info).then(nodes => {
+        let count = nodes.count || 0
+        let first = args.first || 0
+        let hasPreviousPage = !!args.after
+        let hasNextPage = false
+        if (first && nodes.length > first) {
+          nodes = nodes.slice(0, nodes.length - 1)
+          hasNextPage = true
         }
-      }
+        const edges = nodes.map(node => ({
+          node,
+          cursor: node._uid_
+        }))
+        const firstEdge = edges[0]
+        const lastEdge = edges[edges.length - 1]
+        return {
+          edges,
+          count: count,
+          pageInfo: {
+            startCursor: firstEdge ? firstEdge.cursor : null,
+            endCursor: lastEdge ? lastEdge.cursor : null,
+            hasPreviousPage,
+            hasNextPage
+          }
+        }
+      })
     }
   }
 }

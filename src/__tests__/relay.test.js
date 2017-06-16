@@ -1,4 +1,4 @@
-import { init } from '../harness'
+import { init } from './harness'
 
 var graphql
 

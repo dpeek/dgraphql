@@ -18,11 +18,14 @@ export default function getQueryField (
         type: new GraphQLNonNull(GraphQLID)
       }
     },
-    resolve: async (source, args, context, info) => {
-      const node = await resolve(source, context, info).then(nodes => nodes[0])
-      // currently dgraph _always_ returns a result. I know, right?
-      if (typeof node.__typename === 'undefined') return null
-      return node
+    resolve: (source, args, context, info) => {
+      return resolve(source, context, info)
+        .then(nodes => nodes[0])
+        .then(node => {
+          // currently dgraph _always_ returns a result. I know, right?
+          if (typeof node.__typename === 'undefined') return null
+          return node
+        })
     }
   }
 }

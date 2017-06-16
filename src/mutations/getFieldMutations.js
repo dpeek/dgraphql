@@ -17,14 +17,13 @@ import { upperCamelCase, lowerCamelCase, unwrapNonNull } from '../utils'
 import type { GraphQLType, GraphQLResolveInfo } from 'graphql'
 import type { Context } from '../context'
 
-async function setAndGetPayload (
+function setAndGetPayload (
   info: GraphQLResolveInfo,
   context: Context,
   type: GraphQLObjectType,
   input: any,
   predicate: string
 ) {
-  let edges = {}
   let mutation = 'mutation {\n'
   const subject = input.id
   const payload = input[predicate]
@@ -36,36 +35,47 @@ async function setAndGetPayload (
     query += `value(id: ${value}) { ${reversePredicate} { _uid_ }}`
   }
   query += '}'
-  edges = await context.client.fetchQuery(query)
-
-  let subjectEdge = edges.subject && edges.subject[0][predicate][0]._uid_
-  let valueEdge = edges.value && edges.value[0][reversePredicate][0]._uid_
-  if ((subjectEdge || valueEdge) && subjectEdge !== value) {
-    mutation += '  delete {\n'
-    if (subjectEdge) {
-      mutation += `    <${subject}> <${predicate}> <${subjectEdge}> .\n`
-      if (reversePredicate) {
-        mutation += `    <${subjectEdge}> <${reversePredicate}> <${subject}> .\n`
+  return context.client
+    .fetchQuery(query)
+    .then(edges => {
+      let subjectEdge = edges.subject && edges.subject[0][predicate][0]._uid_
+      let valueEdge = edges.value && edges.value[0][reversePredicate][0]._uid_
+      if ((subjectEdge || valueEdge) && subjectEdge !== value) {
+        mutation += '  delete {\n'
+        if (subjectEdge) {
+          mutation += `    <${subject}> <${predicate}> <${subjectEdge}> .\n`
+          if (reversePredicate) {
+            mutation += `    <${subjectEdge}> <${reversePredicate}> <${subject}> .\n`
+          }
+        }
+        if (valueEdge) {
+          mutation += `    <${value}> <${predicate}> <${valueEdge}> .\n`
+          if (reversePredicate) {
+            mutation += `    <${valueEdge}> <${reversePredicate}> <${value}> .\n`
+          }
+        }
+        mutation += '  }\n'
       }
-    }
-    if (valueEdge) {
-      mutation += `    <${value}> <${predicate}> <${valueEdge}> .\n`
-      if (reversePredicate) {
-        mutation += `    <${valueEdge}> <${reversePredicate}> <${value}> .\n`
+
+      if (input[predicate]) {
+        mutation += '  set {\n'
+        mutation += getMutationFields(
+          info,
+          context,
+          type,
+          input,
+          `<${subject}>`,
+          0
+        )
+        mutation += '  }\n'
       }
-    }
-    mutation += '  }\n'
-  }
 
-  if (input[predicate]) {
-    mutation += '  set {\n'
-    mutation += getMutationFields(info, context, type, input, `<${subject}>`, 0)
-    mutation += '  }\n'
-  }
-
-  mutation += '}'
-  await context.client.fetchQuery(mutation)
-  return payloadQuery(info, context, subject)
+      mutation += '}'
+      return context.client.fetchQuery(mutation)
+    })
+    .then(() => {
+      return payloadQuery(info, context, subject)
+    })
 }
 
 function getObjectMutation (
@@ -114,7 +124,7 @@ function getObjectMutation (
   }
 }
 
-async function addAndGetPayload (
+function addAndGetPayload (
   info: GraphQLResolveInfo,
   context: Context,
   type: GraphQLObjectType,
@@ -125,11 +135,12 @@ async function addAndGetPayload (
   let mutation = 'mutation { set {\n'
   mutation += getMutationFields(info, context, type, input, `<${subject}>`, 0)
   mutation += '}}'
-  await context.client.fetchQuery(mutation)
-  return payloadQuery(info, context, subject)
+  return context.client.fetchQuery(mutation).then(() => {
+    return payloadQuery(info, context, subject)
+  })
 }
 
-async function removeAndGetPayload (
+function removeAndGetPayload (
   info: GraphQLResolveInfo,
   context: Context,
   type: GraphQLObjectType,
@@ -147,8 +158,9 @@ async function removeAndGetPayload (
     }
   })
   mutation += '}}'
-  await context.client.fetchQuery(mutation)
-  return payloadQuery(info, context, subject)
+  return context.client.fetchQuery(mutation).then(() => {
+    return payloadQuery(info, context, subject)
+  })
 }
 
 function getListMutation (

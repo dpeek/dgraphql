@@ -5,13 +5,13 @@ import path from 'path'
 
 import { graphql } from 'graphql'
 
-import { Client } from './client'
+import { Client } from '../client'
 
 export async function init (relay?: boolean = false) {
-  const schemaPath = path.resolve(__dirname, '__tests__/schema.graphql')
+  const schemaPath = path.resolve(__dirname, 'schema.graphql')
   const schema = fs.readFileSync(schemaPath).toString()
 
-  const sourcePath = path.resolve(__dirname, '__tests__/source.graphql')
+  const sourcePath = path.resolve(__dirname, 'source.graphql')
   const source = fs.readFileSync(sourcePath).toString()
 
   const time = String(new Date().getTime() - 1495660000000)

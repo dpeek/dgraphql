@@ -17,7 +17,7 @@ import type { GraphQLResolveInfo } from 'graphql'
 import type { Client } from '../client'
 import type { Context } from '../context'
 
-async function createOrUpdate (
+function createOrUpdate (
   info: GraphQLResolveInfo,
   context: Context,
   type: GraphQLObjectType,
@@ -28,10 +28,10 @@ async function createOrUpdate (
   let query = 'mutation { set {\n'
   query += getMutationFields(info, context, type, input, subject, 0)
   query += '}}'
-  const res = await context.client.fetchQuery(query)
-
-  const uid = id || res.uids.node
-  return payloadQuery(info, context, uid)
+  return context.client.fetchQuery(query).then(res => {
+    const uid = id || res.uids.node
+    return payloadQuery(info, context, uid)
+  })
 }
 
 function getCreateMutation (
@@ -92,7 +92,7 @@ function getUpdateMutation (
   })
 }
 
-async function deleteAndGetPayload (
+function deleteAndGetPayload (
   client: Client,
   info: GraphQLResolveInfo,
   context: Context,
@@ -111,28 +111,34 @@ async function deleteAndGetPayload (
   })
   edgeQuery += '}}'
 
-  const edges = await client.fetchQuery(edgeQuery)
-  if (edges.node) {
-    const subject = edges.node[0]
-    let query = 'mutation { delete {\n'
-    query += `  <${id}> * * .\n`
-    Object.keys(subject).forEach(key => {
-      const results = subject[key]
-      const reverse = client.getReversePredicate(key)
-      if (reverse) {
-        results.forEach(node => {
-          query += `  <${node._uid_}> <${reverse}> <${id}> .\n`
+  return client
+    .fetchQuery(edgeQuery)
+    .then(edges => {
+      if (edges.node) {
+        const subject = edges.node[0]
+        let query = 'mutation { delete {\n'
+        query += `  <${id}> * * .\n`
+        Object.keys(subject).forEach(key => {
+          const results = subject[key]
+          const reverse = client.getReversePredicate(key)
+          if (reverse) {
+            results.forEach(node => {
+              query += `  <${node._uid_}> <${reverse}> <${id}> .\n`
+            })
+          }
         })
+        query += '}}'
+        return client.fetchQuery(query)
+      }
+      return Promise.resolve()
+    })
+    .then(() => {
+      return {
+        [lowerCamelCase(type.name)]: {
+          _uid_: id
+        }
       }
     })
-    query += '}}'
-    await client.fetchQuery(query)
-  }
-  return {
-    [lowerCamelCase(type.name)]: {
-      _uid_: id
-    }
-  }
 }
 
 function getDeleteMutation (

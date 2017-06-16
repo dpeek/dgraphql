@@ -40,14 +40,16 @@ function resolveQuery (
   return req
 }
 
-export default async function resolve (
+export default function resolve (
   source: {},
   context: Context,
   info: GraphQLResolveInfo
 ): Promise<GraphNodes> {
   invariant(typeof info.path !== 'undefined', 'No path defined')
   if (typeof info.path.prev === 'undefined') {
-    source = await resolveQuery(context, info)
+    return resolveQuery(context, info).then(source => {
+      return source[info.path.key] || []
+    })
   }
-  return source[info.path.key] || []
+  return Promise.resolve(source[info.path.key] || [])
 }

@@ -13,7 +13,7 @@ export default function getObjectField (
   return {
     type,
     description: `Get a ${type.name} by \`id\``,
-    resolve: async (source, args, context, info) => {
+    resolve: (source, args, context, info) => {
       return resolve(source, context, info).then(nodes => nodes[0])
     }
   }

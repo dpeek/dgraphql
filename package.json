@@ -60,5 +60,8 @@
     "env": {
       "jest/globals": true
     }
-  }
+  },
+  "jest": {
+   "testRegex": "\\.test\\.js$"
+ }
 }
