@@ -1,6 +1,11 @@
 ---
-title: "DgraphQL: Relay compatible GraphQL server from a schema using Dgraph"
+title: "DgraphQL: Build a GraphQL service from a schema"
 ---
+
+[![npm](https://img.shields.io/npm/v/dgraphql.svg)](https://www.npmjs.com/package/dgraphql)
+[![Documentation](https://img.shields.io/badge/support-docs-blue.svg)](http://dpeek.com/dgraphql/)
+[![Travis](https://img.shields.io/travis/dpeek/dgraphql.svg)](https://travis-ci.org/dpeek/dgraphql)
+[![Codecov](https://img.shields.io/codecov/c/github/dpeek/dgraphql.svg)](https://codecov.io/gh/dpeek/dgraphql)
 
 ## Introduction
 
@@ -18,6 +23,8 @@ Given a GraphQL schema, DgraphQL can do four things:
 3. Generate defaults for create/update/delete/query operations (with filtering,
    ordering and nested create/update mutations)
 4. Configure Dgraph's schema with types and indexes each property.
+
+Check out the [complete documentation](http://dpeek.com/dgraphql/) for more.
 
 ## Getting Started
 
@@ -78,7 +85,7 @@ const config = {
 const source = `
 type Person {
   id: ID!
-  name: String @index(type: "exact")
+  name: String @filter(types: [EQUALITY])
   children: [Person!]! @reverse(name: "parents")
   parents: [Person!]! @reverse(name: "children")
 }`
