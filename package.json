@@ -23,6 +23,7 @@
     "dgraph": "docker rm dgraphql; docker run -it -p 8080:8080 --name dgraphql dgraph/dgraph dgraph --bindall=true"
   },
   "dependencies": {
+    "codecov": "^2.2.0",
     "graphql": "^0.10.1",
     "graphql-relay": "^0.5.2",
     "graphql-tools": "^1.0.0",
@@ -34,7 +35,6 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-flow": "^6.23.0",
     "babel-preset-stage-0": "^6.24.1",
-    "coveralls": "^2.13.1",
     "express": "^4.15.3",
     "express-graphql": "^0.6.6",
     "flow-bin": "^0.46.0",
@@ -63,6 +63,9 @@
   },
   "jest": {
     "testRegex": "\\.test\\.js$",
-    "coveragePathIgnorePatterns": ["/node_modules/", "__tests__"]
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "__tests__"
+    ]
   }
 }

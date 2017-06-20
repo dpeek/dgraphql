@@ -15,4 +15,4 @@ before_install:
   - docker run -d -p 8080:8080 --name dgraph dgraph/dgraph dgraph --bindall=true
 
 after_success:
-  - ./bin/codecov -e TRAVIS_NODE_VERSION -f coverage/coverage-final.json
+  - ./node_modules/.bin/codecov
