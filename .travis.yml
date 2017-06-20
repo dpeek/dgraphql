@@ -15,4 +15,4 @@ before_install:
   - docker run -d -p 8080:8080 --name dgraph dgraph/dgraph dgraph --bindall=true
 
 after_success:
-  - if [[ "$TRAVIS_JOB_NUMBER" == *.1 ]]; then cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js; fi
+  - ./bin/codecov -e TRAVIS_NODE_VERSION -f coverage/coverage-final.json

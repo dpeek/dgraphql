@@ -5,7 +5,7 @@ Create a Relay compatible GraphQL server from a schema using [Dgraph](https://gi
 [![npm](https://img.shields.io/npm/v/dgraphql.svg)](https://www.npmjs.com/package/dgraphql)
 [![Documentation](https://img.shields.io/badge/support-docs-blue.svg)](http://dpeek.com/dgraphql/)
 [![Travis](https://img.shields.io/travis/dpeek/dgraphql.svg)](https://travis-ci.org/dpeek/dgraphql)
-[![Coveralls](https://img.shields.io/coveralls/dpeek/dgraphql.svg)](https://coveralls.io/github/dpeek/dgraphql)
+[![Codecov](https://img.shields.io/codecov/c/github/dpeek/dgraphql.svg)](https://codecov.io/gh/dpeek/dgraphql)
 
 Dgraph is a distributed, highly available graph database that uses a language
 similar to GraphQL to query and mutate data. Unlike GraphQL, Dgraph only defines
