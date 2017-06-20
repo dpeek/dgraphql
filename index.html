@@ -21,7 +21,7 @@
                   .ball-5 {
                     background-image: url(/dgraphql/docs/some-react-code/5.jpg);
                   }
-                </style></head><body><div id="react-mount"><div data-reactroot="" data-reactid="1" data-react-checksum="-1487687495"><div style="background:rgb(41,70,75);color:rgb(185,194,196);margin-bottom:2.25rem;" data-reactid="2"><div style="max-width:960px;margin-left:auto;margin-right:auto;padding-left:1.125rem;" data-reactid="3"><div style="padding:1.125rem 0;" data-reactid="4"><div style="float:left;margin-left:0%;margin-right:1.694915254237288%;width:32.20338983050847%;clear:none;height:24px;" data-reactid="5"><a style="text-decoration:none;color:rgb(185,194,196);font-size:1.59375rem;" href="/dgraphql/" data-reactid="6">DgraphQL</a><span style="display:block;clear:both;" data-reactid="7"> </span></div><div style="float:right;margin-left:0%;margin-right:0%;width:66.10169491525423%;clear:none;" data-reactid="8"><a style="float:right;color:rgb(185,194,196);text-decoration:none;margin-left:0.75rem;" href="https://github.com/dpeek/dgraphql" data-reactid="9">Github</a><a style="background:rgb(41,70,75);color:rgb(185,194,196);float:right;text-decoration:none;padding-left:0.75rem;padding-right:0.75rem;padding-bottom:1.125rem;margin-bottom:-1.5rem;padding-top:1.5rem;margin-top:-1.5rem;" href="/dgraphql/docs/" data-reactid="10">Documentation</a><span style="display:block;clear:both;" data-reactid="11"> </span></div><span style="display:block;clear:both;" data-reactid="12"> </span></div><span style="display:block;clear:both;" data-reactid="13"> </span></div></div><div style="max-width:960px;margin-left:auto;margin-right:auto;padding:1.5rem 1.125rem;padding-top:0;" data-reactid="14"><div class="markdown" data-reactid="15"><h1 data-reactid="16">DgraphQL: Build a GraphQL service from a schema</h1><div data-reactid="17"><p><a href="https://www.npmjs.com/package/dgraphql"><img src="https://img.shields.io/npm/v/dgraphql.svg" alt="npm"></a>
+                </style></head><body><div id="react-mount"><div data-reactroot="" data-reactid="1" data-react-checksum="-1888733712"><div style="background:rgb(41,70,75);color:rgb(185,194,196);margin-bottom:2.25rem;" data-reactid="2"><div style="max-width:960px;margin-left:auto;margin-right:auto;padding-left:1.125rem;" data-reactid="3"><div style="padding:1.125rem 0;" data-reactid="4"><div style="float:left;margin-left:0%;margin-right:1.694915254237288%;width:32.20338983050847%;clear:none;height:24px;" data-reactid="5"><a style="text-decoration:none;color:rgb(185,194,196);font-size:1.59375rem;" href="/dgraphql/" data-reactid="6">DgraphQL</a><span style="display:block;clear:both;" data-reactid="7"> </span></div><div style="float:right;margin-left:0%;margin-right:0%;width:66.10169491525423%;clear:none;" data-reactid="8"><a style="float:right;color:rgb(185,194,196);text-decoration:none;margin-left:0.75rem;" href="https://github.com/dpeek/dgraphql" data-reactid="9">Github</a><a style="background:rgb(41,70,75);color:rgb(185,194,196);float:right;text-decoration:none;padding-left:0.75rem;padding-right:0.75rem;padding-bottom:1.125rem;margin-bottom:-1.5rem;padding-top:1.5rem;margin-top:-1.5rem;" href="/dgraphql/docs/" data-reactid="10">Documentation</a><span style="display:block;clear:both;" data-reactid="11"> </span></div><span style="display:block;clear:both;" data-reactid="12"> </span></div><span style="display:block;clear:both;" data-reactid="13"> </span></div></div><div style="max-width:960px;margin-left:auto;margin-right:auto;padding:1.5rem 1.125rem;padding-top:0;" data-reactid="14"><div class="markdown" data-reactid="15"><h1 data-reactid="16">DgraphQL: Build a GraphQL service from a schema</h1><div data-reactid="17"><p><a href="https://www.npmjs.com/package/dgraphql"><img src="https://img.shields.io/npm/v/dgraphql.svg" alt="npm"></a>
 <a href="http://dpeek.com/dgraphql/"><img src="https://img.shields.io/badge/support-docs-blue.svg" alt="Documentation"></a>
 <a href="https://travis-ci.org/dpeek/dgraphql"><img src="https://img.shields.io/travis/dpeek/dgraphql.svg" alt="Travis"></a>
 <a href="https://codecov.io/gh/dpeek/dgraphql"><img src="https://img.shields.io/codecov/c/github/dpeek/dgraphql.svg" alt="Codecov"></a></p>
@@ -67,13 +67,9 @@ or (much better) run it in Docker:</p>
 </code></pre>
 <p>The entry point to the library is <code>buildSchema</code></p>
 <pre><code class="language-javascript"><span class="hljs-keyword">import</span> { graphql } <span class="hljs-keyword">from</span> <span class="hljs-string">'graphql'</span>
-<span class="hljs-keyword">import</span> { buildSchema } <span class="hljs-keyword">from</span> <span class="hljs-string">'dgraphql'</span>
+<span class="hljs-keyword">import</span> { Client } <span class="hljs-keyword">from</span> <span class="hljs-string">'dgraphql'</span>
 
-<span class="hljs-keyword">const</span> config = {
-  <span class="hljs-attr">server</span>: <span class="hljs-string">'http://localhost:8080/query'</span>
-}
-
-<span class="hljs-keyword">const</span> source = <span class="hljs-string">`
+<span class="hljs-keyword">const</span> schema = <span class="hljs-string">`
 type Person {
   id: ID!
   name: String @filter(types: [EQUALITY])
@@ -81,19 +77,28 @@ type Person {
   parents: [Person!]! @reverse(name: "children")
 }`</span>
 
-<span class="hljs-keyword">const</span> schema = buildSchema(source, config)
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> Client({
+  <span class="hljs-attr">server</span>: <span class="hljs-string">'http://localhost:8080/query'</span>,
+  <span class="hljs-attr">schema</span>: schema,
+  <span class="hljs-attr">debug</span>: <span class="hljs-literal">false</span>
+})
 
 <span class="hljs-keyword">const</span> mutation = <span class="hljs-string">`
 mutation {
   createPerson(input: { name: "David" }) {
     person {
       id
+      name
     }
   }
 }`</span>
 
-graphql(schema, mutation).then(<span class="hljs-function"><span class="hljs-params">result</span> =&gt;</span> {
-  <span class="hljs-built_in">console</span>.log(result);
+graphql({
+  <span class="hljs-attr">schema</span>: client.schema,
+  <span class="hljs-attr">source</span>: mutation,
+  <span class="hljs-attr">contextValue</span>: client.getContext()
+}).then(<span class="hljs-function"><span class="hljs-params">result</span> =&gt;</span> {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(result, <span class="hljs-literal">null</span>, <span class="hljs-string">'  '</span>))
 })
 </code></pre>
-</div></div><span style="display:block;clear:both;" data-reactid="18"> </span></div></div></div><script src="/dgraphql/bundle.js?t=1497966013434"></script></body></html>
+</div></div><span style="display:block;clear:both;" data-reactid="18"> </span></div></div></div><script src="/dgraphql/bundle.js?t=1497966903756"></script></body></html>
