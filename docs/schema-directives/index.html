@@ -21,51 +21,53 @@
                   .ball-5 {
                     background-image: url(/dgraphql/docs/some-react-code/5.jpg);
                   }
-                </style></head><body><div id="react-mount"><div data-reactroot="" data-reactid="1" data-react-checksum="1837833902"><div style="background:rgb(41,70,75);color:rgb(185,194,196);margin-bottom:2.25rem;" data-reactid="2"><div style="max-width:960px;margin-left:auto;margin-right:auto;padding-left:1.125rem;" data-reactid="3"><div style="padding:1.125rem 0;" data-reactid="4"><div style="float:left;margin-left:0%;margin-right:1.694915254237288%;width:32.20338983050847%;clear:none;height:24px;" data-reactid="5"><a style="text-decoration:none;color:rgb(185,194,196);font-size:1.59375rem;" href="/dgraphql/" data-reactid="6">DgraphQL</a><span style="display:block;clear:both;" data-reactid="7"> </span></div><div style="float:right;margin-left:0%;margin-right:0%;width:66.10169491525423%;clear:none;" data-reactid="8"><a style="float:right;color:rgb(185,194,196);text-decoration:none;margin-left:0.75rem;" href="https://github.com/dpeek/dgraphql" data-reactid="9">Github</a><a style="background:rgb(18,48,52);color:rgb(174,184,186);float:right;text-decoration:none;padding-left:0.75rem;padding-right:0.75rem;padding-bottom:1.125rem;margin-bottom:-1.5rem;padding-top:1.5rem;margin-top:-1.5rem;" href="/dgraphql/docs/" data-reactid="10">Documentation</a><span style="display:block;clear:both;" data-reactid="11"> </span></div><span style="display:block;clear:both;" data-reactid="12"> </span></div><span style="display:block;clear:both;" data-reactid="13"> </span></div></div><div style="max-width:960px;margin-left:auto;margin-right:auto;padding:1.5rem 1.125rem;padding-top:0;" data-reactid="14"><div data-reactid="15"><div class="breakpoint-min-width-700" data-reactid="16"><div style="overflow-y:auto;padding-right:calc(0.75rem - 1px);position:absolute;width:calc(12rem - 1px);border-right:1px solid lightgrey;" data-reactid="17"><ul style="list-style:none;margin-left:0;margin-top:0.75rem;" data-reactid="18"><li style="margin-bottom:0.75rem;" data-reactid="19"><a style="text-decoration:none;" href="/dgraphql/docs/" data-reactid="20">Introduction</a></li><li style="margin-bottom:0.75rem;" data-reactid="21"><a style="text-decoration:none;" href="/dgraphql/docs/getting-started/" data-reactid="22">Getting Started</a></li><li style="margin-bottom:0.75rem;" data-reactid="23"><a style="text-decoration:none;" href="/dgraphql/docs/schema-directives/" data-reactid="24"><strong data-reactid="25">Schema Directives</strong></a></li><li style="margin-bottom:0.75rem;" data-reactid="26"><a style="text-decoration:none;" href="/dgraphql/docs/querying-types/" data-reactid="27">Querying Types</a></li><li style="margin-bottom:0.75rem;" data-reactid="28"><a style="text-decoration:none;" href="/dgraphql/docs/mutating-types/" data-reactid="29">Mutating Types</a></li><li style="margin-bottom:0.75rem;" data-reactid="30"><a style="text-decoration:none;" href="/dgraphql/docs/mutating-edges/" data-reactid="31">Mutating Edges</a></li><li style="margin-bottom:0.75rem;" data-reactid="32"><a style="text-decoration:none;" href="/dgraphql/docs/relay-mode/" data-reactid="33">Relay Mode</a></li></ul></div><div style="padding:0 1.5rem;padding-left:calc(12rem + 1.5rem);" data-reactid="34"><div class="markdown" data-reactid="35"><h1 data-reactid="36">Schema Directives</h1><div data-reactid="37"><h2>Directives</h2>
-<p>DgraphQL supports a number of custom GraphQL directives for customizing the
-configuration of both Dgraph and the generated schema.</p>
-<h2>Indexing Properties</h2>
-<p>Dgraph requires properties used in filter and order operations to be indexed.
-The <code>@index</code> directive automatically creates indexes for the specified property
-when the DgraphQL client first connects to the database.</p>
-<p>String property types support a number of indexes:</p>
-<pre><code>type TypeName {
-  # Allows `name_eq`
-  name: String @<span class="hljs-keyword">index</span>(<span class="hljs-built_in">type</span>: <span class="hljs-string">"exact"</span>)
-  # Allows <span class="hljs-symbol">`type_eq`</span>, smaller memory footprint that <span class="hljs-symbol">`exact`</span>
-  <span class="hljs-built_in">type</span>: <span class="hljs-keyword">String</span> @<span class="hljs-keyword">index</span>(<span class="hljs-built_in">type</span>: <span class="hljs-string">"hash"</span>)
-  # Allows <span class="hljs-symbol">`tags_anyofterms`</span> <span class="hljs-keyword">and</span> <span class="hljs-symbol">`tags_allofterms`</span>
-  tags: <span class="hljs-keyword">String</span> @<span class="hljs-keyword">index</span>(<span class="hljs-built_in">type</span>: <span class="hljs-string">"term"</span>)
-  # Allows <span class="hljs-symbol">`content_anyofterms`</span> <span class="hljs-keyword">and</span> <span class="hljs-symbol">`content_allofterms`</span> <span class="hljs-keyword">with</span> <span class="hljs-keyword">with</span> language
-  # specific stemming <span class="hljs-keyword">and</span> stopwords
-  content: <span class="hljs-keyword">String</span> @<span class="hljs-keyword">index</span>(<span class="hljs-built_in">type</span>: <span class="hljs-string">"fulltext"</span>)
-}
-</code></pre>
-<p>You can also create multiple indexes for a single property:</p>
-<pre><code><span class="hljs-selector-tag">type</span> <span class="hljs-selector-tag">TypeName</span> {
-  <span class="hljs-attribute">name</span>: String <span class="hljs-variable">@index</span>(<span class="hljs-attribute">type</span>: <span class="hljs-string">"exact"</span>) <span class="hljs-variable">@index</span>(<span class="hljs-attribute">type</span>: <span class="hljs-string">"term"</span>)
-}
-</code></pre>
-<p>Each property type has an equivalent index:</p>
+                </style></head><body><div id="react-mount"><div data-reactroot="" data-reactid="1" data-react-checksum="1179318725"><div style="background:rgb(41,70,75);color:rgb(185,194,196);margin-bottom:2.25rem;" data-reactid="2"><div style="max-width:960px;margin-left:auto;margin-right:auto;padding-left:1.125rem;" data-reactid="3"><div style="padding:1.125rem 0;" data-reactid="4"><div style="float:left;margin-left:0%;margin-right:1.694915254237288%;width:32.20338983050847%;clear:none;height:24px;" data-reactid="5"><a style="text-decoration:none;color:rgb(185,194,196);font-size:1.59375rem;" href="/dgraphql/" data-reactid="6">DgraphQL</a><span style="display:block;clear:both;" data-reactid="7"> </span></div><div style="float:right;margin-left:0%;margin-right:0%;width:66.10169491525423%;clear:none;" data-reactid="8"><a style="float:right;color:rgb(185,194,196);text-decoration:none;margin-left:0.75rem;" href="https://github.com/dpeek/dgraphql" data-reactid="9">Github</a><a style="background:rgb(18,48,52);color:rgb(174,184,186);float:right;text-decoration:none;padding-left:0.75rem;padding-right:0.75rem;padding-bottom:1.125rem;margin-bottom:-1.5rem;padding-top:1.5rem;margin-top:-1.5rem;" href="/dgraphql/docs/" data-reactid="10">Documentation</a><span style="display:block;clear:both;" data-reactid="11"> </span></div><span style="display:block;clear:both;" data-reactid="12"> </span></div><span style="display:block;clear:both;" data-reactid="13"> </span></div></div><div style="max-width:960px;margin-left:auto;margin-right:auto;padding:1.5rem 1.125rem;padding-top:0;" data-reactid="14"><div data-reactid="15"><div class="breakpoint-min-width-700" data-reactid="16"><div style="overflow-y:auto;padding-right:calc(0.75rem - 1px);position:absolute;width:calc(12rem - 1px);border-right:1px solid lightgrey;" data-reactid="17"><ul style="list-style:none;margin-left:0;margin-top:0.75rem;" data-reactid="18"><li style="margin-bottom:0.75rem;" data-reactid="19"><a style="text-decoration:none;" href="/dgraphql/docs/" data-reactid="20">Introduction</a></li><li style="margin-bottom:0.75rem;" data-reactid="21"><a style="text-decoration:none;" href="/dgraphql/docs/getting-started/" data-reactid="22">Getting Started</a></li><li style="margin-bottom:0.75rem;" data-reactid="23"><a style="text-decoration:none;" href="/dgraphql/docs/schema-directives/" data-reactid="24"><strong data-reactid="25">Schema Directives</strong></a></li><li style="margin-bottom:0.75rem;" data-reactid="26"><a style="text-decoration:none;" href="/dgraphql/docs/querying-types/" data-reactid="27">Querying Types</a></li><li style="margin-bottom:0.75rem;" data-reactid="28"><a style="text-decoration:none;" href="/dgraphql/docs/mutating-types/" data-reactid="29">Mutating Types</a></li><li style="margin-bottom:0.75rem;" data-reactid="30"><a style="text-decoration:none;" href="/dgraphql/docs/mutating-edges/" data-reactid="31">Mutating Edges</a></li><li style="margin-bottom:0.75rem;" data-reactid="32"><a style="text-decoration:none;" href="/dgraphql/docs/relay-mode/" data-reactid="33">Relay Mode</a></li></ul></div><div style="padding:0 1.5rem;padding-left:calc(12rem + 1.5rem);" data-reactid="34"><div class="markdown" data-reactid="35"><h1 data-reactid="36">Schema Directives</h1><div data-reactid="37"><h2>Directives</h2>
+<p>DgraphQL supports a number of GraphQL directives for configuring Dgraph and the
+generated schema.</p>
+<h2>Filter Operations</h2>
+<p>The <code>@filter</code> directive controls the filter operations available on a field.
+There are currently two filter types: <code>EQUALITY</code> and <code>TERM</code>. The <code>@filter</code>
+directive accepts an array of <code>types</code>.</p>
+<p>The <code>EQUALITY</code> filter type adds filters for the following types:</p>
 <ul>
-<li>Int: <code>@index(type: &quot;int&quot;)</code></li>
-<li>Float: <code>@index(type: &quot;int&quot;)</code></li>
-<li>Boolean: <code>@index(type: &quot;bool&quot;)</code></li>
+<li>String, Boolean, Enum: <code>field_eq</code></li>
+<li>Float, Int: <code>_eq</code>, <code>_lt</code>, <code>_le</code>, <code>_gt</code>, <code>_ge</code></li>
 </ul>
-<p>Note that, as Dgraph property schema as universal (ie. a property can only have
-one type and index configuration applied to it), applying an index to one
-property is equivalent to applying it to all properties of the same name.</p>
-<p>As the available indexes on a property effectively dictate the kinds of query
-that can be performed against it, a future improvement would be specifying the
-queries allowed on the property and inferring the indexes to create from that.</p>
-<p>Dgraph also supports <code>trigram</code>, <code>geo</code>, <code>date</code> and <code>datetime</code> indexes. These
-indexes can be created by are not currently exposed by the generated schema or
-available types.</p>
-<p>For more information on the available indexes see the <a href="https://docs.dgraph.io/v0.7.7/query-language/#indexing">Dgraph documentation</a></p>
+<p>The <code>TERM</code> filter is only supported on <code>String</code> fields, and adds
+<code>_anyofterms</code> and <code>_allofterms</code> filters.</p>
+<p>Example:</p>
+<pre><code><span class="hljs-keyword">type</span> <span class="hljs-type">TypeName</span> {
+  # name_eq, name_anyofterms, name_allofterms
+  name: <span class="hljs-type">String</span> @filter(types: [<span class="hljs-type">EQUALITY</span>, <span class="hljs-type">TERM</span>])
+  # active_eq
+  active: <span class="hljs-type">Boolean</span> @filter(types: [<span class="hljs-type">EQUALITY</span>])
+  # height_eq, height_lt, height_le, height_gt, height_ge
+  height: <span class="hljs-type">Float</span> @filter(types: [<span class="hljs-type">EQUALITY</span>])
+}
+</code></pre>
+<h2>Order Operations</h2>
+<p>The <code>@order</code> directive controls whether a type can be ordered by a field. Order
+operations are only supported on <code>String</code>, <code>Int</code> and <code>Float</code> fields.</p>
+<p>Example:</p>
+<pre><code><span class="hljs-keyword">type</span> TypeName {
+  <span class="hljs-comment"># order: name_asc, order: name_desc</span>
+  name: <span class="hljs-keyword">String</span> @<span class="hljs-keyword">order</span>
+<span class="hljs-title">}
+</span></code></pre>
+<h2>Dgraph Indexes</h2>
+<p>Dgraph requires predicates used in filter and order operations to be indexed.
+The <code>@filter</code> and <code>@order</code> directives create the required indexes for each
+predicate when the DgraphQL client first connects to the database.</p>
+<p>Note that, as Dgraph predicate schema are universal (ie. a property can only
+have one type and index configuration applied to it), applying an index to one
+property is equivalent to applying it to all properties of the same name.
+DgrapQL will limit the operations in the generated schema even where the
+underlying indexes might support them.</p>
+<p>For more information on indexes see the <a href="https://docs.dgraph.io/v0.7.7/query-language/#indexing">Dgraph documentation</a></p>
 <h2>Localizing Properties</h2>
-<p>Properties in Dgraph can have multiple, <a href="https://docs.dgraph.io/v0.7.7/query-language/#language">localized values</a>. Marking a
-property as localized will store values under the current <code>language</code> of the
-GraphQL-JS execution context. You can see an demo of this in <a href="https://github.com/dpeek/dgraphql/blob/master/example/index.js#L25">the example</a>.</p>
+<p>Properties in Dgraph can have multiple, <a href="https://docs.dgraph.io/v0.7.7/query-language/#language">localized values</a>.
+Marking a property as localized will store values under the current <code>language</code>
+of the GraphQL-JS execution context. You can see an demo of this in <a href="https://github.com/dpeek/dgraphql/blob/master/example/index.js#L25">the example</a>.</p>
 <pre><code><span class="hljs-keyword">type</span> TypeName {
   <span class="hljs-comment"># Mutations and queries will use the `language` of the graphql-js context</span>
   name: <span class="hljs-keyword">String</span> @localize
@@ -85,50 +87,52 @@ partner relationship.</p>
 }
 </code></pre>
 </div></div></div></div><div class="breakpoint-max-width-700" data-reactid="38"><strong data-reactid="39">Topics:</strong><!-- react-text: 40 --> <!-- /react-text --><select data-reactid="41"><option value="/dgraphql/docs/" data-reactid="42">Introduction</option><option value="/dgraphql/docs/getting-started/" data-reactid="43">Getting Started</option><option selected="" value="/dgraphql/docs/schema-directives/" data-reactid="44">Schema Directives</option><option value="/dgraphql/docs/querying-types/" data-reactid="45">Querying Types</option><option value="/dgraphql/docs/mutating-types/" data-reactid="46">Mutating Types</option><option value="/dgraphql/docs/mutating-edges/" data-reactid="47">Mutating Edges</option><option value="/dgraphql/docs/relay-mode/" data-reactid="48">Relay Mode</option></select><br data-reactid="49"/><br data-reactid="50"/><div class="markdown" data-reactid="51"><h1 data-reactid="52">Schema Directives</h1><div data-reactid="53"><h2>Directives</h2>
-<p>DgraphQL supports a number of custom GraphQL directives for customizing the
-configuration of both Dgraph and the generated schema.</p>
-<h2>Indexing Properties</h2>
-<p>Dgraph requires properties used in filter and order operations to be indexed.
-The <code>@index</code> directive automatically creates indexes for the specified property
-when the DgraphQL client first connects to the database.</p>
-<p>String property types support a number of indexes:</p>
-<pre><code>type TypeName {
-  # Allows `name_eq`
-  name: String @<span class="hljs-keyword">index</span>(<span class="hljs-built_in">type</span>: <span class="hljs-string">"exact"</span>)
-  # Allows <span class="hljs-symbol">`type_eq`</span>, smaller memory footprint that <span class="hljs-symbol">`exact`</span>
-  <span class="hljs-built_in">type</span>: <span class="hljs-keyword">String</span> @<span class="hljs-keyword">index</span>(<span class="hljs-built_in">type</span>: <span class="hljs-string">"hash"</span>)
-  # Allows <span class="hljs-symbol">`tags_anyofterms`</span> <span class="hljs-keyword">and</span> <span class="hljs-symbol">`tags_allofterms`</span>
-  tags: <span class="hljs-keyword">String</span> @<span class="hljs-keyword">index</span>(<span class="hljs-built_in">type</span>: <span class="hljs-string">"term"</span>)
-  # Allows <span class="hljs-symbol">`content_anyofterms`</span> <span class="hljs-keyword">and</span> <span class="hljs-symbol">`content_allofterms`</span> <span class="hljs-keyword">with</span> <span class="hljs-keyword">with</span> language
-  # specific stemming <span class="hljs-keyword">and</span> stopwords
-  content: <span class="hljs-keyword">String</span> @<span class="hljs-keyword">index</span>(<span class="hljs-built_in">type</span>: <span class="hljs-string">"fulltext"</span>)
-}
-</code></pre>
-<p>You can also create multiple indexes for a single property:</p>
-<pre><code><span class="hljs-selector-tag">type</span> <span class="hljs-selector-tag">TypeName</span> {
-  <span class="hljs-attribute">name</span>: String <span class="hljs-variable">@index</span>(<span class="hljs-attribute">type</span>: <span class="hljs-string">"exact"</span>) <span class="hljs-variable">@index</span>(<span class="hljs-attribute">type</span>: <span class="hljs-string">"term"</span>)
-}
-</code></pre>
-<p>Each property type has an equivalent index:</p>
+<p>DgraphQL supports a number of GraphQL directives for configuring Dgraph and the
+generated schema.</p>
+<h2>Filter Operations</h2>
+<p>The <code>@filter</code> directive controls the filter operations available on a field.
+There are currently two filter types: <code>EQUALITY</code> and <code>TERM</code>. The <code>@filter</code>
+directive accepts an array of <code>types</code>.</p>
+<p>The <code>EQUALITY</code> filter type adds filters for the following types:</p>
 <ul>
-<li>Int: <code>@index(type: &quot;int&quot;)</code></li>
-<li>Float: <code>@index(type: &quot;int&quot;)</code></li>
-<li>Boolean: <code>@index(type: &quot;bool&quot;)</code></li>
+<li>String, Boolean, Enum: <code>field_eq</code></li>
+<li>Float, Int: <code>_eq</code>, <code>_lt</code>, <code>_le</code>, <code>_gt</code>, <code>_ge</code></li>
 </ul>
-<p>Note that, as Dgraph property schema as universal (ie. a property can only have
-one type and index configuration applied to it), applying an index to one
-property is equivalent to applying it to all properties of the same name.</p>
-<p>As the available indexes on a property effectively dictate the kinds of query
-that can be performed against it, a future improvement would be specifying the
-queries allowed on the property and inferring the indexes to create from that.</p>
-<p>Dgraph also supports <code>trigram</code>, <code>geo</code>, <code>date</code> and <code>datetime</code> indexes. These
-indexes can be created by are not currently exposed by the generated schema or
-available types.</p>
-<p>For more information on the available indexes see the <a href="https://docs.dgraph.io/v0.7.7/query-language/#indexing">Dgraph documentation</a></p>
+<p>The <code>TERM</code> filter is only supported on <code>String</code> fields, and adds
+<code>_anyofterms</code> and <code>_allofterms</code> filters.</p>
+<p>Example:</p>
+<pre><code><span class="hljs-keyword">type</span> <span class="hljs-type">TypeName</span> {
+  # name_eq, name_anyofterms, name_allofterms
+  name: <span class="hljs-type">String</span> @filter(types: [<span class="hljs-type">EQUALITY</span>, <span class="hljs-type">TERM</span>])
+  # active_eq
+  active: <span class="hljs-type">Boolean</span> @filter(types: [<span class="hljs-type">EQUALITY</span>])
+  # height_eq, height_lt, height_le, height_gt, height_ge
+  height: <span class="hljs-type">Float</span> @filter(types: [<span class="hljs-type">EQUALITY</span>])
+}
+</code></pre>
+<h2>Order Operations</h2>
+<p>The <code>@order</code> directive controls whether a type can be ordered by a field. Order
+operations are only supported on <code>String</code>, <code>Int</code> and <code>Float</code> fields.</p>
+<p>Example:</p>
+<pre><code><span class="hljs-keyword">type</span> TypeName {
+  <span class="hljs-comment"># order: name_asc, order: name_desc</span>
+  name: <span class="hljs-keyword">String</span> @<span class="hljs-keyword">order</span>
+<span class="hljs-title">}
+</span></code></pre>
+<h2>Dgraph Indexes</h2>
+<p>Dgraph requires predicates used in filter and order operations to be indexed.
+The <code>@filter</code> and <code>@order</code> directives create the required indexes for each
+predicate when the DgraphQL client first connects to the database.</p>
+<p>Note that, as Dgraph predicate schema are universal (ie. a property can only
+have one type and index configuration applied to it), applying an index to one
+property is equivalent to applying it to all properties of the same name.
+DgrapQL will limit the operations in the generated schema even where the
+underlying indexes might support them.</p>
+<p>For more information on indexes see the <a href="https://docs.dgraph.io/v0.7.7/query-language/#indexing">Dgraph documentation</a></p>
 <h2>Localizing Properties</h2>
-<p>Properties in Dgraph can have multiple, <a href="https://docs.dgraph.io/v0.7.7/query-language/#language">localized values</a>. Marking a
-property as localized will store values under the current <code>language</code> of the
-GraphQL-JS execution context. You can see an demo of this in <a href="https://github.com/dpeek/dgraphql/blob/master/example/index.js#L25">the example</a>.</p>
+<p>Properties in Dgraph can have multiple, <a href="https://docs.dgraph.io/v0.7.7/query-language/#language">localized values</a>.
+Marking a property as localized will store values under the current <code>language</code>
+of the GraphQL-JS execution context. You can see an demo of this in <a href="https://github.com/dpeek/dgraphql/blob/master/example/index.js#L25">the example</a>.</p>
 <pre><code><span class="hljs-keyword">type</span> TypeName {
   <span class="hljs-comment"># Mutations and queries will use the `language` of the graphql-js context</span>
   name: <span class="hljs-keyword">String</span> @localize
@@ -147,4 +151,4 @@ partner relationship.</p>
   staff: [<span class="hljs-type">Person</span>!]! @reverse(name: "manager")
 }
 </code></pre>
-</div></div></div></div><span style="display:block;clear:both;" data-reactid="54"> </span></div></div></div><script src="/dgraphql/bundle.js?t=1497302675775"></script></body></html>
+</div></div></div></div><span style="display:block;clear:both;" data-reactid="54"> </span></div></div></div><script src="/dgraphql/bundle.js?t=1497962389476"></script></body></html>
