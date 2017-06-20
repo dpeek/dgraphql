@@ -26,7 +26,6 @@ export function payloadQuery (
     'Selection not found'
   )
   const payload = mutation.selectionSet.selections[0]
-  console.log(payload)
   invariant(
     !!payload && payload.kind === 'Field' && payload.selectionSet,
     'Selection not found'

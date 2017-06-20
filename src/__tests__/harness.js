@@ -34,7 +34,7 @@ export async function init (relay?: boolean = false) {
       if (typeof value === 'object') walk(value)
     })
   }
-  console.log(result)
+
   if (result.data) walk(result.data)
   else throw new Error(result.errors)
 
