@@ -71,7 +71,9 @@ export default function buildSchema (
     if (!(type instanceof GraphQLObjectType)) return
 
     type = transformType(client, type, mutations)
-    type._interfaces.push(nodeInterface)
+    if (client.relay) {
+      type._interfaces.push(nodeInterface)
+    }
 
     let singular = lowerCamelCase(name)
     queries[singular] = getQueryField(type)
@@ -79,7 +81,9 @@ export default function buildSchema (
 
     Object.assign(mutations, getTypeMutations(client, type))
 
-    queries['node'] = nodeField
+    if (client.relay) {
+      queries['node'] = nodeField
+    }
   })
   return new GraphQLSchema({
     query: new GraphQLObjectType({
