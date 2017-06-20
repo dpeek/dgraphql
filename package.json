@@ -62,6 +62,7 @@
     }
   },
   "jest": {
-    "testRegex": "\\.test\\.js$"
+    "testRegex": "\\.test\\.js$",
+    "coveragePathIgnorePatterns": ["/node_modules/", "__tests__"]
   }
 }

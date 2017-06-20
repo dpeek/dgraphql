@@ -4,64 +4,69 @@ title: Schema Directives
 
 ## Directives
 
-DgraphQL supports a number of custom GraphQL directives for customizing the
-configuration of both Dgraph and the generated schema.
+DgraphQL supports a number of GraphQL directives for configuring Dgraph and the
+generated schema.
 
-## Indexing Properties
+## Filter Operations
 
-Dgraph requires properties used in filter and order operations to be indexed.
-The `@index` directive automatically creates indexes for the specified property
-when the DgraphQL client first connects to the database.
+The `@filter` directive controls the filter operations available on a field.
+There are currently two filter types: `EQUALITY` and `TERM`. The `@filter`
+directive accepts an array of `types`.
 
-String property types support a number of indexes:
+The `EQUALITY` filter type adds filters for the following types:
 
-```
-type TypeName {
-  # Allows `name_eq`
-  name: String @index(type: "exact")
-  # Allows `type_eq`, smaller memory footprint that `exact`
-  type: String @index(type: "hash")
-  # Allows `tags_anyofterms` and `tags_allofterms`
-  tags: String @index(type: "term")
-  # Allows `content_anyofterms` and `content_allofterms` with with language
-  # specific stemming and stopwords
-  content: String @index(type: "fulltext")
-}
-```
+- String, Boolean, Enum: `field_eq`
+- Float, Int: `_eq`, `_lt`, `_le`, `_gt`, `_ge`
 
-You can also create multiple indexes for a single property:
+The `TERM` filter is only supported on `String` fields, and adds
+`_anyofterms` and `_allofterms` filters.
+
+Example:
 
 ```
 type TypeName {
-  name: String @index(type: "exact") @index(type: "term")
+  # name_eq, name_anyofterms, name_allofterms
+  name: String @filter(types: [EQUALITY, TERM])
+  # active_eq
+  active: Boolean @filter(types: [EQUALITY])
+  # height_eq, height_lt, height_le, height_gt, height_ge
+  height: Float @filter(types: [EQUALITY])
 }
 ```
 
-Each property type has an equivalent index:
+## Order Operations
 
-- Int: `@index(type: "int")`
-- Float: `@index(type: "int")`
-- Boolean: `@index(type: "bool")`
+The `@order` directive controls whether a type can be ordered by a field. Order
+operations are only supported on `String`, `Int` and `Float` fields.
 
-Note that, as Dgraph property schema as universal (ie. a property can only have
-one type and index configuration applied to it), applying an index to one
+Example:
+
+```
+type TypeName {
+  # order: name_asc, order: name_desc
+  name: String @order
+}
+```
+
+## Dgraph Indexes
+
+Dgraph requires predicates used in filter and order operations to be indexed.
+The `@filter` and `@order` directives create the required indexes for each
+predicate when the DgraphQL client first connects to the database.
+
+Note that, as Dgraph predicate schema are universal (ie. a property can only
+have one type and index configuration applied to it), applying an index to one
 property is equivalent to applying it to all properties of the same name.
+DgrapQL will limit the operations in the generated schema even where the
+underlying indexes might support them.
 
-As the available indexes on a property effectively dictate the kinds of query
-that can be performed against it, a future improvement would be specifying the
-queries allowed on the property and inferring the indexes to create from that.
-
-Dgraph also supports `trigram`, `geo`, `date` and `datetime` indexes. These
-indexes can be created by are not currently exposed by the generated schema or
-available types.
-
-For more information on the available indexes see the [Dgraph documentation](https://docs.dgraph.io/v0.7.7/query-language/#indexing)
+For more information on indexes see the [Dgraph documentation](https://docs.dgraph.io/v0.7.7/query-language/#indexing)
 
 ## Localizing Properties
 
-Properties in Dgraph can have multiple, [localized values](https://docs.dgraph.io/v0.7.7/query-language/#language). Marking a
-property as localized will store values under the current `language` of the
-GraphQL-JS execution context. You can see an demo of this in [the example](https://github.com/dpeek/dgraphql/blob/master/example/index.js#L25).
+Properties in Dgraph can have multiple, [localized values](https://docs.dgraph.io/v0.7.7/query-language/#language).
+Marking a property as localized will store values under the current `language`
+of the GraphQL-JS execution context. You can see an demo of this in [the example](https://github.com/dpeek/dgraphql/blob/master/example/index.js#L25).
 
 ```
 type TypeName {

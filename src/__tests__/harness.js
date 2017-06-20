@@ -14,7 +14,7 @@ export async function init (relay?: boolean = false) {
   const sourcePath = path.resolve(__dirname, 'source.graphql')
   const source = fs.readFileSync(sourcePath).toString()
 
-  const time = String(new Date().getTime() - 1495660000000)
+  const time = Math.round(Math.random() * 1000000000)
   let commonVariables = { time }
 
   // can't use the same client as some tests are in relay mode, the query is not

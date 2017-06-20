@@ -15,6 +15,7 @@ import resolve from '../resolve'
 
 import type { GraphQLFieldConfig } from 'graphql'
 import type { Context } from '../context'
+import type { Client } from '../client'
 
 const pageInfoType = new GraphQLObjectType({
   name: 'PageInfo',
@@ -58,7 +59,10 @@ function getEdgeType (type: GraphQLObjectType): GraphQLObjectType {
 
 const connectionTypes: Map<string, GraphQLObjectType> = new Map()
 
-function getConnectionType (type: GraphQLObjectType): GraphQLObjectType {
+function getConnectionType (
+  client: Client,
+  type: GraphQLObjectType
+): GraphQLObjectType {
   const name = `${type.name}Connection`
   let connectionType = connectionTypes.get(name)
   if (!connectionType) {
@@ -87,12 +91,13 @@ function getConnectionType (type: GraphQLObjectType): GraphQLObjectType {
 }
 
 function getConnectionField (
+  client: Client,
   type: GraphQLObjectType
 ): GraphQLFieldConfig<{}, Context> {
-  const filterType = getFilterType(type)
-  const orderType = getOrderType(type)
+  const filterType = getFilterType(client, type)
+  const orderType = getOrderType(client, type)
   return {
-    type: getConnectionType(type),
+    type: getConnectionType(client, type),
     description: `Query ${type.name} nodes`,
     args: {
       first: {
@@ -136,10 +141,11 @@ function getConnectionField (
 }
 
 function getListQueryField (
+  client: Client,
   type: GraphQLObjectType
 ): GraphQLFieldConfig<{}, Context> {
-  const filterType = getFilterType(type)
-  const orderType = getOrderType(type)
+  const filterType = getFilterType(client, type)
+  const orderType = getOrderType(client, type)
   return {
     type: new GraphQLList(type),
     description: `Query ${type.name} nodes`,
@@ -159,6 +165,8 @@ function getListQueryField (
   }
 }
 
-export default function getListField (type: GraphQLObjectType, relay: boolean) {
-  return relay ? getConnectionField(type) : getListQueryField(type)
+export default function getListField (client: Client, type: GraphQLObjectType) {
+  return client.relay
+    ? getConnectionField(client, type)
+    : getListQueryField(client, type)
 }

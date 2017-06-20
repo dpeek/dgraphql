@@ -1,8 +1,10 @@
 // @flow
 
-import { GraphQLObjectType, GraphQLEnumType, GraphQLScalarType } from 'graphql'
+import { GraphQLObjectType, GraphQLEnumType } from 'graphql'
 
-import { getFields, unwrap } from '../utils'
+import { getFields } from '../utils'
+
+import type { Client } from '../client'
 
 const orderTypes: Map<string, ?GraphQLEnumType> = new Map()
 
@@ -12,15 +14,15 @@ export const orders = [
 ]
 
 export default function getOrderType (
+  client: Client,
   type: GraphQLObjectType
 ): ?GraphQLEnumType {
   const name = `${type.name}Order`
   let orderType = orderTypes.get(name)
   if (!orderType) {
-    const fields = getFields(type).filter(
-      field =>
-        unwrap(field.type) instanceof GraphQLScalarType && field.name !== 'id'
-    )
+    const fields = getFields(type).filter(field => {
+      return client.getOrder(type.name, field.name)
+    })
     if (fields.length > 0) {
       const values = {}
       fields.forEach(field => {

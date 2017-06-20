@@ -48,7 +48,7 @@ For the type:
 
 ```
 type Person {
-  name: String @index(type: "exact")
+  name: String @filter(types: [EQUALITY])
 }
 ```
 
@@ -70,17 +70,18 @@ query {
 }
 ```
 
-Note: filtering by a property requires it to be [indexed by Dgraph](/docs/schema-directives/).
+Note: filtering by a property requires it to be [marked with the `@filter` directive](/docs/schema-directives/).
 
 Supported filter operations and their required indexes:
 
-| Type    | Indexes       | Operations              |
-|---------|---------------|-------------------------|
-| String  | exact, hash   | eq                      |
-| String  | term          | anyofterms, allofterms  |
-| Float   | float         | eq, lt, le, gt, ge      |
-| Int     | int           | eq, lt, le, gt, ge      |
-| enum    | exact         | eq                      |
+| Type    | Filter Type   | Operations               |
+|---------|---------------|--------------------------|
+| String  | EQUALITY      | _eq                      |
+| String  | TERM          | _anyofterms, _allofterms |
+| Float   | EQUALITY      | _eq, _lt, _le, _gt, _ge  |
+| Int     | EQUALITY      | _eq, _lt, _le, _gt, _ge  |
+| Boolean | EQUALITY      | _eq                      |
+| enum    | EQUALITY      | _eq                      |
 
 Support for boolean filter logic will be added soon. Currently multiple filters
 are applied as `filter1 and filter2`:
@@ -88,7 +89,7 @@ are applied as `filter1 and filter2`:
 ```
 query {
   # Persons where name is "foo" and type is "bar"
-  typeNames(filter:{name_eq: "foo", type_eq: "bar"}) {
+  typeNames(filter: {name_eq: "foo", type_eq: "bar"}) {
     name
   }
 }
@@ -104,7 +105,7 @@ For the type:
 
 ```
 type Person {
-  name: String @index(type: "exact")
+  name: String @order
 }
 ```
 

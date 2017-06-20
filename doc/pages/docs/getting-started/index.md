@@ -21,7 +21,7 @@ const config = {
 const source = `
 type Person {
   id: ID!
-  name: String @index(type: "exact")
+  name: String @filter(types: [EQUALITY])
   children: [Person!]! @reverse(name: "parents")
   parents: [Person!]! @reverse(name: "children")
 }`

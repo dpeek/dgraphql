@@ -1,8 +1,10 @@
 // @flow
 
+import invariant from 'invariant'
 import fetch from 'isomorphic-fetch'
 import { parse, GraphQLSchema, Source } from 'graphql'
 import buildSchema from './buildSchema'
+import { getValue } from './utils'
 
 import type { Context } from './context'
 
@@ -18,7 +20,9 @@ type PredicateInfo = {
   type: string,
   reverse: ?string,
   localize: boolean,
-  indexes: Set<string>
+  indexes: Set<string>,
+  orders: Set<string>,
+  filters: Map<string, Set<string>>
 }
 
 export class Client {
@@ -51,6 +55,23 @@ export class Client {
     }
     query += '}}'
     this._updateSchema = this.fetchQuery(query)
+  }
+  getFilters (typeName: string, fieldName: string): Set<string> {
+    const info = this._predicates.get(fieldName)
+    if (info) {
+      const filters = info.filters.get(typeName)
+      if (filters) {
+        return filters
+      }
+    }
+    return new Set()
+  }
+  getOrder (typeName: string, fieldName: string): boolean {
+    const info = this._predicates.get(fieldName)
+    if (info) {
+      return info.orders.has(typeName)
+    }
+    return false
   }
   getReversePredicate (predicate: string): ?string {
     const info = this._predicates.get(predicate)
@@ -104,12 +125,16 @@ function getPredicates (ast) {
     type: 'string',
     indexes: new Set(['hash']),
     localize: false,
-    reverse: ''
+    reverse: '',
+    filters: new Map(),
+    orders: new Set()
   })
 
   ast.definitions.forEach(definition => {
     if (definition.kind !== 'ObjectTypeDefinition') return
+    const typeName = definition.name.value
     definition.fields.forEach(field => {
+      const fieldType = getType(field.type)
       if (field.name === 'id') return
       if (!field.directives) return
       field.directives.forEach(directive => {
@@ -117,8 +142,10 @@ function getPredicates (ast) {
         var fieldInfo = info.get(fieldName)
         if (!fieldInfo) {
           fieldInfo = {
-            type: getType(field.type),
+            type: fieldType,
             indexes: new Set(),
+            orders: new Set(),
+            filters: new Map(),
             localize: false,
             reverse: ''
           }
@@ -129,15 +156,55 @@ function getPredicates (ast) {
         if (directiveName === 'localize') {
           fieldInfo.localize = true
         }
+        if (directiveName === 'order') {
+          fieldInfo.orders.add(typeName)
+        }
+        if (directiveName === 'filter') {
+          const types = directive.arguments[0]
+          invariant(
+            typeof types !== 'undefined' && types.name.value === 'types',
+            'Filter directive requires argument "types"'
+          )
+          invariant(
+            types.value.kind === 'ListValue',
+            'Filter directive argument "types" must be an array of filter types'
+          )
+          types.value.values.forEach(filter => {
+            invariant(filter.kind === 'EnumValue', 'Filter type must be enum')
+            invariant(typeof fieldInfo !== 'undefined', 'No fieldInfo')
+            let filters = fieldInfo.filters.get(typeName)
+            if (!filters) {
+              filters = new Set()
+              fieldInfo.filters.set(typeName, filters)
+            }
+            filters.add(filter.value)
+            switch (filter.value) {
+              case 'EQUALITY':
+                if (fieldType === 'string') {
+                  fieldInfo.indexes.add('exact')
+                } else {
+                  fieldInfo.indexes.add(fieldType)
+                }
+                break
+              case 'TERM':
+                if (fieldType === 'string') {
+                  fieldInfo.indexes.add('term')
+                } else {
+                  throw new Error(
+                    `Unsupported filter TERM on field type ${fieldType}`
+                  )
+                }
+                break
+            }
+          })
+        }
         directive.arguments.forEach(argument => {
-          if (!fieldInfo || argument.value.kind !== 'StringValue') return
+          if (!fieldInfo) return
           const argumentName = argument.name.value
-          const argumentValue = argument.value.value
-          if (directiveName === 'reverse' && argumentName === 'name') {
-            fieldInfo.reverse = argumentValue
-          }
-          if (directiveName === 'index' && argumentName === 'type') {
-            fieldInfo.indexes.add(argumentValue)
+          if (argument.value.kind === 'StringValue') {
+            if (directiveName === 'reverse' && argumentName === 'name') {
+              fieldInfo.reverse = argument.value.value
+            }
           }
         })
       })
@@ -165,5 +232,7 @@ function getType (type) {
         default:
           return 'uid'
       }
+    default:
+      return 'uid'
   }
 }
