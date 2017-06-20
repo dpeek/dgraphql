@@ -9,7 +9,7 @@ import {
   GraphQLID
 } from 'graphql'
 
-import { mutationWithClientMutationId } from 'graphql-relay'
+import mutationWithClientMutationId from './mutationWithClientMutationId'
 
 import { getInputType, getMutationFields, payloadQuery } from './common'
 import { upperCamelCase, lowerCamelCase, unwrapNonNull } from '../utils'

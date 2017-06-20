@@ -8,7 +8,7 @@ import {
   isLeafType
 } from 'graphql'
 
-import { mutationWithClientMutationId } from 'graphql-relay'
+import mutationWithClientMutationId from './mutationWithClientMutationId'
 
 import { getInputFields, getMutationFields, payloadQuery } from './common'
 import { unwrap, lowerCamelCase, getFields } from '../utils'
