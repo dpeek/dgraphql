@@ -107,6 +107,7 @@ test('deletes node', async () => {
       }
     }
   }`
+
   const createResult = await graphql(create)
   const id = createResult.data.createPerson.person.id
 
@@ -128,12 +129,27 @@ test('deletes node', async () => {
   expect(queryResult).toMatchSnapshot()
 })
 
+test('deleting non-existent node returns error', async () => {
+  const deletes = `mutation {
+    deletePerson(input: {id: "foo"}) {
+      person {
+        id
+      }
+    }
+  }`
+  const result = await graphql(deletes)
+  expect(result).toMatchSnapshot()
+})
+
 test('deletes reverse edge to deleted node', async () => {
   const create = `mutation {
     createPerson(input: {
       name: "Tim",
       partner: {
         name: "Bob"
+      },
+      emergencyContact: {
+        name: "Harry"
       }
     }) {
       person {

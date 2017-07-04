@@ -23,7 +23,8 @@
     "dgraph": "docker rm dgraphql; docker run -it -p 8080:8080 --name dgraphql dgraph/dgraph dgraph --bindall=true"
   },
   "dependencies": {
-    "graphql": "^0.10.1",
+    "graphql": "^0.10.3",
+    "graphql-tools": "^1.1.0",
     "isomorphic-fetch": "^2.2.1",
     "pluralize": "^5.0.0"
   },
@@ -35,7 +36,7 @@
     "codecov": "^2.2.0",
     "express": "^4.15.3",
     "express-graphql": "^0.6.6",
-    "flow-bin": "^0.46.0",
+    "flow-bin": "^0.49.1",
     "jest": "^20.0.4"
   },
   "babel": {

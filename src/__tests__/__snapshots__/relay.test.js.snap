@@ -36,6 +36,19 @@ Object {
 }
 `;
 
+exports[`passes clientMutationId from input to payload  1`] = `
+Object {
+  "data": Object {
+    "createPerson": Object {
+      "clientMutationId": "123",
+      "person": Object {
+        "name": "Bane",
+      },
+    },
+  },
+}
+`;
+
 exports[`queries node with fragment 1`] = `
 Object {
   "data": Object {

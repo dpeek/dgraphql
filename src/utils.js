@@ -7,7 +7,8 @@ import type {
   SelectionNode,
   GraphQLResolveInfo,
   GraphQLOutputType,
-  ValueNode
+  ValueNode,
+  ArgumentNode
 } from 'graphql'
 
 import invariant from 'invariant'
@@ -84,7 +85,7 @@ export function getFields (type: GraphQLObjectType) {
   return Object.keys(fields).map(key => fields[key])
 }
 
-export function getValue (info: GraphQLResolveInfo, node: ValueNode): mixed {
+export function getValue (info: ?GraphQLResolveInfo, node: ValueNode): mixed {
   switch (node.kind) {
     case 'StringValue':
       return node.value
@@ -99,6 +100,7 @@ export function getValue (info: GraphQLResolveInfo, node: ValueNode): mixed {
     case 'EnumValue':
       return node.value
     case 'Variable':
+      invariant(info, 'Resolve info required to evaluate variables value.')
       return info.variableValues[node.name.value]
     case 'ListValue':
       return node.values.map(value => getValue(info, value))
@@ -109,6 +111,17 @@ export function getValue (info: GraphQLResolveInfo, node: ValueNode): mixed {
       })
       return object
   }
+}
+
+export function getArguments (
+  info: ?GraphQLResolveInfo,
+  args: Array<ArgumentNode>
+): any {
+  const result = {}
+  args.forEach(arg => {
+    result[arg.name.value] = getValue(info, arg.value)
+  })
+  return result
 }
 
 export function lowerCamelCase (str: string): string {

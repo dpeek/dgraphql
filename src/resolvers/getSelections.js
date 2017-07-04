@@ -10,31 +10,18 @@ import {
   getConnectionType,
   flattenSelections,
   findSelections,
-  getValue,
+  getArguments,
   quoteValue
-} from './utils'
+} from '../utils'
 
 import type {
   GraphQLResolveInfo,
   FieldNode,
   SelectionNode,
-  GraphQLField,
-  ArgumentNode
+  GraphQLField
 } from 'graphql'
 
-import type { Client } from './client'
-import type { Context } from './context'
-
-function getArguments (
-  info: GraphQLResolveInfo,
-  args: Array<ArgumentNode>
-): any {
-  const result = {}
-  args.forEach(arg => {
-    result[arg.name.value] = getValue(info, arg.value)
-  })
-  return result
-}
+import type { Client, Context } from '../client'
 
 function getParams (
   client: Client,
@@ -61,7 +48,7 @@ function getParams (
       params.push(`first: ${args.first + (client.relay ? 1 : 0)}`)
     }
     if (args.after) {
-      params.push(`after: "${args.after}"`)
+      params.push(`after: ${args.after}`)
     }
   }
   if (args.order) {

@@ -71,6 +71,17 @@ Object {
 }
 `;
 
+exports[`deleting non-existent node returns error 1`] = `
+Object {
+  "data": Object {
+    "deletePerson": null,
+  },
+  "errors": Array [
+    [GraphQLError: There is no 'Person' with id 'foo'],
+  ],
+}
+`;
+
 exports[`returns fields for created node 1`] = `
 Object {
   "data": Object {

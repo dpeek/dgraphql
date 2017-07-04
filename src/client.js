@@ -1,12 +1,12 @@
 // @flow
 
-import invariant from 'invariant'
 import fetch from 'isomorphic-fetch'
 import { parse, GraphQLSchema, Source } from 'graphql'
-import buildSchema from './buildSchema'
-import { getValue } from './utils'
 
-import type { Context } from './context'
+import buildSchema from './buildSchema'
+import getInfo from './getInfo'
+
+import type { SchemaInfo } from './getInfo'
 
 export type ClientConfig = {
   schema: string,
@@ -16,17 +16,8 @@ export type ClientConfig = {
   debug?: boolean
 }
 
-type PredicateInfo = {
-  type: string,
-  reverse: ?string,
-  localize: boolean,
-  indexes: Set<string>,
-  orders: Set<string>,
-  filters: Map<string, Set<string>>
-}
-
 export class Client {
-  _predicates: Map<string, PredicateInfo>
+  _info: SchemaInfo
   _server: string
   _debug: boolean
   _updateSchema: Promise<any>
@@ -35,9 +26,8 @@ export class Client {
   relay: boolean
 
   constructor (config: ClientConfig) {
-    const boiler = '\ntype Query { temp: String }'
-    const ast = parse(new Source(config.schema + boiler))
-    this._predicates = getPredicates(ast)
+    const ast = parse(new Source(config.schema))
+    this._info = getInfo(ast)
 
     this._server = config.server || 'http://localhost:8080/query'
     this._debug = config.debug || false
@@ -46,7 +36,7 @@ export class Client {
     this.schema = buildSchema(ast, this)
 
     let query = 'mutation { schema {\n'
-    for (var [key, value] of this._predicates) {
+    for (var [key, value] of this._info) {
       query += '  ' + key + ': ' + value.type
       if (value.indexes.size) {
         query += ' @index(' + [...value.indexes].join(',') + ')'
@@ -56,42 +46,25 @@ export class Client {
     query += '}}'
     this._updateSchema = this.fetchQuery(query)
   }
-  getFilters (typeName: string, fieldName: string): Set<string> {
-    const info = this._predicates.get(fieldName)
-    if (info) {
-      const filters = info.filters.get(typeName)
-      if (filters) {
-        return filters
-      }
-    }
-    return new Set()
-  }
-  getOrder (typeName: string, fieldName: string): boolean {
-    const info = this._predicates.get(fieldName)
-    if (info) {
-      return info.orders.has(typeName)
-    }
-    return false
-  }
   getReversePredicate (predicate: string): ?string {
-    const info = this._predicates.get(predicate)
+    const info = this._info.get(predicate)
     return info ? info.reverse : null
   }
   localizePredicate (predicate: string, language: string): string {
-    const info = this._predicates.get(predicate)
+    const info = this._info.get(predicate)
     if (info && info.localize) {
       return `${predicate}@${language}`
     }
     return predicate
   }
   localizeValue (value: mixed, predicate: string, language: string): string {
-    const info = this._predicates.get(predicate)
+    const info = this._info.get(predicate)
     if (info && info.localize) {
       return `"${String(value)}"@${language}`
     }
     return `"${String(value)}"`
   }
-  fetchQuery (query: string) {
+  fetchQuery (query: string): Promise<GraphResponse> {
     if (this._debug) {
       console.log('-- dgraph query')
       console.log(query)
@@ -119,120 +92,18 @@ export class Client {
   }
 }
 
-function getPredicates (ast) {
-  const info = new Map()
-  info.set('__typename', {
-    type: 'string',
-    indexes: new Set(['hash']),
-    localize: false,
-    reverse: '',
-    filters: new Map(),
-    orders: new Set()
-  })
-
-  ast.definitions.forEach(definition => {
-    if (definition.kind !== 'ObjectTypeDefinition') return
-    const typeName = definition.name.value
-    definition.fields.forEach(field => {
-      const fieldType = getType(field.type)
-      if (field.name === 'id') return
-      if (!field.directives) return
-      field.directives.forEach(directive => {
-        const fieldName = field.name.value
-        var fieldInfo = info.get(fieldName)
-        if (!fieldInfo) {
-          fieldInfo = {
-            type: fieldType,
-            indexes: new Set(),
-            orders: new Set(),
-            filters: new Map(),
-            localize: false,
-            reverse: ''
-          }
-          info.set(fieldName, fieldInfo)
-        }
-        const directiveName = directive.name.value
-        if (!directive.arguments) return
-        if (directiveName === 'localize') {
-          fieldInfo.localize = true
-        }
-        if (directiveName === 'order') {
-          fieldInfo.orders.add(typeName)
-        }
-        if (directiveName === 'filter') {
-          const types = directive.arguments[0]
-          invariant(
-            typeof types !== 'undefined' && types.name.value === 'types',
-            'Filter directive requires argument "types"'
-          )
-          invariant(
-            types.value.kind === 'ListValue',
-            'Filter directive argument "types" must be an array of filter types'
-          )
-          types.value.values.forEach(filter => {
-            invariant(filter.kind === 'EnumValue', 'Filter type must be enum')
-            invariant(typeof fieldInfo !== 'undefined', 'No fieldInfo')
-            let filters = fieldInfo.filters.get(typeName)
-            if (!filters) {
-              filters = new Set()
-              fieldInfo.filters.set(typeName, filters)
-            }
-            filters.add(filter.value)
-            switch (filter.value) {
-              case 'EQUALITY':
-                if (fieldType === 'string') {
-                  fieldInfo.indexes.add('exact')
-                } else {
-                  fieldInfo.indexes.add(fieldType)
-                }
-                break
-              case 'TERM':
-                if (fieldType === 'string') {
-                  fieldInfo.indexes.add('term')
-                } else {
-                  throw new Error(
-                    `Unsupported filter TERM on field type ${fieldType}`
-                  )
-                }
-                break
-            }
-          })
-        }
-        directive.arguments.forEach(argument => {
-          if (!fieldInfo) return
-          const argumentName = argument.name.value
-          if (argument.value.kind === 'StringValue') {
-            if (directiveName === 'reverse' && argumentName === 'name') {
-              fieldInfo.reverse = argument.value.value
-            }
-          }
-        })
-      })
-    })
-  })
-  return info
+export type Context = {
+  client: Client,
+  language: string
 }
 
-function getType (type) {
-  switch (type.kind) {
-    case 'NonNullType':
-      return getType(type.type)
-    case 'ListType':
-      return 'uid'
-    case 'NamedType':
-      switch (type.name.value) {
-        case 'Int':
-        case 'Float':
-        case 'String':
-          return String(type.name.value).toLowerCase()
-        case 'Boolean':
-          return 'bool'
-        case 'ID':
-          return 'string'
-        default:
-          return 'uid'
-      }
-    default:
-      return 'uid'
-  }
+export type GraphNode = {
+  _uid_: string,
+  __typename?: string,
+  [string]: Array<GraphNode>
+}
+
+export type GraphResponse = {
+  uids: { [string]: string },
+  [string]: Array<GraphNode>
 }

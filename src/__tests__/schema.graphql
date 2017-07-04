@@ -9,8 +9,9 @@ type Person {
   partner: Person @reverse(name: "partner")
   children: [Person!]! @reverse(name: "parents")
   parents: [Person!]! @reverse(name: "children")
+  emergencyContact: Person
 }
 
-type Empty {
-  id: ID!
-}
+# type Empty {
+#   id: ID!
+# }

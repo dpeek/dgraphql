@@ -50,6 +50,47 @@ test('sets node edge to existing node', async () => {
   expect(setResult).toMatchSnapshot()
 })
 
+test('sets one way edge to existing node', async () => {
+  const create = `mutation {
+    tim: createPerson(input: {
+      name: "Tim"
+    }) {
+      person {
+        id
+      }
+    }
+    alice: createPerson(input: {
+      name: "Alice"
+    }) {
+      person {
+        id
+      }
+    }
+  }`
+  const createResult = await graphql(create)
+
+  const tim = createResult.data.tim.person.id
+  const alice = createResult.data.alice.person.id
+
+  const set = `mutation {
+    setPersonEmergencyContact(input: {
+      id: "${tim}",
+      emergencyContact: {
+        id: "${alice}"
+      }
+    }) {
+      person {
+        name
+        emergencyContact {
+          name
+        }
+      }
+    }
+  }`
+  let setResult = await graphql(set)
+  expect(setResult).toMatchSnapshot()
+})
+
 test('sets node edge to new node', async () => {
   const create = `mutation {
     tim: createPerson(input: {
@@ -129,7 +170,7 @@ test('setting node edge to existing value has no effect', async () => {
   expect(setResult).toMatchSnapshot()
 })
 
-test('setting node edge removes reverse edge from existing value', async () => {
+test('setting edge with reverse removes reverse edge from existing node', async () => {
   const create = `mutation {
     tim: createPerson(input: {
       name: "Tim",
@@ -183,6 +224,70 @@ test('setting node edge removes reverse edge from existing value', async () => {
       name
       partner {
         id
+      }
+    }
+  }`
+  const queryResult = await graphql(query)
+  expect(queryResult).toMatchSnapshot()
+})
+
+test('setting edge with no reverse does nothing to existing node', async () => {
+  const create = `mutation {
+    tim: createPerson(input: {
+      name: "Tim",
+      emergencyContact: {
+        name: "Sally",
+        emergencyContact: {
+          name: "Gerald"
+        }
+      }
+    }) {
+      person {
+        id
+        name
+        emergencyContact {
+          id
+          name
+        }
+      }
+    }
+    alice: createPerson(input: {
+      name: "Alice"
+    }) {
+      person {
+        id
+        name
+      }
+    }
+  }`
+  const createResult = await graphql(create)
+
+  const tim = createResult.data.tim.person.id
+  const sally = createResult.data.tim.person.emergencyContact.id
+  const alice = createResult.data.alice.person.id
+
+  const set = `mutation {
+    setPersonEmergencyContact(input: {
+      id: "${tim}",
+      emergencyContact: {
+        id: "${alice}"
+      }
+    }) {
+      person {
+        name
+        emergencyContact {
+          name
+        }
+      }
+    }
+  }`
+  await graphql(set)
+
+  const query = `query {
+    person(id: "${sally}") {
+      name
+      emergencyContact {
+        name
       }
     }
   }`

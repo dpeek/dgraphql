@@ -233,3 +233,16 @@ test('pageInfo startCursor returns first cursor in query', async () => {
     result.data.people.edges[0].cursor
   )
 })
+
+test('passes clientMutationId from input to payload ', async () => {
+  const query = `mutation {
+    createPerson(input: {name: "Bane", clientMutationId:"123"}) {
+      person {
+        name
+      }
+      clientMutationId
+    }
+  }`
+  const result = await graphql(query)
+  expect(result).toMatchSnapshot()
+})

@@ -184,22 +184,50 @@ Object {
 }
 `;
 
-exports[`setting node edge removes existing reverse edge from new value 1`] = `
+exports[`sets one way edge to existing node 1`] = `
+Object {
+  "data": Object {
+    "setPersonEmergencyContact": Object {
+      "person": Object {
+        "emergencyContact": Object {
+          "name": "Alice",
+        },
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`setting edge with no reverse does nothing to existing node 1`] = `
 Object {
   "data": Object {
     "person": Object {
-      "name": "Sue",
+      "emergencyContact": Object {
+        "name": "Gerald",
+      },
+      "name": "Sally",
+    },
+  },
+}
+`;
+
+exports[`setting edge with reverse removes reverse edge from existing node 1`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "name": "Sally",
       "partner": null,
     },
   },
 }
 `;
 
-exports[`setting node edge removes reverse edge from existing value 1`] = `
+exports[`setting node edge removes existing reverse edge from new value 1`] = `
 Object {
   "data": Object {
     "person": Object {
-      "name": "Sally",
+      "name": "Sue",
       "partner": null,
     },
   },
