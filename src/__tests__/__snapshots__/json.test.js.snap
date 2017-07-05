@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`sets JSON as inline AST 1`] = `
+Object {
+  "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "config": Object {
+          "baz": Array [
+            1,
+            null,
+            1.2,
+          ],
+          "foo": "bar",
+        },
+      },
+    },
+  },
+}
+`;

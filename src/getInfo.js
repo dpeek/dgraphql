@@ -111,6 +111,10 @@ function getType (type) {
           return 'bool'
         case 'ID':
           return 'string'
+        case 'Date':
+          return 'date'
+        case 'DateTime':
+          return 'datetime'
         default:
           return 'uid'
       }

@@ -1,6 +1,6 @@
 // @flow
 
-import { GraphQLNonNull, GraphQLObjectType, GraphQLList } from 'graphql'
+import { GraphQLNonNull, GraphQLObjectType, GraphQLList, Kind } from 'graphql'
 
 import type {
   GraphQLType,
@@ -87,29 +87,29 @@ export function getFields (type: GraphQLObjectType) {
 
 export function getValue (info: ?GraphQLResolveInfo, node: ValueNode): mixed {
   switch (node.kind) {
-    case 'StringValue':
+    case Kind.STRING:
       return node.value
-    case 'IntValue':
+    case Kind.INT:
       return parseInt(node.value, 10)
-    case 'FloatValue':
+    case Kind.FLOAT:
       return parseFloat(node.value)
-    case 'BooleanValue':
+    case Kind.BOOLEAN:
       return node.value
-    case 'NullValue':
-      return null
-    case 'EnumValue':
+    case Kind.ENUM:
       return node.value
-    case 'Variable':
-      invariant(info, 'Resolve info required to evaluate variables value.')
-      return info.variableValues[node.name.value]
-    case 'ListValue':
+    case Kind.LIST:
       return node.values.map(value => getValue(info, value))
-    case 'ObjectValue':
+    case Kind.OBJECT:
       const object = {}
       node.fields.forEach(field => {
         object[field.name.value] = getValue(info, field.value)
       })
       return object
+    case Kind.VARIABLE:
+      invariant(info, 'Resolve info required to evaluate variables value.')
+      return info.variableValues[node.name.value]
+    default:
+      return null
   }
 }
 

@@ -11,8 +11,8 @@ import type {
   NamedTypeNode,
   ListTypeNode,
   NonNullTypeNode,
-  DefinitionNode,
   TypeDefinitionNode,
+  TypeSystemDefinitionNode,
   ObjectTypeDefinitionNode,
   InputObjectTypeDefinitionNode,
   EnumTypeDefinitionNode,
@@ -22,7 +22,7 @@ import type {
 type TypeMap = Map<string, TypeDefinitionNode>
 
 const booleanOps = ['AND', 'OR']
-const orderableTypes = ['String', 'Int', 'Float', 'DateTime']
+const orderableTypes = ['String', 'Int', 'Float', 'Date', 'DateTime']
 
 const fieldDef = ({
   name,
@@ -117,6 +117,11 @@ const pageInfo = {
   ]
 }
 
+const scalar = name => ({
+  kind: 'ScalarTypeDefinition',
+  name: { kind: 'Name', value: name }
+})
+
 export default function transformSchema (ast: DocumentNode, relay: boolean) {
   let types = new Map()
   let queries = []
@@ -195,7 +200,7 @@ export default function transformSchema (ast: DocumentNode, relay: boolean) {
     types.set(typeName, newType)
   })
 
-  const definitions: Array<DefinitionNode> = [...types.values()]
+  const definitions: Array<TypeSystemDefinitionNode> = [...types.values()]
 
   if (relay) {
     definitions.push(nodeInterface)
@@ -216,6 +221,10 @@ export default function transformSchema (ast: DocumentNode, relay: boolean) {
       })
     )
   }
+
+  definitions.push(scalar('JSON'))
+  definitions.push(scalar('Date'))
+  definitions.push(scalar('DateTime'))
 
   definitions.push({
     kind: 'ObjectTypeDefinition',
@@ -601,7 +610,12 @@ function getFilter (
           description: `${name} is equal to`,
           type: typeName
         })
-        if (typeName === 'Int' || typeName === 'Float') {
+        if (
+          typeName === 'Int' ||
+          typeName === 'Float' ||
+          typeName === 'Date' ||
+          typeName === 'DateTime'
+        ) {
           filters.push({
             name: `${name}_gt`,
             description: `${name} is greather than`,

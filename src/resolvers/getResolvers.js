@@ -6,6 +6,9 @@ import { GraphQLSchema, GraphQLObjectType, GraphQLList } from 'graphql'
 
 import { unwrapNonNull, upperCamelCase, lowerCamelCase } from '../utils'
 
+import GraphQLJSON from '../scalar/GraphQLJSON'
+import GraphQLDateTime from '../scalar/GraphQLDateTime'
+
 import resolveId from './id'
 import resolveNode from './node'
 import resolveList from './list'
@@ -23,33 +26,36 @@ import type { GraphNode } from '../client'
 export default function getResolvers (schema: GraphQLSchema, relay: boolean) {
   const query = {}
   const mutation = {}
-  const resolvers = {}
-  resolvers.Query = query
-  resolvers.Mutation = mutation
+  const types = {}
+  types.JSON = GraphQLJSON
+  types.Date = GraphQLDateTime
+  types.DateTime = GraphQLDateTime
+  types.Query = query
+  types.Mutation = mutation
   if (relay) {
     query.node = {
       resolve: resolveNode
     }
-    resolvers.Node = {
+    types.Node = {
       __resolveType: (node: GraphNode) => node.__typename
     }
   }
 
-  const types = schema.getTypeMap()
-  Object.keys(types).forEach(typeName => {
+  const typeMap = schema.getTypeMap()
+  Object.keys(typeMap).forEach(typeName => {
     if (typeName.indexOf('_') === 0) return
     if (typeName === 'Query' || typeName === 'Mutation') return
     if (typeName === 'PageInfo') return
     if (typeName.endsWith('Payload')) return
     if (typeName.endsWith('Connection')) return
     if (typeName.endsWith('Edge')) return
-    const type = types[typeName]
+    const type = typeMap[typeName]
     if (type instanceof GraphQLObjectType) {
       query[lowerCamelCase(typeName)] = { resolve: resolveNode }
       query[lowerCamelCase(pluralize(typeName))] = {
         resolve: relay ? resolveConnection : resolveList
       }
-      const typeResolver = (resolvers[typeName] = {
+      const typeResolver = (types[typeName] = {
         id: { resolve: resolveId }
       })
       mutation[`create${typeName}`] = {
@@ -91,5 +97,5 @@ export default function getResolvers (schema: GraphQLSchema, relay: boolean) {
       })
     }
   })
-  return resolvers
+  return types
 }

@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`sets Date and DateTime as String 1`] = `
+Object {
+  "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "dob": "2000-12-01",
+        "lastActiveAt": "2000-12-01T00:00:00Z",
+      },
+    },
+  },
+}
+`;

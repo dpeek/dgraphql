@@ -10,7 +10,7 @@ const schema = path.resolve(__dirname, 'schema.graphql')
 const client = new Client({
   server: 'http://localhost:8080/query',
   schema: fs.readFileSync(schema).toString(),
-  relay: true,
+  relay: false,
   debug: true
 })
 

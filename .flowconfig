@@ -8,3 +8,4 @@
 [libs]
 
 [options]
+sharedmemory.hash_table_pow=21

@@ -1,5 +1,8 @@
 type Person {
   id: ID!
+  config: JSON
+  dob: Date @order @filter(types: [EQUALITY])
+  lastActiveAt: DateTime @order @filter(types: [EQUALITY])
   name: String @order @filter(types: [EQUALITY, TERM])
   title: String @localize @filter(types: [EQUALITY])
   employed: Boolean @filter(types: [EQUALITY])
