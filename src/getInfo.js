@@ -46,7 +46,6 @@ export default function getInfo (ast: DocumentNode): SchemaInfo {
             reverse: ''
           }
           info.set(fieldName, fieldInfo)
-          console.log(fieldName)
           switch (directive.name.value) {
             case 'localize':
               fieldInfo.localize = true

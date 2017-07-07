@@ -8,7 +8,7 @@ import { getFields, unwrap } from '../utils'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { Context } from '../client'
 
-export default function resolveDelete (
+export default function resolve (
   type: GraphQLObjectType,
   source: void,
   args: { input: { id: string, clientMutationId?: string } },

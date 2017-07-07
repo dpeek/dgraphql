@@ -8,22 +8,35 @@ import { unwrapNonNull } from '../utils'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { Context } from '../client'
 
-export function getMutationFields (
+export default function getMutation (
   info: GraphQLResolveInfo,
   context: Context,
   type: GraphQLObjectType,
   input: {},
+  subject: string
+) {
+  const stamp = new Date().toISOString()
+  const node = Object.assign({}, input, { createdAt: stamp, updatedAt: stamp })
+  return getMutationFields(info, context, type, node, subject, 0)
+}
+
+function getMutationFields (
+  info: GraphQLResolveInfo,
+  context: Context,
+  type: GraphQLObjectType,
+  input: { id?: string, updatedAt: string, createdAt: string },
   subject: string,
   count: number
 ) {
+  const isCreate = !input.id
   let query = ''
   if (subject.indexOf('node') !== -1) {
     query += `  ${subject} <__typename> "${type.name}" .\n`
   }
-
   const fields = type.getFields()
   Object.keys(input).forEach(key => {
     if (key === 'id') return
+    if (key === 'createdAt' && !isCreate) return
     if (typeof fields[key] === 'undefined') return
     let fieldType = unwrapNonNull(fields[key].type)
     if (
@@ -45,7 +58,10 @@ export function getMutationFields (
           info,
           context,
           fieldType,
-          node,
+          Object.assign({}, node, {
+            createdAt: input.createdAt,
+            updatedAt: input.updatedAt
+          }),
           nodeIdent,
           count
         )

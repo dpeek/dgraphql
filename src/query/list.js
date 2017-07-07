@@ -6,7 +6,7 @@ import query from './query'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { Context } from '../client'
 
-export default function resolveList (
+export default function resolve (
   source: any,
   args: any,
   context: Context,

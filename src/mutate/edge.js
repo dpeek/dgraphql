@@ -1,12 +1,12 @@
 // @flow
 
-import { getMutationFields } from './common'
+import getMutation from './getMutation'
 import payloadQuery from '../query/payload'
 
 import type { GraphQLResolveInfo, GraphQLObjectType } from 'graphql'
 import type { Context } from '../client'
 
-export default function resolveEdgeMutation (
+export default function resolve (
   type: GraphQLObjectType,
   fieldName: string,
   source: void,
@@ -53,14 +53,7 @@ export default function resolveEdgeMutation (
 
       if (input[fieldName]) {
         mutation += '  set {\n'
-        mutation += getMutationFields(
-          info,
-          context,
-          type,
-          input,
-          `<${subject}>`,
-          0
-        )
+        mutation += getMutation(info, context, type, input, `<${subject}>`)
         mutation += '  }\n'
       }
 

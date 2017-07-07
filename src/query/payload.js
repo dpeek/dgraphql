@@ -7,7 +7,7 @@ import getSelections from './getSelections'
 import type { GraphQLResolveInfo, FieldNode } from 'graphql'
 import type { Context } from '../client'
 
-export default function payloadQuery (
+export default function resolve (
   info: GraphQLResolveInfo,
   context: Context,
   id: string,
