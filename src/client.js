@@ -3,6 +3,7 @@
 import fetch from 'isomorphic-fetch'
 import { parse, GraphQLSchema, Source } from 'graphql'
 
+import transformSchema from './transformSchema'
 import buildSchema from './buildSchema'
 import getInfo from './getInfo'
 
@@ -26,13 +27,13 @@ export class Client {
   relay: boolean
 
   constructor (config: ClientConfig) {
-    const ast = parse(new Source(config.schema))
-    this._info = getInfo(ast)
-
     this._server = config.server || 'http://localhost:8080/query'
     this._debug = config.debug || false
-
     this.relay = config.relay || false
+
+    const ast = transformSchema(parse(new Source(config.schema)), this.relay)
+
+    this._info = getInfo(ast)
     this.schema = buildSchema(ast, this)
 
     let query = 'mutation { schema {\n'

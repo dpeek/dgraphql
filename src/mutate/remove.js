@@ -1,6 +1,6 @@
 // @flow
 
-import { payloadQuery } from './mutate'
+import payloadQuery from '../query/payload'
 
 import type { GraphQLResolveInfo, GraphQLObjectType } from 'graphql'
 import type { Context, GraphResponse } from '../client'

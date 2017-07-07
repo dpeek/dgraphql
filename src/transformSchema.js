@@ -15,6 +15,8 @@ import type {
   TypeSystemDefinitionNode,
   ObjectTypeDefinitionNode,
   InputObjectTypeDefinitionNode,
+  InputValueDefinitionNode,
+  DirectiveNode,
   EnumTypeDefinitionNode,
   FieldDefinitionNode
 } from 'graphql'
@@ -27,15 +29,18 @@ const orderableTypes = ['String', 'Int', 'Float', 'Date', 'DateTime']
 const fieldDef = ({
   name,
   type,
-  args
+  args,
+  directives
 }: {
   name: string,
   type: TypeNode,
-  args?: Array<*>
+  args?: Array<InputValueDefinitionNode>,
+  directives?: Array<DirectiveNode>
 }) => ({
   kind: 'FieldDefinition',
   name: { kind: 'Name', value: name },
   arguments: args || [],
+  directives: directives || [],
   type
 })
 
@@ -117,6 +122,40 @@ const pageInfo = {
   ]
 }
 
+const timestampDirectives = [
+  {
+    kind: 'Directive',
+    name: { kind: 'Name', value: 'order' },
+    arguments: []
+  },
+  {
+    kind: 'Directive',
+    name: { kind: 'Name', value: 'filter' },
+    arguments: [
+      {
+        kind: 'Argument',
+        name: { kind: 'Name', value: 'types' },
+        value: {
+          kind: 'ListValue',
+          values: [{ kind: 'EnumValue', value: 'EQUALITY' }]
+        }
+      }
+    ]
+  }
+]
+
+const createdAtField = fieldDef({
+  name: 'createdAt',
+  type: nonNullNamedType('DateTime'),
+  directives: timestampDirectives
+})
+
+const updatedAtField = fieldDef({
+  name: 'updatedAt',
+  type: nonNullNamedType('DateTime'),
+  directives: timestampDirectives
+})
+
 const scalar = name => ({
   kind: 'ScalarTypeDefinition',
   name: { kind: 'Name', value: name }
@@ -195,6 +234,9 @@ export default function transformSchema (ast: DocumentNode, relay: boolean) {
     mutations.push(getTypeMutationField(types, type, 'create', relay))
     mutations.push(getTypeMutationField(types, type, 'update', relay))
     mutations.push(getTypeMutationField(types, type, 'delete', relay))
+
+    fields.push(createdAtField)
+    fields.push(updatedAtField)
 
     const newType: ObjectTypeDefinitionNode = { ...type, fields }
     types.set(typeName, newType)

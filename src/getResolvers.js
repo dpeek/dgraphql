@@ -4,24 +4,21 @@ import pluralize from 'pluralize'
 
 import { GraphQLSchema, GraphQLObjectType, GraphQLList } from 'graphql'
 
-import { unwrapNonNull, upperCamelCase, lowerCamelCase } from '../utils'
+import { unwrapNonNull, upperCamelCase, lowerCamelCase } from './utils'
 
-import GraphQLJSON from '../scalar/GraphQLJSON'
-import GraphQLDateTime from '../scalar/GraphQLDateTime'
+import GraphQLJSON from './scalar/GraphQLJSON'
+import GraphQLDateTime from './scalar/GraphQLDateTime'
 
-import resolveId from './id'
-import resolveNode from './node'
-import resolveList from './list'
-import resolveConnection from './connection'
-import resolveCreate from './create'
-import resolveUpdate from './update'
-import resolveDelete from './delete'
-import resolveSet from './set'
-import resolveUnset from './unset'
-import resolveAdd from './add'
-import resolveRemove from './remove'
+import resolveId from './query/id'
+import resolveNode from './query/node'
+import resolveList from './query/list'
+import resolveConnection from './query/connection'
+import resolveDelete from './mutate/delete'
+import resolveEdgeMutation from './mutate/edge'
+import resolveCreateMutation from './mutate/create'
+import resolveRemove from './mutate/remove'
 
-import type { GraphNode } from '../client'
+import type { GraphNode } from './client'
 
 export default function getResolvers (schema: GraphQLSchema, relay: boolean) {
   const query = {}
@@ -59,10 +56,10 @@ export default function getResolvers (schema: GraphQLSchema, relay: boolean) {
         id: { resolve: resolveId }
       })
       mutation[`create${typeName}`] = {
-        resolve: resolveCreate.bind(null, type)
+        resolve: resolveCreateMutation.bind(null, type)
       }
       mutation[`update${typeName}`] = {
-        resolve: resolveUpdate.bind(null, type)
+        resolve: resolveCreateMutation.bind(null, type)
       }
       mutation[`delete${typeName}`] = {
         resolve: resolveDelete.bind(null, type)
@@ -80,7 +77,7 @@ export default function getResolvers (schema: GraphQLSchema, relay: boolean) {
             resolve: relay ? resolveConnection : resolveList
           }
           mutation[`add${relationName}`] = {
-            resolve: resolveAdd.bind(null, type, fieldName)
+            resolve: resolveCreateMutation.bind(null, type)
           }
           mutation[`remove${relationName}`] = {
             resolve: resolveRemove.bind(null, type, fieldName)
@@ -88,10 +85,10 @@ export default function getResolvers (schema: GraphQLSchema, relay: boolean) {
         } else if (fieldType instanceof GraphQLObjectType) {
           typeResolver[fieldName] = { resolve: resolveNode }
           mutation[`set${relationName}`] = {
-            resolve: resolveSet.bind(null, type, fieldName)
+            resolve: resolveEdgeMutation.bind(null, type, fieldName)
           }
           mutation[`unset${relationName}`] = {
-            resolve: resolveUnset.bind(null, type, fieldName)
+            resolve: resolveEdgeMutation.bind(null, type, fieldName)
           }
         }
       })

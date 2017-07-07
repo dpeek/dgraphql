@@ -2,7 +2,7 @@
 
 import { GraphQLObjectType, GraphQLList, GraphQLError } from 'graphql'
 
-import { payloadQuery } from './mutate'
+import payloadQuery from '../query/payload'
 import { getFields, unwrap } from '../utils'
 
 import type { GraphQLResolveInfo } from 'graphql'
