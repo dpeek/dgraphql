@@ -43,15 +43,7 @@ const fieldDef = ({
   type
 })
 
-const inputValueDef = ({
-  name,
-  type,
-  args
-}: {
-  name: string,
-  type: TypeNode,
-  args?: Array<*>
-}) => ({
+const inputValueDef = ({ name, type }: { name: string, type: TypeNode }) => ({
   kind: 'InputValueDefinition',
   name: { kind: 'Name', value: name },
   type
@@ -634,11 +626,11 @@ function getFilter (
   type: ObjectTypeDefinitionNode
 ): InputObjectTypeDefinitionNode {
   const filterName = `${type.name.value}Filter`
-  const filters = []
+  const filters: Array<{ name: string, description: string, type: string }> = []
   type.fields.forEach(field => {
-    const config = getConfig(field)
     const name = field.name.value
     const typeName = getTypeName(field.type)
+    const config = getConfig(field)
     config.filters.forEach(filter => {
       if (filter === 'EQUALITY') {
         filters.push({
@@ -697,12 +689,12 @@ function getFilter (
       type: listType(nonNullNamedType(filterName))
     })
   })
-  filters.forEach(({ name, type, description }) => {
+  filters.forEach(filter => {
     fields.push({
       kind: 'InputValueDefinition',
-      name: { kind: 'Name', value: name },
+      name: { kind: 'Name', value: filter.name },
       // description: description,
-      type: namedType(type)
+      type: namedType(filter.type)
     })
   })
   return {
@@ -712,7 +704,13 @@ function getFilter (
   }
 }
 
-function getConfig (field: FieldDefinitionNode) {
+type FieldConfig = {
+  order: boolean,
+  localize: boolean,
+  filters: Array<string>,
+  reverse: ?string
+}
+function getConfig (field: FieldDefinitionNode): FieldConfig {
   let order = false
   let localize = false
   let reverse = null
