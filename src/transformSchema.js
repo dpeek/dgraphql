@@ -6,13 +6,12 @@ import pluralize from 'pluralize'
 import { upperCamelCase, lowerCamelCase } from './utils'
 
 import type {
+  DefinitionNode,
   DocumentNode,
   TypeNode,
   NamedTypeNode,
   ListTypeNode,
   NonNullTypeNode,
-  TypeDefinitionNode,
-  TypeSystemDefinitionNode,
   ObjectTypeDefinitionNode,
   InputObjectTypeDefinitionNode,
   InputValueDefinitionNode,
@@ -21,7 +20,7 @@ import type {
   FieldDefinitionNode
 } from 'graphql'
 
-type TypeMap = Map<string, TypeDefinitionNode>
+type TypeMap = Map<string, DefinitionNode>
 
 const booleanOps = ['AND', 'OR']
 const orderableTypes = ['String', 'Int', 'Float', 'Date', 'DateTime']
@@ -162,7 +161,7 @@ const scalar = name => ({
 })
 
 export default function transformSchema (ast: DocumentNode, relay: boolean) {
-  let types = new Map()
+  let types: TypeMap = new Map()
   let queries = []
   let mutations = []
   let defs: Array<ObjectTypeDefinitionNode> = []
@@ -242,7 +241,8 @@ export default function transformSchema (ast: DocumentNode, relay: boolean) {
     types.set(typeName, newType)
   })
 
-  const definitions: Array<TypeSystemDefinitionNode> = [...types.values()]
+  const definitions: Array<DefinitionNode> = []
+  types.forEach(value => definitions.push(value))
 
   if (relay) {
     definitions.push(nodeInterface)
@@ -300,7 +300,10 @@ export default function transformSchema (ast: DocumentNode, relay: boolean) {
   return { ...ast, definitions }
 }
 
-function getQueryArguments (types: TypeMap, type: ObjectTypeDefinitionNode) {
+function getQueryArguments (
+  types: TypeMap,
+  type: ObjectTypeDefinitionNode
+): Array<InputValueDefinitionNode> {
   const args = [
     {
       kind: 'InputValueDefinition',
@@ -339,15 +342,18 @@ function getTypeMutationField (
   type: ObjectTypeDefinitionNode,
   operation: string,
   relay: boolean
-) {
-  const name = `${operation}${type.name.value}`
+): FieldDefinitionNode {
   let input = getTypeMutationInput(types, type, operation, relay)
+  types.set(input.name.value, input)
+
   let payload = getMutationPayload(types, type, relay)
+  types.set(payload.name.value, payload)
+
   return {
     kind: 'FieldDefinition',
     name: {
       kind: 'Name',
-      value: name
+      value: `${operation}${type.name.value}`
     },
     type: namedType(payload.name.value),
     arguments: [
@@ -365,11 +371,8 @@ function getTypeMutationInput (
   type: ObjectTypeDefinitionNode,
   operation: string,
   relay: boolean
-) {
+): InputObjectTypeDefinitionNode {
   const inputName = `${upperCamelCase(operation)}${type.name.value}MutationInput`
-  let input = types.get(inputName)
-  if (input) return input
-
   let fields = []
   if (operation === 'create') {
     fields = getInputFields(types, type, true)
@@ -384,14 +387,11 @@ function getTypeMutationInput (
       }
     ]
   }
-  input = {
+  return {
     kind: 'InputObjectTypeDefinition',
     name: { kind: 'Name', value: inputName },
     fields: [...fields, ...(relay ? [clientMutationIdInput] : [])]
   }
-
-  types.set(inputName, input)
-  return input
 }
 
 function getFieldMutation (
@@ -400,9 +400,12 @@ function getFieldMutation (
   field: FieldDefinitionNode,
   operation: string,
   relay: boolean
-) {
+): FieldDefinitionNode {
   const name = `${operation}${type.name.value}${upperCamelCase(field.name.value)}`
+
   let input = getFieldMutationInput(types, type, field, operation, relay)
+  types.set(input.name.value, input)
+
   let payload = getMutationPayload(types, type, relay)
   return {
     kind: 'FieldDefinition',
@@ -427,13 +430,10 @@ function getFieldMutationInput (
   field: FieldDefinitionNode,
   operation: string,
   relay: boolean
-) {
+): InputObjectTypeDefinitionNode {
   const inputName = `${upperCamelCase(operation)}${type.name.value}${upperCamelCase(field.name.value)}MutationInput`
-  let input = typeMap.get(inputName)
-  if (input) return input
-
   if (operation === 'unset') {
-    input = {
+    return {
       kind: 'InputObjectTypeDefinition',
       name: { kind: 'Name', value: inputName },
       fields: [
@@ -443,45 +443,38 @@ function getFieldMutationInput (
         })
       ]
     }
-  } else {
-    const typeInput = getInputType(typeMap, `${type.name.value}Input`, type)
-    const relation = operation === 'add' || operation === 'remove'
-      ? nonNullListOfNamedType(typeInput.name.value)
-      : nonNullNamedType(typeInput.name.value)
-
-    input = {
-      kind: 'InputObjectTypeDefinition',
-      name: { kind: 'Name', value: inputName },
-      fields: [
-        inputValueDef({
-          name: 'id',
-          type: nonNullType(namedType('ID'))
-        }),
-        inputValueDef({
-          name: field.name.value,
-          type: relation
-        }),
-        ...(relay ? [clientMutationIdInput] : [])
-      ]
-    }
   }
-  typeMap.set(inputName, input)
-  return input
+  const typeInput = getInputType(typeMap, `${type.name.value}Input`, type)
+  const relation = operation === 'add' || operation === 'remove'
+    ? nonNullListOfNamedType(typeInput.name.value)
+    : nonNullNamedType(typeInput.name.value)
+
+  return {
+    kind: 'InputObjectTypeDefinition',
+    name: { kind: 'Name', value: inputName },
+    fields: [
+      inputValueDef({
+        name: 'id',
+        type: nonNullType(namedType('ID'))
+      }),
+      inputValueDef({
+        name: field.name.value,
+        type: relation
+      }),
+      ...(relay ? [clientMutationIdInput] : [])
+    ]
+  }
 }
 
 function getMutationPayload (
   typeMap: TypeMap,
   type: ObjectTypeDefinitionNode,
   relay: boolean
-) {
-  const payloadName = `${type.name.value}MutationPayload`
-  let payload = typeMap.get(payloadName)
-  if (payload) return payload
-
+): ObjectTypeDefinitionNode {
   const typeName = type.name.value
-  payload = {
+  return {
     kind: 'ObjectTypeDefinition',
-    name: { kind: 'Name', value: payloadName },
+    name: { kind: 'Name', value: `${type.name.value}MutationPayload` },
     fields: [
       {
         kind: 'FieldDefinition',
@@ -492,15 +485,13 @@ function getMutationPayload (
       ...(relay ? [clientMutationIdField] : [])
     ]
   }
-  typeMap.set(payloadName, payload)
-  return payload
 }
 
 function getInputFields (
   types: TypeMap,
   type: ObjectTypeDefinitionNode,
   excludeId: boolean
-) {
+): Array<InputValueDefinitionNode> {
   return type.fields
     .filter(field => {
       return !(excludeId && field.name.value === 'id')
@@ -544,9 +535,12 @@ function getInputType (
   types: TypeMap,
   name: string,
   type: ObjectTypeDefinitionNode
-) {
+): InputObjectTypeDefinitionNode {
   let inputType = types.get(name)
-  if (inputType) return inputType
+  if (inputType) {
+    invariant(inputType.kind === 'InputObjectTypeDefinition', 'Not input type')
+    return inputType
+  }
 
   const fields = []
   inputType = {
@@ -559,7 +553,7 @@ function getInputType (
   return inputType
 }
 
-function isList (type: TypeNode) {
+function isList (type: TypeNode): boolean {
   if (type.kind === 'NonNullType') {
     return isList(type.type)
   }
@@ -766,7 +760,7 @@ function getConfig (field: FieldDefinitionNode) {
   }
 }
 
-function getTypeName (type: TypeNode) {
+function getTypeName (type: TypeNode): string {
   if (type.kind === 'NonNullType' || type.kind === 'ListType') {
     return getTypeName(type.type)
   }
