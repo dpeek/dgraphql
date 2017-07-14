@@ -199,6 +199,28 @@ Object {
 }
 `;
 
+exports[`setting edge to existing node of incorrect type returns error 1`] = `
+Object {
+  "data": Object {
+    "setPersonPartner": null,
+  },
+  "errors": Array [
+    [GraphQLError: Cannot create edge "partner" from "Person" to "Email", should be "Person"],
+  ],
+}
+`;
+
+exports[`setting edge to non-existent node returns error 1`] = `
+Object {
+  "data": Object {
+    "setPersonPartner": null,
+  },
+  "errors": Array [
+    [GraphQLError: There is no "Person" with id "0x00"],
+  ],
+}
+`;
+
 exports[`setting edge with no reverse does nothing to existing node 1`] = `
 Object {
   "data": Object {

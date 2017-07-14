@@ -158,11 +158,14 @@ export default function transformSchema (ast: DocumentNode, relay: boolean) {
   let mutations = []
   let defs: Array<ObjectTypeDefinitionNode> = []
   ast.definitions.forEach(type => {
+    if (type.name && type.name.value) {
+      types.set(String(type.name.value), type)
+    }
     if (type.kind === 'ObjectTypeDefinition') {
       defs.push(type)
     }
   })
-  defs.forEach(type => types.set(type.name.value, type))
+  // defs.forEach(type => types.set(type.name.value, type))
   defs.forEach(type => {
     const typeName = type.name.value
     const fields = type.fields.map(field => {
@@ -490,8 +493,8 @@ function getInputFields (
     })
     .map(field => {
       const typeName = getTypeName(field.type)
-      if (types.has(typeName)) {
-        const fieldType = types.get(typeName)
+      const fieldType = types.get(typeName)
+      if (fieldType && fieldType.kind !== 'EnumTypeDefinition') {
         invariant(
           fieldType && fieldType.kind === 'ObjectTypeDefinition',
           'Invalid input type'

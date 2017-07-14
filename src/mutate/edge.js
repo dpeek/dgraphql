@@ -27,17 +27,26 @@ export default function resolve (
   const reversePredicate = context.client.getReversePredicate(fieldName)
   let query = 'query {\n'
   query += `  subject(id: ${subject}) { ${fieldName} { _uid_ }}\n`
-  if (value && reversePredicate) {
-    query += `value(id: ${value}) { ${reversePredicate} { _uid_ }}`
+  if (value) {
+    query += `value(id: ${value}) { _uid_ __typename`
+    if (reversePredicate) {
+      query += ` ${reversePredicate} { _uid_ }`
+    }
+    query += '}\n'
   }
   query += '}'
   return context.client
     .fetchQuery(query)
     .then(edges => {
+      const types = {}
+      if (edges.value) {
+        types[edges.value[0]._uid_] = edges.value[0].__typename
+      }
       let subjectEdge = edges.subject && edges.subject[0][fieldName][0]._uid_
       let valueEdge =
         edges.value &&
         reversePredicate &&
+        edges.value[0][reversePredicate] &&
         edges.value[0][reversePredicate][0]._uid_
       if ((subjectEdge || valueEdge) && subjectEdge !== value) {
         mutation += '  delete {\n'
@@ -58,7 +67,14 @@ export default function resolve (
 
       if (input[fieldName]) {
         mutation += '  set {\n'
-        mutation += getMutation(info, context, type, input, `<${subject}>`)
+        mutation += getMutation(
+          info,
+          context,
+          type,
+          input,
+          `<${subject}>`,
+          types
+        )
         mutation += '  }\n'
       }
 

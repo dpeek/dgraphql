@@ -43,6 +43,28 @@ Object {
 }
 `;
 
+exports[`creating node with edge to node of incorrect type returns error 1`] = `
+Object {
+  "data": Object {
+    "createPerson": null,
+  },
+  "errors": Array [
+    [GraphQLError: Cannot create edge "partner" from "Person" to "Email", should be "Person"],
+  ],
+}
+`;
+
+exports[`creating node with edge to non-existent node returns error 1`] = `
+Object {
+  "data": Object {
+    "createPerson": null,
+  },
+  "errors": Array [
+    [GraphQLError: There is no "Person" with id "0x00"],
+  ],
+}
+`;
+
 exports[`deletes node 1`] = `
 Object {
   "data": Object {

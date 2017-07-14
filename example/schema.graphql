@@ -2,6 +2,7 @@ type Person {
   id: ID!
   config: JSON
   dob: Date @order @filter(types: [EQUALITY])
+  emails: [Email!]!
   lastActiveAt: DateTime @order @filter(types: [EQUALITY])
   name: String @order @filter(types: [EQUALITY, TERM])
   title: String @localize @filter(types: [EQUALITY])
@@ -12,4 +13,15 @@ type Person {
   partner: Person @reverse(name: "partner")
   children: [Person!]! @reverse(name: "parents")
   parents: [Person!]! @reverse(name: "children")
+}
+
+enum EmailType {
+  HOME
+  WORK
+}
+
+type Email {
+  id: ID!
+  type: EmailType! @filter(types: [EQUALITY])
+  address: String!
 }

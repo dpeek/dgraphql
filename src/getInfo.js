@@ -26,6 +26,10 @@ export default function getInfo (ast: DocumentNode): SchemaInfo {
     reverse: '',
     orders: new Set()
   })
+  const types = {}
+  ast.definitions.forEach(def => {
+    if (def.name && def.name.value) types[String(def.name.value)] = def
+  })
   visit(ast, {
     Directive: (directive, key, parent, path, ancestors) => {
       const field = ancestors[ancestors.length - 1]
@@ -34,7 +38,7 @@ export default function getInfo (ast: DocumentNode): SchemaInfo {
         if (type.kind === 'ObjectTypeDefinition') {
           const typeName = type.name.value
           const fieldName = field.name.value
-          const fieldType = getType(field.type)
+          const fieldType = getType(field.type, types)
           const args = getArguments(null, directive.arguments || [])
 
           const fieldInfo = info.get(fieldName) || {
@@ -94,10 +98,10 @@ export default function getInfo (ast: DocumentNode): SchemaInfo {
   return info
 }
 
-function getType (type) {
+function getType (type, types) {
   switch (type.kind) {
     case 'NonNullType':
-      return getType(type.type)
+      return getType(type.type, types)
     case 'ListType':
       return 'uid'
     case 'NamedType':
@@ -111,10 +115,12 @@ function getType (type) {
         case 'ID':
           return 'string'
         case 'Date':
-          return 'date'
         case 'DateTime':
           return 'datetime'
         default:
+          if (types[type.name.value].kind === 'EnumTypeDefinition') {
+            return 'string'
+          }
           return 'uid'
       }
     default:

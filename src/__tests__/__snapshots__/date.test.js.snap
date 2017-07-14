@@ -5,7 +5,7 @@ Object {
   "data": Object {
     "createPerson": Object {
       "person": Object {
-        "dob": "2000-12-01",
+        "dob": "2000-12-01T00:00:00Z",
         "lastActiveAt": "2000-12-01T00:00:00Z",
       },
     },

@@ -297,3 +297,55 @@ test('creates node linked to existing nodes', async () => {
   const createLinkedResult = await graphql(createLinked)
   expect(createLinkedResult).toMatchSnapshot()
 })
+
+test('creating node with edge to non-existent node returns error', async () => {
+  const create = `mutation {
+    createPerson(
+      input: {
+        name: "David",
+        partner: { id:"0x00" }
+      }
+    ) {
+      person {
+        name
+        partner {
+          name
+        }
+      }
+    }
+  }`
+
+  const result = await graphql(create)
+  expect(result).toMatchSnapshot()
+})
+
+test('creating node with edge to node of incorrect type returns error', async () => {
+  const email = `mutation {
+    email: createEmail(input: { type: HOME, address: "test@test.com" }) {
+      email {
+        id
+      }
+    }
+  }`
+  const emailResult = await graphql(email)
+  const emailId = emailResult.data.email.email.id
+
+  const create = `mutation {
+    createPerson(
+      input: {
+        name: "David",
+        partner: { id:"${emailId}" }
+      }
+    ) {
+      person {
+        name
+        partner {
+          name
+        }
+      }
+    }
+  }`
+
+  const result = await graphql(create)
+  expect(result).toMatchSnapshot()
+})

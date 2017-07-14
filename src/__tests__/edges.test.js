@@ -671,3 +671,58 @@ test('removes edges removing reverse edges', async () => {
   const queryResult = await graphql(query)
   expect(queryResult).toMatchSnapshot()
 })
+
+test('setting edge to non-existent node returns error', async () => {
+  const create = `mutation {
+    tom: createPerson(input: {name: "Tom"}) {
+      person {
+        id
+      }
+    }
+  }`
+  const result = await graphql(create)
+  const tom = result.data.tom.person.id
+  const set = `mutation {
+    setPersonPartner(input: {id: "${tom}", partner: {id: "0x00"}}) {
+      person {
+        name
+        partner {
+          name
+        }
+      }
+    }
+  }`
+  const setResult = await graphql(set)
+  expect(setResult).toMatchSnapshot()
+})
+
+test('setting edge to existing node of incorrect type returns error', async () => {
+  const create = `mutation {
+    tom: createPerson(input: {name: "Tom"}) {
+      person {
+        id
+      }
+    }
+    email: createEmail(input: {type: HOME, address: "test@test.com"}) {
+      email {
+        id
+      }
+    }
+  }`
+  const result = await graphql(create)
+  const tom = result.data.tom.person.id
+  const email = result.data.email.email.id
+
+  const set = `mutation {
+    setPersonPartner(input: {id: "${tom}", partner: {id: "${email}"}}) {
+      person {
+        name
+        partner {
+          name
+        }
+      }
+    }
+  }`
+  const setResult = await graphql(set)
+  expect(setResult).toMatchSnapshot()
+})
