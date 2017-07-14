@@ -8,18 +8,19 @@ import { unwrapNonNull } from '../utils'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { Context } from '../client'
 
-type NodeInput = {
+export type MutationInput = {
   id?: string,
-  updatedAt: string,
-  createdAt: string,
-  [string]: { id?: string }
+  updatedAt?: string,
+  createdAt?: string,
+  clientMutationId?: string,
+  [string]: MutationInput | Array<MutationInput>
 }
 
 export default function getMutation (
   info: GraphQLResolveInfo,
   context: Context,
   type: GraphQLObjectType,
-  input: {},
+  input: MutationInput,
   subject: string
 ) {
   const ident = getIdent()
@@ -31,7 +32,7 @@ export default function getMutation (
 function getMutationFields (
   context: Context,
   type: GraphQLObjectType,
-  input: NodeInput,
+  input: MutationInput,
   subject: string,
   ident: (id?: string) => string
 ) {
@@ -56,7 +57,9 @@ function getMutationFields (
       if (fieldType instanceof GraphQLList) {
         fieldType = unwrapNonNull(fieldType.ofType)
       }
-      const values = Array.isArray(value) ? value : [value]
+      const values = Array.isArray(value)
+        ? value
+        : typeof value === 'object' ? [value] : []
       values
         .map(value => {
           invariant(typeof value === 'object', 'Input value is not object')
@@ -79,11 +82,11 @@ function getMutationFields (
 
 function getNodeQuery (
   context: Context,
-  input: NodeInput,
+  input: MutationInput,
   type: GraphQLObjectType,
   ident: (id?: string) => string,
-  subject,
-  predicate
+  subject: string,
+  predicate: string
 ) {
   let value = ident(input.id)
   let query = `  ${subject} <${predicate}> ${value} .\n`

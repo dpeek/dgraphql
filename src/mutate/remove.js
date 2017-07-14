@@ -9,7 +9,13 @@ export default function resolve (
   type: GraphQLObjectType,
   fieldName: string,
   source: ?GraphResponse,
-  args: { input: { id: string, clientMutationId?: string } },
+  args: {
+    input: {
+      id: string,
+      clientMutationId?: string,
+      [string]: Array<{ id: string }>
+    }
+  },
   context: Context,
   info: GraphQLResolveInfo
 ) {

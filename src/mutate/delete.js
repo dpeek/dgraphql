@@ -23,8 +23,8 @@ export default function resolve (
     context,
     id,
     args.input.clientMutationId
-  ).then(res => {
-    if (res === null) {
+  ).then(payload => {
+    if (payload === null) {
       throw new GraphQLError(`There is no '${type.name}' with id '${id}'`)
     }
 
@@ -58,6 +58,6 @@ export default function resolve (
         query += '}}'
         return client.fetchQuery(query)
       })
-      .then(() => res)
+      .then(() => payload)
   })
 }

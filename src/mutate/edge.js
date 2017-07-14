@@ -1,23 +1,28 @@
 // @flow
 
+import invariant from 'invariant'
+
 import getMutation from './getMutation'
 import payloadQuery from '../query/payload'
 
 import type { GraphQLResolveInfo, GraphQLObjectType } from 'graphql'
 import type { Context } from '../client'
+import type { MutationInput } from './getMutation'
 
 export default function resolve (
   type: GraphQLObjectType,
   fieldName: string,
   source: void,
-  args: { input: { id: string, clientMutationId?: string } },
+  args: { input: MutationInput },
   context: Context,
   info: GraphQLResolveInfo
 ) {
   let mutation = 'mutation {\n'
   const input = args.input
   const subject = input.id
+  invariant(typeof subject === 'string', 'No subject')
   const payload = input[fieldName]
+  invariant(!Array.isArray(payload), 'Payload is array')
   const value = payload && payload.id
   const reversePredicate = context.client.getReversePredicate(fieldName)
   let query = 'query {\n'
@@ -42,7 +47,7 @@ export default function resolve (
             mutation += `    <${subjectEdge}> <${reversePredicate}> <${subject}> .\n`
           }
         }
-        if (valueEdge) {
+        if (value && valueEdge) {
           mutation += `    <${value}> <${fieldName}> <${valueEdge}> .\n`
           if (reversePredicate) {
             mutation += `    <${valueEdge}> <${reversePredicate}> <${value}> .\n`

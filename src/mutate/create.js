@@ -5,11 +5,12 @@ import payloadQuery from '../query/payload'
 
 import type { GraphQLResolveInfo, GraphQLObjectType } from 'graphql'
 import type { Context } from '../client'
+import type { MutationInput } from './getMutation'
 
 export default function resolve (
   type: GraphQLObjectType,
   source: void,
-  args: { input: { id?: string, clientMutationId?: string } },
+  args: { input: MutationInput },
   context: Context,
   info: GraphQLResolveInfo
 ) {
