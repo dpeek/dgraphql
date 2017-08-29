@@ -11,7 +11,7 @@ export default function resolve (
   info: GraphQLResolveInfo,
   context: Context,
   id: string,
-  clientMutationId?: string
+  clientMutationId: ?string
 ) {
   const mutation = info.fieldNodes[0]
   invariant(

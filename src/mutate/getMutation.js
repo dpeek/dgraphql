@@ -5,19 +5,22 @@ import invariant from 'invariant'
 import { GraphQLObjectType, GraphQLList } from 'graphql'
 import { unwrapNonNull } from '../utils'
 
-import type { GraphQLResolveInfo } from 'graphql'
 import type { Context } from '../client'
 
-export type MutationInput = {
+export type NodeInput = {
   id?: string,
-  updatedAt?: string,
-  createdAt?: string,
-  clientMutationId?: string,
-  [string]: MutationInput | Array<MutationInput>
+  updatedAt: string,
+  createdAt: string,
+  [string]: NodeInput | Array<NodeInput>
+}
+
+export type MutationInput = {
+  id: string,
+  clientMutationId: ?string,
+  [string]: NodeInput | Array<NodeInput>
 }
 
 export default function getMutation (
-  info: GraphQLResolveInfo,
   context: Context,
   type: GraphQLObjectType,
   input: MutationInput,
@@ -36,7 +39,7 @@ export default function getMutation (
 function getMutationFields (
   context: Context,
   type: GraphQLObjectType,
-  input: MutationInput,
+  input: NodeInput,
   subject: string,
   ident: (id?: string) => string,
   types: { [string]: string }
@@ -107,7 +110,7 @@ function getMutationFields (
 
 function getNodeQuery (
   context: Context,
-  input: MutationInput,
+  input: NodeInput,
   type: GraphQLObjectType,
   ident: (id?: string) => string,
   subject: string,

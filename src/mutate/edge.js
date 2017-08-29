@@ -1,80 +1,73 @@
 // @flow
 
-import invariant from 'invariant'
-
 import getMutation from './getMutation'
 import payloadQuery from '../query/payload'
 
 import type { GraphQLResolveInfo, GraphQLObjectType } from 'graphql'
 import type { Context } from '../client'
-import type { MutationInput } from './getMutation'
+import type { NodeInput } from './getMutation'
 
 export default function resolve (
   type: GraphQLObjectType,
-  fieldName: string,
+  predicate: string,
   source: void,
-  args: { input: MutationInput },
+  args: {
+    input: { id: string, clientMutationId: ?string, [string]: NodeInput }
+  },
   context: Context,
   info: GraphQLResolveInfo
 ) {
-  let mutation = 'mutation {\n'
   const input = args.input
   const subject = input.id
-  invariant(typeof subject === 'string', 'No subject')
-  const payload = input[fieldName]
-  invariant(!Array.isArray(payload), 'Payload is array')
-  const value = payload && payload.id
-  const reversePredicate = context.client.getReversePredicate(fieldName)
+  const valueInput = input[predicate]
+  const value = valueInput && valueInput.id
+  const reverse = context.client.getReversePredicate(predicate)
   let query = 'query {\n'
-  query += `  subject(id: ${subject}) { ${fieldName} { _uid_ }}\n`
-  if (value) {
+  query += `  subject(id: ${subject}) { ${predicate} { _uid_ }}\n`
+  if (typeof value !== 'undefined') {
     query += `value(id: ${value}) { _uid_ __typename`
-    if (reversePredicate) {
-      query += ` ${reversePredicate} { _uid_ }`
+    if (reverse) {
+      query += ` ${reverse} { _uid_ }`
     }
     query += '}\n'
   }
   query += '}'
   return context.client
     .fetchQuery(query)
-    .then(edges => {
+    .then(result => {
+      const subjectNode = result.subject && result.subject[0]
+      const valueNode = result.value && result.value[0]
       const types = {}
-      if (edges.value) {
-        types[edges.value[0]._uid_] = edges.value[0].__typename
+      if (valueNode) {
+        types[valueNode._uid_] = valueNode.__typename
       }
-      let subjectEdge = edges.subject && edges.subject[0][fieldName][0]._uid_
+      let subjectEdge = subjectNode && subjectNode[predicate][0]._uid_
       let valueEdge =
-        edges.value &&
-        reversePredicate &&
-        edges.value[0][reversePredicate] &&
-        edges.value[0][reversePredicate][0]._uid_
+        reverse &&
+        valueNode &&
+        valueNode[reverse] &&
+        valueNode[reverse][0]._uid_
+      let mutation = 'mutation {\n'
       if ((subjectEdge || valueEdge) && subjectEdge !== value) {
         mutation += '  delete {\n'
         if (subjectEdge) {
-          mutation += `    <${subject}> <${fieldName}> <${subjectEdge}> .\n`
-          if (reversePredicate) {
-            mutation += `    <${subjectEdge}> <${reversePredicate}> <${subject}> .\n`
+          mutation += `    <${subject}> <${predicate}> <${subjectEdge}> .\n`
+          if (reverse) {
+            mutation += `    <${subjectEdge}> <${reverse}> <${subject}> .\n`
           }
         }
         if (value && valueEdge) {
-          mutation += `    <${value}> <${fieldName}> <${valueEdge}> .\n`
-          if (reversePredicate) {
-            mutation += `    <${valueEdge}> <${reversePredicate}> <${value}> .\n`
+          mutation += `    <${value}> <${predicate}> <${valueEdge}> .\n`
+          if (reverse) {
+            mutation += `    <${valueEdge}> <${reverse}> <${value}> .\n`
           }
         }
         mutation += '  }\n'
       }
 
-      if (input[fieldName]) {
+      if (valueInput) {
         mutation += '  set {\n'
-        mutation += getMutation(
-          info,
-          context,
-          type,
-          input,
-          `<${subject}>`,
-          types
-        )
+        mutation += getMutation(context, type, input, `<${subject}>`, types)
         mutation += '  }\n'
       }
 
