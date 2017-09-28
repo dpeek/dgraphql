@@ -126,12 +126,12 @@ test('deletes node', async () => {
     }
   }`
   const queryResult = await graphql(query)
-  expect(queryResult).toMatchSnapshot()
+  expect(queryResult.data.person).toBe(null)
 })
 
 test('deleting non-existent node returns error', async () => {
   const deletes = `mutation {
-    deletePerson(input: {id: "foo"}) {
+    deletePerson(input: {id: "0xFFFFFFFFFFFF"}) {
       person {
         id
       }

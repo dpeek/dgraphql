@@ -11,7 +11,7 @@ services:
   - docker
 
 before_install:
-  - docker pull dgraph/dgraph
+  - docker pull dgraph/dgraph@sha256:efd1ad757c4b5ffb2b4072920ba13aa462b4318b48f55496235e25d1c6e51949
   - docker run -d -p 8080:8080 --name dgraph dgraph/dgraph dgraph --bindall=true
 
 after_success:

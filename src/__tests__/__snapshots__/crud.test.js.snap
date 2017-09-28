@@ -65,14 +65,6 @@ Object {
 }
 `;
 
-exports[`deletes node 1`] = `
-Object {
-  "data": Object {
-    "person": null,
-  },
-}
-`;
-
 exports[`deletes reverse edge to deleted node 1`] = `
 Object {
   "data": Object {
@@ -99,7 +91,7 @@ Object {
     "deletePerson": null,
   },
   "errors": Array [
-    [GraphQLError: There is no 'Person' with id 'foo'],
+    [GraphQLError: There is no 'Person' with id '0xFFFFFFFFFFFF'],
   ],
 }
 `;

@@ -1,5 +1,7 @@
 // @flow
 
+import { GraphQLError } from 'graphql'
+
 import invariant from 'invariant'
 import query from './query'
 
@@ -16,6 +18,11 @@ export default function resolve (
     invariant(info.path && info.path.key, 'No path')
     let nodes = result[String(info.path.key)] || []
     nodes = nodes.filter(node => !!node.__typename)
-    return nodes[0]
+    const node = nodes[0]
+    if (args.id && !node) {
+      console.log('>>', node)
+      throw new GraphQLError(`There is no 'Node' with id '${args.id}'`)
+    }
+    return node
   })
 }

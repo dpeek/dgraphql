@@ -28,7 +28,7 @@ export default function resolve (
       throw new GraphQLError(`There is no '${type.name}' with id '${id}'`)
     }
 
-    let edgeQuery = `query { node(id: ${id}) {\n  __typename\n`
+    let edgeQuery = `query { node(func:uid(${id})) {\n  __typename\n`
     getFields(type).forEach(field => {
       const fieldType = unwrap(field.type)
       if (

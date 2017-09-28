@@ -74,6 +74,8 @@ export default function getInfo (ast: DocumentNode): SchemaInfo {
                   case 'EQUALITY':
                     if (fieldType === 'string') {
                       fieldInfo.indexes.add('exact')
+                    } else if (fieldType === 'dateTime') {
+                      fieldInfo.indexes.add('hour')
                     } else {
                       fieldInfo.indexes.add(fieldType)
                     }
@@ -116,7 +118,7 @@ function getType (type, types) {
           return 'string'
         case 'Date':
         case 'DateTime':
-          return 'datetime'
+          return 'dateTime'
         default:
           if (types[type.name.value].kind === 'EnumTypeDefinition') {
             return 'string'

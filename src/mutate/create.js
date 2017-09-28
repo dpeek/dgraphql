@@ -32,7 +32,7 @@ function getTypes (
   context: Context
 ): Promise<{ [string]: string }> {
   const ids = getIds(input)
-  const query = `query { nodes(id: [${ids.join(',')}]) { _uid_, __typename }}`
+  const query = `query { nodes(func:uid(${ids.join(',')})) { _uid_, __typename }}`
   return context.client.fetchQuery(query).then(result => {
     const types = {}
     if (result.nodes) {

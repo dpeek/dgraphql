@@ -34,7 +34,7 @@ function getParams (
   const args = getArguments(info, selection.arguments || [])
   if (args.id) {
     // if we have an id we can bail early
-    return `(id: ${args.id})`
+    return `(func:uid(${args.id}))`
   }
   let query = ''
   let params = []

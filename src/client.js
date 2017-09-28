@@ -82,7 +82,10 @@ export class Client {
             console.log('--dgraph response')
             console.log(JSON.stringify(json, null, '  '))
           }
-          return json
+          if (json.error) {
+            throw json.error
+          }
+          return json.data || {}
         } catch (error) {
           throw new Error(res)
         }

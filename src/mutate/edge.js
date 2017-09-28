@@ -23,9 +23,9 @@ export default function resolve (
   const value = valueInput && valueInput.id
   const reverse = context.client.getReversePredicate(predicate)
   let query = 'query {\n'
-  query += `  subject(id: ${subject}) { ${predicate} { _uid_ }}\n`
+  query += `  subject(func:uid(${subject})) { ${predicate} { _uid_ }}\n`
   if (typeof value !== 'undefined') {
-    query += `value(id: ${value}) { _uid_ __typename`
+    query += `value(func:uid(${value})) { _uid_ __typename`
     if (reverse) {
       query += ` ${reverse} { _uid_ }`
     }

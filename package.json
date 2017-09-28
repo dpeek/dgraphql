@@ -20,7 +20,7 @@
     "lint": "eslint",
     "prepublish": "babel src --optional runtime --ignore __tests__ --out-dir lib/",
     "start": "babel-node example",
-    "dgraph": "docker rm dgraphql; docker run -it -p 8080:8080 --name dgraphql dgraph/dgraph dgraph --bindall=true"
+    "dgraph": "docker rm dgraphql; docker run -it -p 8080:8080 --name dgraphql dgraph/dgraph dgraph --bindall=true --memory_mb=1024"
   },
   "dependencies": {
     "graphql": "^0.10.3",

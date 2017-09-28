@@ -71,12 +71,12 @@ const nonNullListOfNamedType = (name: string) =>
 
 const clientMutationIdField = fieldDef({
   name: 'clientMutationId',
-  type: nonNullNamedType('String')
+  type: namedType('String')
 })
 
 const clientMutationIdInput = inputValueDef({
   name: 'clientMutationId',
-  type: nonNullNamedType('String')
+  type: namedType('String')
 })
 
 const nodeInterface = {
