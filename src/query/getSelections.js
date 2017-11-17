@@ -39,8 +39,8 @@ function getParams (
   let query = ''
   let params = []
   if (isRoot) {
-    // root queries in dgraph query everything, so specify __typename
-    params.push(`func:eq(__typename, "${typeName}")`)
+    // root queries in dgraph query everything, so specify has(typeTypeName)
+    params.push(`func:has(type${typeName})`)
   }
   if (!isCount) {
     if (args.first) {
@@ -127,7 +127,7 @@ function getSelection (
     query += args
     if (selections) {
       query += ' {\n'
-      query += `${indent}  _uid_\n`
+      query += `${indent}  uid\n`
       query += `${indent}  __typename\n`
       query += getSelections(
         info,
@@ -152,7 +152,7 @@ function getSelection (
         isRoot,
         true
       )
-      query += `\n${indent}_count_${fieldName}_${args} { count() }`
+      query += `\n${indent}_count_${fieldName}_${args} { count(uid) }`
     }
   }
   return query + '\n'

@@ -18,7 +18,7 @@ export async function init (relay?: boolean = false) {
   let commonVariables = { time }
 
   // can't use the same client as some tests are in relay mode, the query is not
-  let client = new Client({ schema, debug: true })
+  let client = new Client({ schema })
   const result = await graphql({
     source,
     schema: client.schema,
@@ -31,14 +31,13 @@ export async function init (relay?: boolean = false) {
       commonVariables[node.name.split(' ')[0].toLowerCase()] = node.id
     }
     Object.values(node).forEach(value => {
-      if (typeof value === 'object') walk(value)
+      if (value && typeof value === 'object') walk(value)
     })
   }
-  console.log(result)
-  if (result.data) walk(result.data)
-  else throw new Error(result.errors)
+  if (result.errors) throw result.errors[0]
+  else walk(result.data)
 
-  client = new Client({ schema, relay, debug: true })
+  client = new Client({ schema, relay, debug: false })
   return (source, variables, language) => {
     return graphql({
       source,

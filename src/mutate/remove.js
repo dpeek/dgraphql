@@ -23,7 +23,7 @@ export default function resolve (
   const subject = input.id
   const values = input[fieldName].map(node => node.id)
   const reversePredicate = context.client.getReversePredicate(fieldName)
-  let mutation = 'mutation { delete {\n'
+  let mutation = '{ delete {\n'
   values.forEach(id => {
     mutation += `  <${subject}> <${fieldName}> <${id}> .\n`
     if (reversePredicate) {
@@ -31,7 +31,7 @@ export default function resolve (
     }
   })
   mutation += '}}'
-  return context.client.fetchQuery(mutation).then(() => {
+  return context.client.mutate(mutation).then(() => {
     return payloadQuery(info, context, subject, input.clientMutationId)
   })
 }

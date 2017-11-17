@@ -8,7 +8,7 @@ console.log('Running a GraphQL API server at http://localhost:4000')
 
 const schema = path.resolve(__dirname, 'schema.graphql')
 const client = new Client({
-  server: 'http://localhost:8080/query',
+  server: 'http://localhost:8080',
   schema: fs.readFileSync(schema).toString(),
   relay: false,
   debug: true

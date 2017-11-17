@@ -22,32 +22,32 @@ export default function resolve (
   const valueInput = input[predicate]
   const value = valueInput && valueInput.id
   const reverse = context.client.getReversePredicate(predicate)
-  let query = 'query {\n'
-  query += `  subject(func:uid(${subject})) { ${predicate} { _uid_ }}\n`
+  let query = '{\n'
+  query += `  subject(func:uid(${subject})) { ${predicate} { uid }}\n`
   if (typeof value !== 'undefined') {
-    query += `value(func:uid(${value})) { _uid_ __typename`
+    query += `value(func:uid(${value})) { uid __typename`
     if (reverse) {
-      query += ` ${reverse} { _uid_ }`
+      query += ` ${reverse} { uid }`
     }
     query += '}\n'
   }
   query += '}'
   return context.client
-    .fetchQuery(query)
+    .query(query)
     .then(result => {
       const subjectNode = result.subject && result.subject[0]
       const valueNode = result.value && result.value[0]
       const types = {}
       if (valueNode) {
-        types[valueNode._uid_] = valueNode.__typename
+        types[valueNode.uid] = valueNode.__typename
       }
-      let subjectEdge = subjectNode && subjectNode[predicate][0]._uid_
+      let subjectEdge = subjectNode && subjectNode[predicate][0].uid
       let valueEdge =
         reverse &&
         valueNode &&
         valueNode[reverse] &&
-        valueNode[reverse][0]._uid_
-      let mutation = 'mutation {\n'
+        valueNode[reverse][0].uid
+      let mutation = '{\n'
       if ((subjectEdge || valueEdge) && subjectEdge !== value) {
         mutation += '  delete {\n'
         if (subjectEdge) {
@@ -72,7 +72,7 @@ export default function resolve (
       }
 
       mutation += '}'
-      return context.client.fetchQuery(mutation)
+      return context.client.mutate(mutation)
     })
     .then(() => {
       return payloadQuery(info, context, subject, input.clientMutationId)

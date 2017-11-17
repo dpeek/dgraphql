@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  zero:
+    image: dgraph/dgraph:master
+    command: dgraph zero --port_offset -2000 --my=zero:5080
+    restart: on-failure
+    volumes:
+      - ./data:/dgraph
+  server:
+    image: dgraph/dgraph:master
+    command: dgraph server --my=server:7080 --memory_mb=2048 --zero=zero:5080
+    restart: on-failure
+    volumes:
+      - ./data:/dgraph
+    ports:
+      - 8080:8080
+      - 9080:9080

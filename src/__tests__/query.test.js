@@ -1,87 +1,87 @@
-import { init } from './harness'
+import { init } from "./harness";
 
-var graphql
+var graphql;
 
 beforeAll(async () => {
-  graphql = await init()
-})
+  graphql = await init();
+});
 
-test('queries node field', async () => {
+test("queries node field", async () => {
   const source = `query TestQuery($david: ID!) {
     person(id: $david) {
       name
     }
-  }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+  }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('queries node fields', async () => {
+test("queries node fields", async () => {
   const source = `query TestQuery($david: ID!) {
     person(id: $david) {
       name
       employed
     }
-  }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+  }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('returns null for node', async () => {
+test("returns null for node", async () => {
   const source = `query {
-    person(id: "non-existing") {
+    person(id: "0xFFFFFFFFFF") {
       name
     }
-  }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+  }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('returns null for non-existing edge', async () => {
+test("returns null for non-existing edge", async () => {
   const source = `query TestQuery($linda: ID!) {
     person(id: $linda) {
       partner {
         name
       }
     }
-  }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+  }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('returns empty array for non-existing edges', async () => {
+test("returns empty array for non-existing edges", async () => {
   const source = `query TestQuery($linda: ID!) {
     person(id: $linda) {
       parents {
         name
       }
     }
-  }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+  }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('queries type name', async () => {
+test("queries type name", async () => {
   const source = `query TestQuery($david: ID!) {
     person(id: $david) {
       __typename
     }
-  }`
-  const result = await graphql(source)
-  expect(result.data.person.__typename).toEqual('Person')
-})
+  }`;
+  const result = await graphql(source);
+  expect(result.data.person.__typename).toEqual("Person");
+});
 
-test('queries aliased field', async () => {
+test("queries aliased field", async () => {
   const source = `query TestQuery($david: ID!) {
     person(id: $david) {
       test: name
     }
-  }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+  }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('queries nested field', async () => {
+test("queries nested field", async () => {
   const source = `query TestQuery($david: ID!) {
     person(id: $david) {
       name
@@ -89,12 +89,12 @@ test('queries nested field', async () => {
         name
       }
     }
-  }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+  }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('order edges by string ascending', async () => {
+test("order edges by string ascending", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: name_asc,
@@ -104,12 +104,12 @@ test('order edges by string ascending', async () => {
       ) {
         name
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('order edges by string descending', async () => {
+test("order edges by string descending", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: name_desc,
@@ -119,12 +119,12 @@ test('order edges by string descending', async () => {
       ) {
         name
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('filters by string with all terms', async () => {
+test("filters by string with all terms", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: name_asc,
@@ -135,12 +135,12 @@ test('filters by string with all terms', async () => {
       ) {
         name
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('filters by string with any of terms', async () => {
+test("filters by string with any of terms", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: name_asc,
@@ -151,12 +151,12 @@ test('filters by string with any of terms', async () => {
       ) {
         name
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('filters by string equal to', async () => {
+test("filters by string equal to", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: name_asc,
@@ -167,12 +167,12 @@ test('filters by string equal to', async () => {
       ) {
         name
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('filters by boolean equal to', async () => {
+test("filters by boolean equal to", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: name_asc,
@@ -184,12 +184,12 @@ test('filters by boolean equal to', async () => {
         name
         employed
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('filters by int equal to', async () => {
+test("filters by int equal to", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: age_asc,
@@ -201,11 +201,11 @@ test('filters by int equal to', async () => {
         name
         age
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
-test('filters by int less than', async () => {
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
+test("filters by int less than", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: age_asc,
@@ -217,12 +217,12 @@ test('filters by int less than', async () => {
         name
         age
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('filters by int less than or equal to', async () => {
+test("filters by int less than or equal to", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: age_asc,
@@ -234,12 +234,12 @@ test('filters by int less than or equal to', async () => {
         name
         age
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('filters by int greater than', async () => {
+test("filters by int greater than", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: age_asc,
@@ -251,12 +251,12 @@ test('filters by int greater than', async () => {
         name
         age
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('filters by int greater than or equal to', async () => {
+test("filters by int greater than or equal to", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: age_asc,
@@ -268,12 +268,12 @@ test('filters by int greater than or equal to', async () => {
         name
         age
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('filters by float equal to', async () => {
+test("filters by float equal to", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: height_asc,
@@ -285,12 +285,12 @@ test('filters by float equal to', async () => {
         name
         height
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('filters by float less than', async () => {
+test("filters by float less than", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: height_asc,
@@ -302,12 +302,12 @@ test('filters by float less than', async () => {
         name
         height
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('filters by float less than or equal to', async () => {
+test("filters by float less than or equal to", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: height_asc,
@@ -319,12 +319,12 @@ test('filters by float less than or equal to', async () => {
         name
         height
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('filters by float greater than', async () => {
+test("filters by float greater than", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: height_asc,
@@ -336,12 +336,12 @@ test('filters by float greater than', async () => {
         name
         height
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});
 
-test('filters by float greater than or equal to', async () => {
+test("filters by float greater than or equal to", async () => {
   const source = `query TestQuery($time: Int) {
       people(
         order: height_asc,
@@ -353,7 +353,7 @@ test('filters by float greater than or equal to', async () => {
         name
         height
       }
-    }`
-  const result = await graphql(source)
-  expect(result).toMatchSnapshot()
-})
+    }`;
+  const result = await graphql(source);
+  expect(result).toMatchSnapshot();
+});

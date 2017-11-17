@@ -350,7 +350,7 @@ Object {
     "person": null,
   },
   "errors": Array [
-    [GraphQLError: There is no 'Node' with id 'non-existing'],
+    [GraphQLError: There is no 'Node' with id '0xFFFFFFFFFF'],
   ],
 }
 `;

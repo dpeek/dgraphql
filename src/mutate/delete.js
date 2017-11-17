@@ -28,35 +28,35 @@ export default function resolve (
       throw new GraphQLError(`There is no '${type.name}' with id '${id}'`)
     }
 
-    let edgeQuery = `query { node(func:uid(${id})) {\n  __typename\n`
+    let edgeQuery = `{ node(func:uid(${id})) {\n  __typename\n`
     getFields(type).forEach(field => {
       const fieldType = unwrap(field.type)
       if (
         fieldType instanceof GraphQLObjectType ||
         fieldType instanceof GraphQLList
       ) {
-        edgeQuery += '  ' + field.name + ' { _uid_ }\n'
+        edgeQuery += '  ' + field.name + ' { uid }\n'
       }
     })
     edgeQuery += '}}'
 
     return client
-      .fetchQuery(edgeQuery)
+      .query(edgeQuery)
       .then(edges => {
         const subject = edges.node[0]
-        let query = 'mutation { delete {\n'
+        let query = '{ delete {\n'
         query += `  <${id}> * * .\n`
         Object.keys(subject).forEach(key => {
           const results = subject[key]
           const reverse = client.getReversePredicate(key)
           if (reverse && Array.isArray(results)) {
             results.forEach(node => {
-              query += `  <${node._uid_}> <${reverse}> <${id}> .\n`
+              query += `  <${node.uid}> <${reverse}> <${id}> .\n`
             })
           }
         })
         query += '}}'
-        return client.fetchQuery(query)
+        return client.mutate(query)
       })
       .then(() => payload)
   })

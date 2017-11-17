@@ -28,7 +28,7 @@ function resolveQuery (
   if (!req) {
     const query = getQuery(info, context)
     // $FlowFixMe
-    req = info.operation.req = context.client.fetchQuery(query)
+    req = info.operation.req = context.client.query(query)
   }
   return req
 }

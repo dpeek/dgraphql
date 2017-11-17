@@ -28,7 +28,7 @@ export default function resolve (
     }
     const edges = nodes.map(node => ({
       node,
-      cursor: node._uid_
+      cursor: node.uid
     }))
     const firstEdge = edges[0]
     const lastEdge = edges[edges.length - 1]

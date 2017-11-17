@@ -20,7 +20,6 @@ export default function resolve (
     nodes = nodes.filter(node => !!node.__typename)
     const node = nodes[0]
     if (args.id && !node) {
-      console.log('>>', node)
       throw new GraphQLError(`There is no 'Node' with id '${args.id}'`)
     }
     return node

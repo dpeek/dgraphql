@@ -27,7 +27,7 @@ export class Client {
   relay: boolean
 
   constructor (config: ClientConfig) {
-    this._server = config.server || 'http://localhost:8080/query'
+    this._server = config.server || 'http://localhost:8080'
     this._debug = config.debug || false
     this.relay = config.relay || false
 
@@ -36,16 +36,15 @@ export class Client {
     this._info = getInfo(ast)
     this.schema = buildSchema(ast, this)
 
-    let query = 'mutation { schema {\n'
+    let gql = ''
     for (var [key, value] of this._info) {
-      query += '  ' + key + ': ' + value.type
+      gql += key + ': ' + value.type
       if (value.indexes.size) {
-        query += ' @index(' + [...value.indexes].join(',') + ')'
+        gql += ' @index(' + [...value.indexes].join(',') + ')'
       }
-      query += ' .\n'
+      gql += ' .\n'
     }
-    query += '}}'
-    this._updateSchema = this.fetchQuery(query)
+    this._updateSchema = this.alter(gql)
   }
   getReversePredicate (predicate: string): ?string {
     const info = this._info.get(predicate)
@@ -65,14 +64,25 @@ export class Client {
     }
     return `"${String(value)}"`
   }
-  fetchQuery (query: string): Promise<GraphResponse> {
+  alter (gql: string) {
+    return this.fetchQuery('alter', gql)
+  }
+  query (gql: string) {
+    return this.fetchQuery('query', gql)
+  }
+  mutate (gql: string) {
+    return this.fetchQuery('mutate', gql)
+  }
+  fetchQuery (action: string, gql: string): Promise<GraphResponse> {
     if (this._debug) {
-      console.log('-- dgraph query')
-      console.log(query)
+      console.log(`${this._server}/${action}`)
+      console.log(gql)
     }
     return (this._updateSchema || Promise.resolve())
       .then(res => {
-        return fetch(this._server, { method: 'POST', body: query })
+        const headers = {}
+        if (action === 'mutate') headers['X-Dgraph-CommitNow'] = 'true'
+        return fetch(`${this._server}/${action}`, { method: 'POST', body: gql, headers: headers })
       })
       .then(res => res.text())
       .then(res => {
@@ -102,7 +112,7 @@ export type Context = {
 }
 
 export type GraphNode = {
-  _uid_: string,
+  uid: string,
   __typename?: string,
   [string]: Array<GraphNode>
 }

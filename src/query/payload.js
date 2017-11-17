@@ -35,10 +35,10 @@ export default function resolve (
   }
   const fieldName = payload.name.value
   const queryType = info.schema.getQueryType()
-  let query = 'query {\n'
+  let query = '{\n'
   query += getSelections(info, context, [payloadQuery], queryType, '  ', true)
   query += '}'
-  return context.client.fetchQuery(query).then(res => {
+  return context.client.query(query).then(res => {
     const nodes = res[fieldName].filter(node => !!node.__typename)
     return nodes.length > 0 ? { [fieldName]: nodes[0], clientMutationId } : null
   })

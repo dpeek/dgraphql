@@ -17,10 +17,11 @@ export default function resolve (
   const input = args.input
   return getTypes(input, context).then(types => {
     const subject = input.id ? `<${input.id}>` : '_:node'
-    let query = 'mutation { set {\n'
+    let query = '{ set {\n'
     query += getMutation(context, type, input, subject, types)
     query += '}}'
-    return context.client.fetchQuery(query).then(res => {
+    return context.client.mutate(query).then(res => {
+      if (!input.id && !res.uids) throw JSON.stringify(res, null, '  ')
       const id = input.id || res.uids.node
       return payloadQuery(info, context, id, input.clientMutationId)
     })
@@ -32,11 +33,12 @@ function getTypes (
   context: Context
 ): Promise<{ [string]: string }> {
   const ids = getIds(input)
-  const query = `query { nodes(func:uid(${ids.join(',')})) { _uid_, __typename }}`
-  return context.client.fetchQuery(query).then(result => {
+  if (ids.length === 0) return Promise.resolve({})
+  const query = `{ nodes(func:uid(${ids.join(',')})) { uid __typename }}`
+  return context.client.query(query).then(result => {
     const types = {}
     if (result.nodes) {
-      result.nodes.forEach(node => (types[node._uid_] = node.__typename))
+      result.nodes.forEach(node => (types[node.uid] = node.__typename))
     }
     return types
   })

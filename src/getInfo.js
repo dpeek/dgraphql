@@ -19,13 +19,6 @@ export type SchemaInfo = Map<string, FieldInfo>
 
 export default function getInfo (ast: DocumentNode): SchemaInfo {
   const info = new Map()
-  info.set('__typename', {
-    type: 'string',
-    indexes: new Set(['hash']),
-    localize: false,
-    reverse: '',
-    orders: new Set()
-  })
   const types = {}
   ast.definitions.forEach(def => {
     if (def.name && def.name.value) types[String(def.name.value)] = def
