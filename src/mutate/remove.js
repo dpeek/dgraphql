@@ -1,5 +1,6 @@
 // @flow
 
+const dgraph = require('dgraph-js')
 import payloadQuery from '../query/payload'
 
 import type { GraphQLResolveInfo, GraphQLObjectType } from 'graphql'
@@ -23,14 +24,15 @@ export default function resolve (
   const subject = input.id
   const values = input[fieldName].map(node => node.id)
   const reversePredicate = context.client.getReversePredicate(fieldName)
-  let mutation = '{ delete {\n'
+  let deletes = ''
   values.forEach(id => {
-    mutation += `  <${subject}> <${fieldName}> <${id}> .\n`
+    deletes += `  <${subject}> <${fieldName}> <${id}> .\n`
     if (reversePredicate) {
-      mutation += `  <${id}> <${reversePredicate}> <${subject}> .\n`
+      deletes += `  <${id}> <${reversePredicate}> <${subject}> .\n`
     }
   })
-  mutation += '}}'
+  const mutation = new dgraph.Mutation()
+  mutation.setDelNquads(new Uint8Array(new Buffer(deletes)))
   return context.client.mutate(mutation).then(() => {
     return payloadQuery(info, context, subject, input.clientMutationId)
   })

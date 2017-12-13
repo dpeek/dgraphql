@@ -1,5 +1,6 @@
 // @flow
 
+const dgraph = require('dgraph-js')
 import getMutation from './getMutation'
 import payloadQuery from '../query/payload'
 
@@ -43,35 +44,31 @@ export default function resolve (
       }
       let subjectEdge = subjectNode && subjectNode[predicate][0].uid
       let valueEdge =
-        reverse &&
-        valueNode &&
-        valueNode[reverse] &&
-        valueNode[reverse][0].uid
-      let mutation = '{\n'
+        reverse && valueNode && valueNode[reverse] && valueNode[reverse][0].uid
+
+      const mutation = new dgraph.Mutation()
       if ((subjectEdge || valueEdge) && subjectEdge !== value) {
-        mutation += '  delete {\n'
+        let deletes = ''
         if (subjectEdge) {
-          mutation += `    <${subject}> <${predicate}> <${subjectEdge}> .\n`
+          deletes += `<${subject}> <${predicate}> <${subjectEdge}> .\n`
           if (reverse) {
-            mutation += `    <${subjectEdge}> <${reverse}> <${subject}> .\n`
+            deletes += `<${subjectEdge}> <${reverse}> <${subject}> .\n`
           }
         }
         if (value && valueEdge) {
-          mutation += `    <${value}> <${predicate}> <${valueEdge}> .\n`
+          deletes += `<${value}> <${predicate}> <${valueEdge}> .\n`
           if (reverse) {
-            mutation += `    <${valueEdge}> <${reverse}> <${value}> .\n`
+            deletes += `<${valueEdge}> <${reverse}> <${value}> .\n`
           }
         }
-        mutation += '  }\n'
+        mutation.setDelNquads(new Uint8Array(new Buffer(deletes)))
       }
 
       if (valueInput) {
-        mutation += '  set {\n'
-        mutation += getMutation(context, type, input, `<${subject}>`, types)
-        mutation += '  }\n'
+        const sets = getMutation(context, type, input, `<${subject}>`, types)
+        mutation.setSetNquads(new Uint8Array(new Buffer(sets)))
       }
 
-      mutation += '}'
       return context.client.mutate(mutation)
     })
     .then(() => {

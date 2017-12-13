@@ -1,6 +1,6 @@
 // @flow
 
-import fetch from 'isomorphic-fetch'
+const dgraph = require('dgraph-js')
 import { parse, GraphQLSchema, Source } from 'graphql'
 
 import transformSchema from './transformSchema'
@@ -16,6 +16,9 @@ export type ClientConfig = {
   language?: string,
   debug?: boolean
 }
+
+const stub = new dgraph.DgraphClientStub()
+const client = new dgraph.DgraphClient(stub)
 
 export class Client {
   _info: SchemaInfo
@@ -44,7 +47,10 @@ export class Client {
       }
       gql += ' .\n'
     }
-    this._updateSchema = this.alter(gql)
+
+    const op = new dgraph.Operation()
+    op.setSchema(gql)
+    this._updateSchema = client.alter(op)
   }
   getReversePredicate (predicate: string): ?string {
     const info = this._info.get(predicate)
@@ -64,42 +70,18 @@ export class Client {
     }
     return `"${String(value)}"`
   }
-  alter (gql: string) {
-    return this.fetchQuery('alter', gql)
-  }
   query (gql: string) {
-    return this.fetchQuery('query', gql)
-  }
-  mutate (gql: string) {
-    return this.fetchQuery('mutate', gql)
-  }
-  fetchQuery (action: string, gql: string): Promise<GraphResponse> {
-    if (this._debug) {
-      console.log(`${this._server}/${action}`)
-      console.log(gql)
-    }
-    return (this._updateSchema || Promise.resolve())
+    return client
+      .newTxn()
+      .query(gql)
       .then(res => {
-        const headers = {}
-        if (action === 'mutate') headers['X-Dgraph-CommitNow'] = 'true'
-        return fetch(`${this._server}/${action}`, { method: 'POST', body: gql, headers: headers })
+        return JSON.parse(new Buffer(res.getJson_asU8()).toString())
       })
-      .then(res => res.text())
-      .then(res => {
-        try {
-          let json = JSON.parse(res)
-          if (this._debug) {
-            console.log('--dgraph response')
-            console.log(JSON.stringify(json, null, '  '))
-          }
-          if (json.error) {
-            throw json.error
-          }
-          return json.data || {}
-        } catch (error) {
-          throw new Error(res)
-        }
-      })
+  }
+  mutate (mutation: *) {
+    mutation.setCommitNow(true)
+    const txn = client.newTxn()
+    return txn.mutate(mutation)
   }
   getContext (language?: string = 'en'): Context {
     return { client: this, language }

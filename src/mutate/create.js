@@ -1,5 +1,6 @@
 // @flow
 
+const dgraph = require('dgraph-js')
 import getMutation from './getMutation'
 import payloadQuery from '../query/payload'
 
@@ -17,12 +18,12 @@ export default function resolve (
   const input = args.input
   return getTypes(input, context).then(types => {
     const subject = input.id ? `<${input.id}>` : '_:node'
-    let query = '{ set {\n'
-    query += getMutation(context, type, input, subject, types)
-    query += '}}'
-    return context.client.mutate(query).then(res => {
-      if (!input.id && !res.uids) throw JSON.stringify(res, null, '  ')
-      const id = input.id || res.uids.node
+    const sets = getMutation(context, type, input, subject, types)
+    const mutation = new dgraph.Mutation()
+    mutation.setSetNquads(new Uint8Array(new Buffer(sets)))
+    return context.client.mutate(mutation).then(res => {
+      const uids = res.getUidsMap()
+      const id = input.id || uids.get('node')
       return payloadQuery(info, context, id, input.clientMutationId)
     })
   })
