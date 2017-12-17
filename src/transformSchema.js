@@ -367,7 +367,9 @@ function getTypeMutationInput (
   operation: string,
   relay: boolean
 ): InputObjectTypeDefinitionNode {
-  const inputName = `${upperCamelCase(operation)}${type.name.value}MutationInput`
+  const inputName = `${upperCamelCase(operation)}${
+    type.name.value
+  }MutationInput`
   let fields = []
   if (operation === 'create') {
     fields = getInputFields(types, type, true)
@@ -396,7 +398,9 @@ function getFieldMutation (
   operation: string,
   relay: boolean
 ): FieldDefinitionNode {
-  const name = `${operation}${type.name.value}${upperCamelCase(field.name.value)}`
+  const name = `${operation}${type.name.value}${upperCamelCase(
+    field.name.value
+  )}`
 
   let input = getFieldMutationInput(types, type, field, operation, relay)
   types.set(input.name.value, input)
@@ -426,7 +430,9 @@ function getFieldMutationInput (
   operation: string,
   relay: boolean
 ): InputObjectTypeDefinitionNode {
-  const inputName = `${upperCamelCase(operation)}${type.name.value}${upperCamelCase(field.name.value)}MutationInput`
+  const inputName = `${upperCamelCase(operation)}${
+    type.name.value
+  }${upperCamelCase(field.name.value)}MutationInput`
   if (operation === 'unset') {
     return {
       kind: 'InputObjectTypeDefinition',
@@ -439,10 +445,12 @@ function getFieldMutationInput (
       ]
     }
   }
-  const typeInput = getInputType(typeMap, `${type.name.value}Input`, type)
-  const relation = operation === 'add' || operation === 'remove'
-    ? nonNullListOfNamedType(typeInput.name.value)
-    : nonNullNamedType(typeInput.name.value)
+  const fieldType = getTypeName(field.type)
+  const typeInput = getInputType(typeMap, `${fieldType}Input`, type)
+  const relation =
+    operation === 'add' || operation === 'remove'
+      ? nonNullListOfNamedType(typeInput.name.value)
+      : nonNullNamedType(typeInput.name.value)
 
   return {
     kind: 'InputObjectTypeDefinition',
