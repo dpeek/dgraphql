@@ -575,6 +575,40 @@ test('adds edges to new and existing nodes', async () => {
   expect(setResult).toMatchSnapshot()
 })
 
+test('adds edges of different type', async () => {
+  const create = `mutation {
+    tim: createPerson(input: {
+      name: "Tim"
+    }) {
+      person {
+        id
+      }
+    }
+  }`
+
+  const createResult = await graphql(create)
+  const tim = createResult.data.tim.person.id
+
+  const set = `mutation {
+    addPersonEmails(input: {
+      id: "${tim}",
+      emails: [{
+        type: HOME,
+        address: "mail@tim.com"
+      }]
+    }) {
+      person {
+        emails {
+          type
+          address
+        }
+      }
+    }
+  }`
+  const setResult = await graphql(set)
+  expect(setResult).toMatchSnapshot()
+})
+
 test('adding edges does not remove existing edges', async () => {
   const create = `mutation {
     tim: createPerson(input: {

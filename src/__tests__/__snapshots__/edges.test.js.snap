@@ -30,6 +30,23 @@ Object {
 }
 `;
 
+exports[`adds edges of different type 1`] = `
+Object {
+  "data": Object {
+    "addPersonEmails": Object {
+      "person": Object {
+        "emails": Array [
+          Object {
+            "address": "mail@tim.com",
+            "type": "HOME",
+          },
+        ],
+      },
+    },
+  },
+}
+`;
+
 exports[`adds edges to existing nodes 1`] = `
 Object {
   "data": Object {

@@ -169,6 +169,7 @@ export default function transformSchema (ast: DocumentNode, relay: boolean) {
   defs.forEach(type => {
     const typeName = type.name.value
     const fields = type.fields.map(field => {
+      const fieldTypeName = getTypeName(field.type)
       if (relay && field.name.value === 'id' && type.interfaces) {
         type.interfaces.push(namedType('Node'))
       }
@@ -193,9 +194,12 @@ export default function transformSchema (ast: DocumentNode, relay: boolean) {
         } else {
           return { ...field, arguments: getQueryArguments(types, type) }
         }
-      } else if (types.has(getTypeName(field.type))) {
-        mutations.push(getFieldMutation(types, type, field, 'set', relay))
-        mutations.push(getFieldMutation(types, type, field, 'unset', relay))
+      } else if (types.has(fieldTypeName)) {
+        const fieldType = types.get(fieldTypeName)
+        if (fieldType.kind !== 'EnumTypeDefinition') {
+          mutations.push(getFieldMutation(types, type, field, 'set', relay))
+          mutations.push(getFieldMutation(types, type, field, 'unset', relay))
+        }
       }
       return field
     })
@@ -446,7 +450,11 @@ function getFieldMutationInput (
     }
   }
   const fieldType = getTypeName(field.type)
-  const typeInput = getInputType(typeMap, `${fieldType}Input`, type)
+  const typeInput = getInputType(
+    typeMap,
+    `${fieldType}Input`,
+    typeMap.get(fieldType)
+  )
   const relation =
     operation === 'add' || operation === 'remove'
       ? nonNullListOfNamedType(typeInput.name.value)
