@@ -20,7 +20,7 @@
     "lint": "eslint",
     "prepublish":
       "babel src --optional runtime --ignore __tests__ --out-dir lib/",
-    "start": "babel-node example",
+    "start": "yarn run dgraph:init && babel-node example",
     "dgraph:start": "docker-compose up -d",
     "dgraph:stop": "docker-compose down",
     "dgraph:init": "babel-node init.js ./src/__tests__/schema.graphql"

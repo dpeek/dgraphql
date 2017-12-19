@@ -26,29 +26,22 @@ Check out the [complete documentation](http://dpeek.com/dgraphql/) for more.
 
 ## Getting Started
 
-The [example](https://github.com/dpeek/dgraphql/tree/master/example) describes basic usage. First, install dependencies:
+The [example](https://github.com/dpeek/dgraphql/tree/master/example) describes
+basic usage. First, install dependencies:
 
 ```sh
 yarn install
 ```
 
-The example and expects a Dgraph instance that you don't mind filling with junk
-running at <http://localhost:8080>. You can either [install Dgraph](https://docs.dgraph.io/v0.7.7/get-started#system-installation)
-or (much better) run it in Docker:
-
-Install the Dgraph Docker image:
+The example and test suite expect a Dgraph instance that you don't mind filling
+with junk running at <http://localhost:8080>. You can either [install Dgraph](https://docs.dgraph.io/v0.7.7/get-started#system-installation)
+or, better yet, run it in Docker:
 
 ```sh
-docker pull dgraph/dgraph
+yarn run dgraph:start
 ```
 
-And run Dgraph:
-
-```sh
-yarn run dgraph
-```
-
-Run the example (in another terminal):
+Run the example:
 
 ```sh
 yarn start
@@ -58,6 +51,12 @@ Or run the test suite:
 
 ```sh
 yarn test
+```
+
+To stop the containers:
+
+```sh
+yarn run dgraph:stop
 ```
 
 ## Using DgraphQL
@@ -84,12 +83,6 @@ type Person {
   parents: [Person!]! @reverse(name: "children")
 }`
 
-const client = new Client({
-  server: 'http://localhost:8080/query',
-  schema: schema,
-  debug: false
-})
-
 const mutation = `
 mutation {
   createPerson(input: { name: "David" }) {
@@ -100,11 +93,15 @@ mutation {
   }
 }`
 
-graphql({
-  schema: client.schema,
-  source: mutation,
-  contextValue: client.getContext()
-}).then(result => {
-  console.log(JSON.stringify(result, null, '  '))
+const client = new Client({ debug: false })
+
+client.updateSchema(schema).then(() => {
+  graphql({
+    schema: client.schema,
+    source: mutation,
+    contextValue: client.getContext()
+  }).then(result => {
+    console.log(JSON.stringify(result, null, '  '))
+  })
 })
 ```
