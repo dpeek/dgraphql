@@ -1,36 +1,71 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[` 1`] = `
+Object {
+  "data": Object {
+    "kim": Object {
+      "person": Object {
+        "name": "Kim",
+      },
+    },
+    "tim": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
 exports[`edge node fields 1`] = `
 Object {
   "data": Object {
     "people": Object {
-      "edges": Array [
-        Object {
+      "edges": Object {
+        "0": Object {
           "node": Object {
-            "name": "Olivia Peek",
+            "name": "Tim",
           },
         },
-        Object {
+        "1": Object {
           "node": Object {
-            "name": "Matthew Peek",
+            "name": "Kim",
           },
         },
-        Object {
+      },
+    },
+  },
+}
+`;
+
+exports[`first n edges 1`] = `
+Object {
+  "data": Object {
+    "people": Object {
+      "edges": Object {
+        "0": Object {
           "node": Object {
-            "name": "Linda Peek",
+            "name": "Tim",
           },
         },
-        Object {
+        "1": Object {
           "node": Object {
-            "name": "David Peek",
+            "name": "Kim",
           },
         },
-        Object {
-          "node": Object {
-            "name": "Amy Winter",
-          },
-        },
-      ],
+      },
+    },
+  },
+}
+`;
+
+exports[`pageInfo.hasNextPage indicates availability of next page 1`] = `
+Object {
+  "data": Object {
+    "people": Object {
+      "pageInfo": Object {
+        "hasNextPage": false,
+      },
     },
   },
 }
@@ -49,11 +84,45 @@ Object {
 }
 `;
 
+exports[`queries connection count ignoring first 1`] = `
+Object {
+  "data": Object {
+    "people": Object {
+      "count": 2,
+    },
+  },
+}
+`;
+
+exports[`queries connection pageInfo.hasNextPage 1`] = `
+Object {
+  "data": Object {
+    "people": Object {
+      "pageInfo": Object {
+        "hasNextPage": true,
+      },
+    },
+  },
+}
+`;
+
+exports[`queries connection pageInfo.hasPreviousPage 1`] = `
+Object {
+  "data": Object {
+    "people": Object {
+      "pageInfo": Object {
+        "hasPreviousPage": false,
+      },
+    },
+  },
+}
+`;
+
 exports[`queries node with fragment 1`] = `
 Object {
   "data": Object {
     "node": Object {
-      "name": "David Peek",
+      "name": "Tim",
     },
   },
 }
@@ -63,7 +132,7 @@ exports[`queries node with inline fragment 1`] = `
 Object {
   "data": Object {
     "node": Object {
-      "name": "David Peek",
+      "name": "Tim",
     },
   },
 }

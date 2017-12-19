@@ -1,6 +1,6 @@
 // @flow
 
-const dgraph = require('dgraph-js')
+import { DgraphClientStub, DgraphClient, Operation, Mutation } from 'dgraph-js'
 import { parse, GraphQLSchema, Source } from 'graphql'
 
 import transformSchema from './transformSchema'
@@ -10,37 +10,49 @@ import getInfo from './getInfo'
 import type { SchemaInfo } from './getInfo'
 
 export type ClientConfig = {
-  schema: string,
-  server?: string,
   relay?: boolean,
-  language?: string,
   debug?: boolean
 }
 
-const stub = new dgraph.DgraphClientStub()
-const client = new dgraph.DgraphClient(stub)
+const stub = new DgraphClientStub()
+const client = new DgraphClient(stub)
+const updateTypeName = 'SchemaUpdate'
 
 export class Client {
   _info: SchemaInfo
-  _server: string
   _debug: boolean
-  _updateSchema: Promise<any>
 
+  init: Promise<any>
   schema: GraphQLSchema
   relay: boolean
 
   constructor (config: ClientConfig) {
-    this._server = config.server || 'http://localhost:8080'
     this._debug = config.debug || false
+    this.init = this.loadSchema()
     this.relay = config.relay || false
-
-    const ast = transformSchema(parse(new Source(config.schema)), this.relay)
-
-    this._info = getInfo(ast)
-    this.schema = buildSchema(ast, this)
+  }
+  loadSchema () {
+    return client
+      .newTxn()
+      .query(`{ updates(func:has(type${updateTypeName})) { schema }}`)
+      .then(res => {
+        const data = JSON.parse(new Buffer(res.getJson_asU8()).toString())
+        const update = data.updates.pop()
+        if (!update) throw new Error('dgraph not initialised with schema')
+        const ast = transformSchema(
+          parse(new Source(update.schema)),
+          this.relay
+        )
+        this._info = getInfo(ast)
+        this.schema = buildSchema(ast, this)
+      })
+  }
+  async updateSchema (schema: string) {
+    const ast = transformSchema(parse(new Source(schema)), this.relay)
+    const info = getInfo(ast)
 
     let gql = ''
-    for (var [key, value] of this._info) {
+    for (var [key, value] of info) {
       gql += key + ': ' + value.type
       if (value.indexes.size) {
         gql += ' @index(' + [...value.indexes].join(',') + ')'
@@ -48,9 +60,22 @@ export class Client {
       gql += ' .\n'
     }
 
-    const op = new dgraph.Operation()
+    const op = new Operation()
     op.setSchema(gql)
-    this._updateSchema = client.alter(op)
+    await client.alter(op)
+
+    const version = 1
+    schema = schema.replace(/\n/g, '\\n')
+    schema = schema.replace(/"/g, '\\"')
+    let sets = `_:node <type${updateTypeName}> "" .\n`
+    sets += `_:node <__typename> "${updateTypeName}" .\n`
+    sets += `_:node <schema> "${schema}" .\n`
+    sets += `_:node <version> "${version}" .\n`
+    const mutation = new Mutation()
+    mutation.setCommitNow(true)
+    mutation.setSetNquads(new Uint8Array(new Buffer(sets)))
+    const txn = client.newTxn()
+    await txn.mutate(mutation)
   }
   getReversePredicate (predicate: string): ?string {
     const info = this._info.get(predicate)
@@ -85,6 +110,11 @@ export class Client {
   }
   getContext (language?: string = 'en'): Context {
     return { client: this, language }
+  }
+  dropAll () {
+    const op = new Operation()
+    op.setDropAll(true)
+    return client.alter(op)
   }
 }
 

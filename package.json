@@ -14,14 +14,16 @@
   "author": "David Peek",
   "license": "BSD-2-Clause",
   "scripts": {
-    "test": "jest --coverage",
-    "test:watch": "jest --watch",
+    "test": "yarn run dgraph:init && jest --coverage",
+    "test:watch": "yarn run dgraph:init && jest --watch",
     "check": "flow",
     "lint": "eslint",
-    "prepublish": "babel src --optional runtime --ignore __tests__ --out-dir lib/",
+    "prepublish":
+      "babel src --optional runtime --ignore __tests__ --out-dir lib/",
     "start": "babel-node example",
     "dgraph:start": "docker-compose up -d",
-    "dgraph:stop": "docker-compose down"
+    "dgraph:stop": "docker-compose down",
+    "dgraph:init": "babel-node init.js ./src/__tests__/schema.graphql"
   },
   "dependencies": {
     "dgraph-js": "0.9.4-beta.1",
@@ -48,31 +50,18 @@
     "jest": "^20.0.4"
   },
   "babel": {
-    "presets": [
-      "env",
-      "stage-0",
-      "flow"
-    ]
+    "presets": ["env", "stage-0", "flow"]
   },
   "eslintConfig": {
-    "extends": [
-      "standard",
-      "standard-flow"
-    ],
+    "extends": ["standard", "standard-flow"],
     "parser": "babel-eslint",
-    "plugins": [
-      "babel",
-      "jest"
-    ],
+    "plugins": ["babel", "jest"],
     "env": {
       "jest/globals": true
     }
   },
   "jest": {
     "testRegex": "\\.test\\.js$",
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "__tests__"
-    ]
+    "coveragePathIgnorePatterns": ["/node_modules/", "__tests__"]
   }
 }

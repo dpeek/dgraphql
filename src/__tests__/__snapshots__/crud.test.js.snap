@@ -3,6 +3,18 @@
 exports[`creates node 1`] = `
 Object {
   "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`creates node 2`] = `
+Object {
+  "data": Object {
     "person": Object {
       "name": "Tim",
     },
@@ -13,17 +25,34 @@ Object {
 exports[`creates node linked to existing nodes 1`] = `
 Object {
   "data": Object {
+    "dad": Object {
+      "person": Object {
+        "name": "Matthew",
+      },
+    },
+    "mum": Object {
+      "person": Object {
+        "name": "Linda",
+      },
+    },
+  },
+}
+`;
+
+exports[`creates node linked to existing nodes 2`] = `
+Object {
+  "data": Object {
     "createPerson": Object {
       "person": Object {
         "name": "David",
-        "parents": Array [
-          Object {
+        "parents": Object {
+          "0": Object {
             "name": "Linda",
           },
-          Object {
+          "1": Object {
             "name": "Matthew",
           },
-        ],
+        },
       },
     },
   },
@@ -33,11 +62,26 @@ Object {
 exports[`creates node with nested node 1`] = `
 Object {
   "data": Object {
-    "partner": Object {
-      "name": "Bob",
+    "createPerson": Object {
+      "person": Object {
+        "name": "Tim",
+        "partner": Object {
+          "name": "Bob",
+        },
+      },
     },
-    "person": Object {
+  },
+}
+`;
+
+exports[`creates node with nested node 2`] = `
+Object {
+  "data": Object {
+    "partner1": Object {
       "name": "Tim",
+    },
+    "partner2": Object {
+      "name": "Bob",
     },
   },
 }
@@ -46,11 +90,34 @@ Object {
 exports[`creating node with edge to node of incorrect type returns error 1`] = `
 Object {
   "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`creating node with edge to node of incorrect type returns error 2`] = `
+Object {
+  "data": Object {
     "createPerson": null,
   },
-  "errors": Array [
-    [GraphQLError: Cannot create edge "partner" from "Person" to "Email", should be "Person"],
-  ],
+  "errors": Object {
+    "0": Object {
+      "locations": Object {
+        "0": Object {
+          "column": 5,
+          "line": 2,
+        },
+      },
+      "message": "Cannot create edge \\"emails\\" from \\"Person\\" to \\"Person\\", should be \\"Email\\"",
+      "path": Object {
+        "0": "createPerson",
+      },
+    },
+  },
 }
 `;
 
@@ -59,13 +126,95 @@ Object {
   "data": Object {
     "createPerson": null,
   },
-  "errors": Array [
-    [GraphQLError: There is no "Person" with id "0x00"],
-  ],
+  "errors": Object {
+    "0": Object {
+      "locations": Object {
+        "0": Object {
+          "column": 5,
+          "line": 2,
+        },
+      },
+      "message": "There is no \\"Person\\" with id \\"0x00\\"",
+      "path": Object {
+        "0": "createPerson",
+      },
+    },
+  },
+}
+`;
+
+exports[`deletes node 1`] = `
+Object {
+  "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`deletes node 2`] = `
+Object {
+  "data": Object {
+    "deletePerson": Object {
+      "person": Object {},
+    },
+  },
+}
+`;
+
+exports[`deletes node 3`] = `
+Object {
+  "data": Object {
+    "person": null,
+  },
+  "errors": Object {
+    "0": Object {
+      "locations": Object {
+        "0": Object {
+          "column": 5,
+          "line": 2,
+        },
+      },
+      "message": "There is no 'Node' with id '0x00'",
+      "path": Object {
+        "0": "person",
+      },
+    },
+  },
 }
 `;
 
 exports[`deletes reverse edge to deleted node 1`] = `
+Object {
+  "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "name": "Tim",
+        "partner": Object {
+          "name": "Bob",
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`deletes reverse edge to deleted node 2`] = `
+Object {
+  "data": Object {
+    "deletePerson": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`deletes reverse edge to deleted node 3`] = `
 Object {
   "data": Object {
     "person": Object {
@@ -78,8 +227,49 @@ Object {
 exports[`deletes reverse edges to deleted node 1`] = `
 Object {
   "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "children": Object {
+          "0": Object {
+            "name": "James",
+          },
+          "1": Object {
+            "name": "Sarah",
+          },
+        },
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`deletes reverse edges to deleted node 2`] = `
+Object {
+  "data": Object {
+    "deletePerson": Object {
+      "person": Object {
+        "children": Object {
+          "0": Object {
+            "name": "James",
+          },
+          "1": Object {
+            "name": "Sarah",
+          },
+        },
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`deletes reverse edges to deleted node 3`] = `
+Object {
+  "data": Object {
     "person": Object {
-      "parents": Array [],
+      "name": "Sarah",
+      "parents": Object {},
     },
   },
 }
@@ -90,9 +280,20 @@ Object {
   "data": Object {
     "deletePerson": null,
   },
-  "errors": Array [
-    [GraphQLError: There is no 'Person' with id '0xFFFFFFFFFFFF'],
-  ],
+  "errors": Object {
+    "0": Object {
+      "locations": Object {
+        "0": Object {
+          "column": 5,
+          "line": 2,
+        },
+      },
+      "message": "There is no 'Person' with id '0x00'",
+      "path": Object {
+        "0": "deletePerson",
+      },
+    },
+  },
 }
 `;
 
@@ -111,6 +312,18 @@ Object {
 exports[`returns fields on updated node 1`] = `
 Object {
   "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`returns fields on updated node 2`] = `
+Object {
+  "data": Object {
     "updatePerson": Object {
       "person": Object {
         "name": "Jim",
@@ -121,6 +334,30 @@ Object {
 `;
 
 exports[`updates node 1`] = `
+Object {
+  "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`updates node 2`] = `
+Object {
+  "data": Object {
+    "updatePerson": Object {
+      "person": Object {
+        "name": "Jim",
+      },
+    },
+  },
+}
+`;
+
+exports[`updates node 3`] = `
 Object {
   "data": Object {
     "person": Object {

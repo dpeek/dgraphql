@@ -1,18 +1,38 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[` 1`] = `
+Object {
+  "data": Object {
+    "ant": Object {
+      "person": Object {
+        "name": "Ant Tim",
+      },
+    },
+    "ben": Object {
+      "person": Object {
+        "name": "Ben Jim",
+      },
+    },
+    "cat": Object {
+      "person": Object {
+        "name": "Cat Jim",
+      },
+    },
+  },
+}
+`;
+
 exports[`filters by boolean equal to 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
-        "employed": true,
-        "name": "Amy Winter",
+    "people": Object {
+      "0": Object {
+        "name": "Ben Jim",
       },
-      Object {
-        "employed": true,
-        "name": "David Peek",
+      "1": Object {
+        "name": "Ant Tim",
       },
-    ],
+    },
   },
 }
 `;
@@ -20,12 +40,12 @@ Object {
 exports[`filters by float equal to 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
+    "people": Object {
+      "0": Object {
         "height": 1.7,
-        "name": "Amy Winter",
+        "name": "Ben Jim",
       },
-    ],
+    },
   },
 }
 `;
@@ -33,16 +53,12 @@ Object {
 exports[`filters by float greater than 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
-        "height": 1.8,
-        "name": "Matthew Peek",
+    "people": Object {
+      "0": Object {
+        "height": 1.76,
+        "name": "Ant Tim",
       },
-      Object {
-        "height": 1.99,
-        "name": "David Peek",
-      },
-    ],
+    },
   },
 }
 `;
@@ -50,20 +66,16 @@ Object {
 exports[`filters by float greater than or equal to 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
+    "people": Object {
+      "0": Object {
         "height": 1.7,
-        "name": "Amy Winter",
+        "name": "Ben Jim",
       },
-      Object {
-        "height": 1.8,
-        "name": "Matthew Peek",
+      "1": Object {
+        "height": 1.76,
+        "name": "Ant Tim",
       },
-      Object {
-        "height": 1.99,
-        "name": "David Peek",
-      },
-    ],
+    },
   },
 }
 `;
@@ -71,16 +83,12 @@ Object {
 exports[`filters by float less than 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
-        "height": 1.12,
-        "name": "Olivia Peek",
+    "people": Object {
+      "0": Object {
+        "height": 1.63,
+        "name": "Cat Jim",
       },
-      Object {
-        "height": 1.6,
-        "name": "Linda Peek",
-      },
-    ],
+    },
   },
 }
 `;
@@ -88,20 +96,16 @@ Object {
 exports[`filters by float less than or equal to 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
-        "height": 1.12,
-        "name": "Olivia Peek",
+    "people": Object {
+      "0": Object {
+        "height": 1.63,
+        "name": "Cat Jim",
       },
-      Object {
-        "height": 1.6,
-        "name": "Linda Peek",
-      },
-      Object {
+      "1": Object {
         "height": 1.7,
-        "name": "Amy Winter",
+        "name": "Ben Jim",
       },
-    ],
+    },
   },
 }
 `;
@@ -109,12 +113,12 @@ Object {
 exports[`filters by int equal to 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
+    "people": Object {
+      "0": Object {
         "age": 37,
-        "name": "Amy Winter",
+        "name": "Ben Jim",
       },
-    ],
+    },
   },
 }
 `;
@@ -122,20 +126,16 @@ Object {
 exports[`filters by int greater than 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
+    "people": Object {
+      "0": Object {
+        "age": 38,
+        "name": "Cat Jim",
+      },
+      "1": Object {
         "age": 37,
-        "name": "Amy Winter",
+        "name": "Ben Jim",
       },
-      Object {
-        "age": 65,
-        "name": "Linda Peek",
-      },
-      Object {
-        "age": 70,
-        "name": "Matthew Peek",
-      },
-    ],
+    },
   },
 }
 `;
@@ -143,20 +143,16 @@ Object {
 exports[`filters by int greater than or equal to 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
+    "people": Object {
+      "0": Object {
+        "age": 38,
+        "name": "Cat Jim",
+      },
+      "1": Object {
         "age": 37,
-        "name": "Amy Winter",
+        "name": "Ben Jim",
       },
-      Object {
-        "age": 65,
-        "name": "Linda Peek",
-      },
-      Object {
-        "age": 70,
-        "name": "Matthew Peek",
-      },
-    ],
+    },
   },
 }
 `;
@@ -164,20 +160,16 @@ Object {
 exports[`filters by int less than 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
-        "age": 3,
-        "name": "Olivia Peek",
-      },
-      Object {
-        "age": 35,
-        "name": "David Peek",
-      },
-      Object {
+    "people": Object {
+      "0": Object {
         "age": 37,
-        "name": "Amy Winter",
+        "name": "Ben Jim",
       },
-    ],
+      "1": Object {
+        "age": 36,
+        "name": "Ant Tim",
+      },
+    },
   },
 }
 `;
@@ -185,20 +177,16 @@ Object {
 exports[`filters by int less than or equal to 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
-        "age": 3,
-        "name": "Olivia Peek",
-      },
-      Object {
-        "age": 35,
-        "name": "David Peek",
-      },
-      Object {
+    "people": Object {
+      "0": Object {
         "age": 37,
-        "name": "Amy Winter",
+        "name": "Ben Jim",
       },
-    ],
+      "1": Object {
+        "age": 36,
+        "name": "Ant Tim",
+      },
+    },
   },
 }
 `;
@@ -206,11 +194,11 @@ Object {
 exports[`filters by string equal to 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
-        "name": "Olivia Peek",
+    "people": Object {
+      "0": Object {
+        "name": "Ben Jim",
       },
-    ],
+    },
   },
 }
 `;
@@ -218,11 +206,11 @@ Object {
 exports[`filters by string with all terms 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
-        "name": "David Peek",
+    "people": Object {
+      "0": Object {
+        "name": "Ben Jim",
       },
-    ],
+    },
   },
 }
 `;
@@ -230,14 +218,98 @@ Object {
 exports[`filters by string with any of terms 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
-        "name": "David Peek",
+    "people": Object {
+      "0": Object {
+        "name": "Cat Jim",
       },
-      Object {
-        "name": "Olivia Peek",
+      "1": Object {
+        "name": "Ben Jim",
       },
-    ],
+    },
+  },
+}
+`;
+
+exports[`order edges by float ascending 1`] = `
+Object {
+  "data": Object {
+    "people": Object {
+      "0": Object {
+        "height": 1.63,
+        "name": "Cat Jim",
+      },
+      "1": Object {
+        "height": 1.7,
+        "name": "Ben Jim",
+      },
+      "2": Object {
+        "height": 1.76,
+        "name": "Ant Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`order edges by float descending 1`] = `
+Object {
+  "data": Object {
+    "people": Object {
+      "0": Object {
+        "height": 1.76,
+        "name": "Ant Tim",
+      },
+      "1": Object {
+        "height": 1.7,
+        "name": "Ben Jim",
+      },
+      "2": Object {
+        "height": 1.63,
+        "name": "Cat Jim",
+      },
+    },
+  },
+}
+`;
+
+exports[`order edges by int ascending 1`] = `
+Object {
+  "data": Object {
+    "people": Object {
+      "0": Object {
+        "age": 36,
+        "name": "Ant Tim",
+      },
+      "1": Object {
+        "age": 37,
+        "name": "Ben Jim",
+      },
+      "2": Object {
+        "age": 38,
+        "name": "Cat Jim",
+      },
+    },
+  },
+}
+`;
+
+exports[`order edges by int descending 1`] = `
+Object {
+  "data": Object {
+    "people": Object {
+      "0": Object {
+        "age": 38,
+        "name": "Cat Jim",
+      },
+      "1": Object {
+        "age": 37,
+        "name": "Ben Jim",
+      },
+      "2": Object {
+        "age": 36,
+        "name": "Ant Tim",
+      },
+    },
   },
 }
 `;
@@ -245,23 +317,17 @@ Object {
 exports[`order edges by string ascending 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
-        "name": "Amy Winter",
+    "people": Object {
+      "0": Object {
+        "name": "Ant Tim",
       },
-      Object {
-        "name": "David Peek",
+      "1": Object {
+        "name": "Ben Jim",
       },
-      Object {
-        "name": "Linda Peek",
+      "2": Object {
+        "name": "Cat Jim",
       },
-      Object {
-        "name": "Matthew Peek",
-      },
-      Object {
-        "name": "Olivia Peek",
-      },
-    ],
+    },
   },
 }
 `;
@@ -269,23 +335,17 @@ Object {
 exports[`order edges by string descending 1`] = `
 Object {
   "data": Object {
-    "people": Array [
-      Object {
-        "name": "Olivia Peek",
+    "people": Object {
+      "0": Object {
+        "name": "Cat Jim",
       },
-      Object {
-        "name": "Matthew Peek",
+      "1": Object {
+        "name": "Ben Jim",
       },
-      Object {
-        "name": "Linda Peek",
+      "2": Object {
+        "name": "Ant Tim",
       },
-      Object {
-        "name": "David Peek",
-      },
-      Object {
-        "name": "Amy Winter",
-      },
-    ],
+    },
   },
 }
 `;
@@ -293,8 +353,20 @@ Object {
 exports[`queries aliased field 1`] = `
 Object {
   "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "name": "David",
+      },
+    },
+  },
+}
+`;
+
+exports[`queries aliased field 2`] = `
+Object {
+  "data": Object {
     "person": Object {
-      "test": "David Peek",
+      "alias": "David",
     },
   },
 }
@@ -303,10 +375,22 @@ Object {
 exports[`queries nested field 1`] = `
 Object {
   "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "name": "David",
+      },
+    },
+  },
+}
+`;
+
+exports[`queries nested field 2`] = `
+Object {
+  "data": Object {
     "person": Object {
-      "name": "David Peek",
+      "name": "David",
       "partner": Object {
-        "name": "Amy Winter",
+        "name": "Amy",
       },
     },
   },
@@ -316,8 +400,20 @@ Object {
 exports[`queries node field 1`] = `
 Object {
   "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "name": "David",
+      },
+    },
+  },
+}
+`;
+
+exports[`queries node field 2`] = `
+Object {
+  "data": Object {
     "person": Object {
-      "name": "David Peek",
+      "name": "David",
     },
   },
 }
@@ -326,9 +422,44 @@ Object {
 exports[`queries node fields 1`] = `
 Object {
   "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "name": "David",
+      },
+    },
+  },
+}
+`;
+
+exports[`queries node fields 2`] = `
+Object {
+  "data": Object {
     "person": Object {
       "employed": true,
-      "name": "David Peek",
+      "name": "David",
+    },
+  },
+}
+`;
+
+exports[`queries type name 1`] = `
+Object {
+  "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "name": "David",
+      },
+    },
+  },
+}
+`;
+
+exports[`queries type name 2`] = `
+Object {
+  "data": Object {
+    "person": Object {
+      "__typename": "Person",
+      "name": "David",
     },
   },
 }
@@ -337,8 +468,21 @@ Object {
 exports[`returns empty array for non-existing edges 1`] = `
 Object {
   "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "name": "Olivia",
+      },
+    },
+  },
+}
+`;
+
+exports[`returns empty array for non-existing edges 2`] = `
+Object {
+  "data": Object {
     "person": Object {
-      "parents": Array [],
+      "children": Object {},
+      "name": "Olivia",
     },
   },
 }
@@ -349,16 +493,40 @@ Object {
   "data": Object {
     "person": null,
   },
-  "errors": Array [
-    [GraphQLError: There is no 'Node' with id '0xFFFFFFFFFF'],
-  ],
+  "errors": Object {
+    "0": Object {
+      "locations": Object {
+        "0": Object {
+          "column": 5,
+          "line": 2,
+        },
+      },
+      "message": "There is no 'Node' with id '0x00'",
+      "path": Object {
+        "0": "person",
+      },
+    },
+  },
 }
 `;
 
 exports[`returns null for non-existing edge 1`] = `
 Object {
   "data": Object {
+    "createPerson": Object {
+      "person": Object {
+        "name": "Olivia",
+      },
+    },
+  },
+}
+`;
+
+exports[`returns null for non-existing edge 2`] = `
+Object {
+  "data": Object {
     "person": Object {
+      "name": "Olivia",
       "partner": null,
     },
   },

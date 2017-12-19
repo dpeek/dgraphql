@@ -1,13 +1,14 @@
 import { init } from './harness'
 
-var graphql
+var sequence
 
 beforeAll(async () => {
-  graphql = await init()
+  const test = await init()
+  sequence = test.sequence
 })
 
-test('sets Date and DateTime as String', async () => {
-  const mutation = `mutation {
+test('sets Date and DateTime as String', () => {
+  const query = `mutation {
     createPerson(input: {
       dob: "2000-12-01",
       lastActiveAt: "2000-12-01"
@@ -18,6 +19,5 @@ test('sets Date and DateTime as String', async () => {
       }
     }
   }`
-  const result = await graphql(mutation)
-  expect(result).toMatchSnapshot()
+  return sequence([query])
 })

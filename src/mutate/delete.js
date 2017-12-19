@@ -1,6 +1,6 @@
 // @flow
 
-const dgraph = require('dgraph-js')
+import { Mutation } from 'dgraph-js'
 import { GraphQLObjectType, GraphQLList, GraphQLError } from 'graphql'
 
 import payloadQuery from '../query/payload'
@@ -51,7 +51,7 @@ export default function resolve (
               })
             }
           })
-          const mutation = new dgraph.Mutation()
+          const mutation = new Mutation()
           mutation.setDelNquads(new Uint8Array(new Buffer(deletes)))
           return client.mutate(mutation)
         })

@@ -1,49 +1,58 @@
 // @flow
 
-import fs from 'fs'
-import path from 'path'
-
 import { graphql } from 'graphql'
-
 import { Client } from '../client'
 
-export async function init (relay?: boolean = false) {
-  const schemaPath = path.resolve(__dirname, 'schema.graphql')
-  const schema = fs.readFileSync(schemaPath).toString()
-
-  const sourcePath = path.resolve(__dirname, 'source.graphql')
-  const source = fs.readFileSync(sourcePath).toString()
-
-  const time = Math.round(Math.random() * 1000000000)
-  let commonVariables = { time }
-
-  // can't use the same client as some tests are in relay mode, the query is not
-  let client = new Client({ schema })
-  const result = await graphql({
-    source,
-    schema: client.schema,
-    variableValues: commonVariables,
-    contextValue: client.getContext()
-  })
-
-  const walk = node => {
-    if (node && node.id && node.name && typeof node.name === 'string') {
-      commonVariables[node.name.split(' ')[0].toLowerCase()] = node.id
-    }
-    Object.values(node).forEach(value => {
-      if (value && typeof value === 'object') walk(value)
-    })
+function getVariables (node, variables) {
+  const vars = variables || {}
+  if (node && node.id && node.name && typeof node.name === 'string') {
+    vars[node.name.split(' ')[0].toLowerCase()] = node.id
   }
-  if (result.errors) throw result.errors[0]
-  else walk(result.data)
+  Object.values(node).forEach(value => {
+    if (value && typeof value === 'object') getVariables(value, vars)
+  })
+  return vars
+}
 
-  client = new Client({ schema, relay, debug: false })
-  return (source, variables, language) => {
+function sanitize (value: string | {}) {
+  if (typeof value === 'string') return value.replace(/0x[a-zA-Z0-9]+/, '0x00')
+  if (!value || typeof value !== 'object') return value
+  const sanitized = {}
+  Object.keys(value).forEach(key => {
+    if (key !== 'id') {
+      sanitized[key] = sanitize(value[key])
+    }
+  })
+  return sanitized
+}
+
+export async function init (relay?: boolean = false) {
+  const client = new Client({ relay, debug: false })
+  await client.init
+
+  const query1 = (source, variables, language) => {
     return graphql({
       source,
       schema: client.schema,
-      variableValues: { ...commonVariables, ...(variables || {}) },
+      variableValues: variables || {},
       contextValue: client.getContext(language)
     })
   }
+
+  function sequence (queries, vars) {
+    vars = vars || {}
+    let result = Promise.resolve()
+    queries.forEach(query => {
+      result = result.then(() =>
+        query1(query, vars).then(res => {
+          vars = { ...vars, ...getVariables(res) }
+          expect(sanitize(res)).toMatchSnapshot()
+          return vars
+        })
+      )
+    })
+    return result
+  }
+
+  return { graphql: query1, sequence: sequence }
 }

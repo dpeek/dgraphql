@@ -1,6 +1,6 @@
 // @flow
 
-const dgraph = require('dgraph-js')
+import { Mutation } from 'dgraph-js'
 import getMutation from './getMutation'
 import payloadQuery from '../query/payload'
 
@@ -46,7 +46,7 @@ export default function resolve (
       let valueEdge =
         reverse && valueNode && valueNode[reverse] && valueNode[reverse][0].uid
 
-      const mutation = new dgraph.Mutation()
+      const mutation = new Mutation()
       if ((subjectEdge || valueEdge) && subjectEdge !== value) {
         let deletes = ''
         if (subjectEdge) {

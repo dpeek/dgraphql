@@ -3,26 +3,38 @@
 exports[`adding edges does not remove existing edges 1`] = `
 Object {
   "data": Object {
+    "tim": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`adding edges does not remove existing edges 2`] = `
+Object {
+  "data": Object {
     "addPersonChildren": Object {
       "person": Object {
-        "children": Array [
-          Object {
+        "children": Object {
+          "0": Object {
             "name": "John",
-            "parents": Array [
-              Object {
+            "parents": Object {
+              "0": Object {
                 "name": "Tim",
               },
-            ],
+            },
           },
-          Object {
+          "1": Object {
             "name": "Olivia",
-            "parents": Array [
-              Object {
+            "parents": Object {
+              "0": Object {
                 "name": "Tim",
               },
-            ],
+            },
           },
-        ],
+        },
         "name": "Tim",
       },
     },
@@ -33,14 +45,26 @@ Object {
 exports[`adds edges of different type 1`] = `
 Object {
   "data": Object {
+    "tim": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`adds edges of different type 2`] = `
+Object {
+  "data": Object {
     "addPersonEmails": Object {
       "person": Object {
-        "emails": Array [
-          Object {
+        "emails": Object {
+          "0": Object {
             "address": "mail@tim.com",
             "type": "HOME",
           },
-        ],
+        },
       },
     },
   },
@@ -50,26 +74,48 @@ Object {
 exports[`adds edges to existing nodes 1`] = `
 Object {
   "data": Object {
+    "alice": Object {
+      "person": Object {
+        "name": "Alice",
+      },
+    },
+    "paula": Object {
+      "person": Object {
+        "name": "Paula",
+      },
+    },
+    "tim": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`adds edges to existing nodes 2`] = `
+Object {
+  "data": Object {
     "addPersonChildren": Object {
       "person": Object {
-        "children": Array [
-          Object {
+        "children": Object {
+          "0": Object {
             "name": "Alice",
-            "parents": Array [
-              Object {
+            "parents": Object {
+              "0": Object {
                 "name": "Tim",
               },
-            ],
+            },
           },
-          Object {
+          "1": Object {
             "name": "Paula",
-            "parents": Array [
-              Object {
+            "parents": Object {
+              "0": Object {
                 "name": "Tim",
               },
-            ],
+            },
           },
-        ],
+        },
         "name": "Tim",
       },
     },
@@ -80,26 +126,43 @@ Object {
 exports[`adds edges to new and existing nodes 1`] = `
 Object {
   "data": Object {
+    "tim": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+    "tom": Object {
+      "person": Object {
+        "name": "Tom",
+      },
+    },
+  },
+}
+`;
+
+exports[`adds edges to new and existing nodes 2`] = `
+Object {
+  "data": Object {
     "addPersonChildren": Object {
       "person": Object {
-        "children": Array [
-          Object {
+        "children": Object {
+          "0": Object {
             "name": "Eve",
-            "parents": Array [
-              Object {
+            "parents": Object {
+              "0": Object {
                 "name": "Tim",
               },
-            ],
+            },
           },
-          Object {
+          "1": Object {
             "name": "Tom",
-            "parents": Array [
-              Object {
+            "parents": Object {
+              "0": Object {
                 "name": "Tim",
               },
-            ],
+            },
           },
-        ],
+        },
         "name": "Tim",
       },
     },
@@ -110,26 +173,38 @@ Object {
 exports[`adds edges to new nodes 1`] = `
 Object {
   "data": Object {
+    "tim": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`adds edges to new nodes 2`] = `
+Object {
+  "data": Object {
     "addPersonChildren": Object {
       "person": Object {
-        "children": Array [
-          Object {
+        "children": Object {
+          "0": Object {
             "name": "Jack",
-            "parents": Array [
-              Object {
+            "parents": Object {
+              "0": Object {
                 "name": "Tim",
               },
-            ],
+            },
           },
-          Object {
+          "1": Object {
             "name": "John",
-            "parents": Array [
-              Object {
+            "parents": Object {
+              "0": Object {
                 "name": "Tim",
               },
-            ],
+            },
           },
-        ],
+        },
         "name": "Tim",
       },
     },
@@ -140,13 +215,19 @@ Object {
 exports[`removes edges removing reverse edges 1`] = `
 Object {
   "data": Object {
-    "removePersonChildren": Object {
+    "tim": Object {
       "person": Object {
-        "children": Array [
-          Object {
+        "children": Object {
+          "0": Object {
+            "name": "Jerry",
+          },
+          "1": Object {
             "name": "Olivia",
           },
-        ],
+          "2": Object {
+            "name": "Paul",
+          },
+        },
         "name": "Tim",
       },
     },
@@ -157,15 +238,49 @@ Object {
 exports[`removes edges removing reverse edges 2`] = `
 Object {
   "data": Object {
+    "removePersonChildren": Object {
+      "person": Object {
+        "children": Object {
+          "0": Object {
+            "name": "Olivia",
+          },
+        },
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`removes edges removing reverse edges 3`] = `
+Object {
+  "data": Object {
     "person": Object {
       "name": "Jerry",
-      "parents": Array [],
+      "parents": Object {},
     },
   },
 }
 `;
 
 exports[`sets node edge to existing node 1`] = `
+Object {
+  "data": Object {
+    "alice": Object {
+      "person": Object {
+        "name": "Alice",
+      },
+    },
+    "tim": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`sets node edge to existing node 2`] = `
 Object {
   "data": Object {
     "setPersonPartner": Object {
@@ -186,6 +301,18 @@ Object {
 exports[`sets node edge to new node 1`] = `
 Object {
   "data": Object {
+    "tim": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`sets node edge to new node 2`] = `
+Object {
+  "data": Object {
     "setPersonPartner": Object {
       "person": Object {
         "name": "Tim",
@@ -204,6 +331,23 @@ Object {
 exports[`sets one way edge to existing node 1`] = `
 Object {
   "data": Object {
+    "alice": Object {
+      "person": Object {
+        "name": "Alice",
+      },
+    },
+    "tim": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`sets one way edge to existing node 2`] = `
+Object {
+  "data": Object {
     "setPersonEmergencyContact": Object {
       "person": Object {
         "emergencyContact": Object {
@@ -219,26 +363,112 @@ Object {
 exports[`setting edge to existing node of incorrect type returns error 1`] = `
 Object {
   "data": Object {
-    "setPersonPartner": null,
+    "tim": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+    "tom": Object {
+      "person": Object {
+        "name": "Tom",
+      },
+    },
   },
-  "errors": Array [
-    [GraphQLError: Cannot create edge "partner" from "Person" to "Email", should be "Person"],
-  ],
+}
+`;
+
+exports[`setting edge to existing node of incorrect type returns error 2`] = `
+Object {
+  "data": Object {
+    "addPersonEmails": null,
+  },
+  "errors": Object {
+    "0": Object {
+      "locations": Object {
+        "0": Object {
+          "column": 5,
+          "line": 2,
+        },
+      },
+      "message": "Cannot create edge \\"emails\\" from \\"Person\\" to \\"Person\\", should be \\"Email\\"",
+      "path": Object {
+        "0": "addPersonEmails",
+      },
+    },
+  },
 }
 `;
 
 exports[`setting edge to non-existent node returns error 1`] = `
 Object {
   "data": Object {
+    "tom": Object {
+      "person": Object {
+        "name": "Tom",
+      },
+    },
+  },
+}
+`;
+
+exports[`setting edge to non-existent node returns error 2`] = `
+Object {
+  "data": Object {
     "setPersonPartner": null,
   },
-  "errors": Array [
-    [GraphQLError: There is no "Person" with id "0x00"],
-  ],
+  "errors": Object {
+    "0": Object {
+      "locations": Object {
+        "0": Object {
+          "column": 5,
+          "line": 2,
+        },
+      },
+      "message": "There is no \\"Person\\" with id \\"0x00\\"",
+      "path": Object {
+        "0": "setPersonPartner",
+      },
+    },
+  },
 }
 `;
 
 exports[`setting edge with no reverse does nothing to existing node 1`] = `
+Object {
+  "data": Object {
+    "alice": Object {
+      "person": Object {
+        "name": "Alice",
+      },
+    },
+    "tim": Object {
+      "person": Object {
+        "emergencyContact": Object {
+          "name": "Sally",
+        },
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`setting edge with no reverse does nothing to existing node 2`] = `
+Object {
+  "data": Object {
+    "setPersonEmergencyContact": Object {
+      "person": Object {
+        "emergencyContact": Object {
+          "name": "Alice",
+        },
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`setting edge with no reverse does nothing to existing node 3`] = `
 Object {
   "data": Object {
     "person": Object {
@@ -254,6 +484,41 @@ Object {
 exports[`setting edge with reverse removes reverse edge from existing node 1`] = `
 Object {
   "data": Object {
+    "alice": Object {
+      "person": Object {
+        "name": "Alice",
+      },
+    },
+    "tim": Object {
+      "person": Object {
+        "name": "Tim",
+        "partner": Object {
+          "name": "Sally",
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`setting edge with reverse removes reverse edge from existing node 2`] = `
+Object {
+  "data": Object {
+    "setPersonPartner": Object {
+      "person": Object {
+        "name": "Tim",
+        "partner": Object {
+          "name": "Alice",
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`setting edge with reverse removes reverse edge from existing node 3`] = `
+Object {
+  "data": Object {
     "person": Object {
       "name": "Sally",
       "partner": null,
@@ -265,6 +530,41 @@ Object {
 exports[`setting node edge removes existing reverse edge from new value 1`] = `
 Object {
   "data": Object {
+    "alice": Object {
+      "person": Object {
+        "name": "Alice",
+        "partner": Object {
+          "name": "Sue",
+        },
+      },
+    },
+    "tim": Object {
+      "person": Object {
+        "name": "Tim",
+      },
+    },
+  },
+}
+`;
+
+exports[`setting node edge removes existing reverse edge from new value 2`] = `
+Object {
+  "data": Object {
+    "setPersonPartner": Object {
+      "person": Object {
+        "name": "Tim",
+        "partner": Object {
+          "name": "Alice",
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`setting node edge removes existing reverse edge from new value 3`] = `
+Object {
+  "data": Object {
     "person": Object {
       "name": "Sue",
       "partner": null,
@@ -274,6 +574,21 @@ Object {
 `;
 
 exports[`setting node edge to existing value has no effect 1`] = `
+Object {
+  "data": Object {
+    "tim": Object {
+      "person": Object {
+        "name": "Tim",
+        "partner": Object {
+          "name": "Alice",
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`setting node edge to existing value has no effect 2`] = `
 Object {
   "data": Object {
     "setPersonPartner": Object {
@@ -294,6 +609,21 @@ Object {
 exports[`unsets node edge 1`] = `
 Object {
   "data": Object {
+    "tim": Object {
+      "person": Object {
+        "name": "Tim",
+        "partner": Object {
+          "name": "Joan",
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`unsets node edge 2`] = `
+Object {
+  "data": Object {
     "unsetPersonPartner": Object {
       "person": Object {
         "name": "Tim",
@@ -305,6 +635,34 @@ Object {
 `;
 
 exports[`unsetting node edge removes reverse edge on value 1`] = `
+Object {
+  "data": Object {
+    "tim": Object {
+      "person": Object {
+        "name": "Tim",
+        "partner": Object {
+          "name": "Joan",
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`unsetting node edge removes reverse edge on value 2`] = `
+Object {
+  "data": Object {
+    "unsetPersonPartner": Object {
+      "person": Object {
+        "name": "Tim",
+        "partner": null,
+      },
+    },
+  },
+}
+`;
+
+exports[`unsetting node edge removes reverse edge on value 3`] = `
 Object {
   "data": Object {
     "person": Object {

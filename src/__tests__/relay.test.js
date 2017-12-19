@@ -1,38 +1,63 @@
 import { init } from './harness'
 
 var graphql
+var sequence
+var vars
 
 beforeAll(async () => {
-  graphql = await init(true)
+  const test = await init(true)
+  graphql = test.graphql
+  sequence = test.sequence
+  const time = Math.round(Math.random() * 1000000000)
+  vars = await sequence([create], { time: time })
 })
 
+const create = `mutation Test($time: Int) {
+  tim: createPerson(input: {
+    name: "Tim",
+    time: $time
+  }) {
+    person {
+      id
+      name
+    }
+  },
+  kim: createPerson(input: {
+    name: "Kim",
+    time: $time
+  }) {
+    person {
+      id
+      name
+    }
+  }
+}`
+
 test('queries node with fragment', async () => {
-  const query = `query TestQuery($david: ID!) {
-    node(id: $david) {
+  const query = `query Test ($tim: ID!) {
+    node(id: $tim) {
       ... on Person {
         name
       }
     }
   }`
-  const result = await graphql(query)
-  expect(result).toMatchSnapshot()
+  return sequence([query], vars)
 })
 
 test('queries node with inline fragment', async () => {
-  const query = `query TestQuery($david: ID!) {
-    node(id: $david) {
+  const query = `query Test ($tim: ID!) {
+    node(id: $tim) {
       ... personFields
     }
   }
   fragment personFields on Person {
     name
   }`
-  const result = await graphql(query)
-  expect(result).toMatchSnapshot()
+  return sequence([query], vars)
 })
 
 test('edge node fields', async () => {
-  const query = `query TestQuery($time: Int) {
+  const query = `query Test ($time: Int) {
     people(
       order: name_desc,
       filter: {
@@ -46,12 +71,11 @@ test('edge node fields', async () => {
       }
     }
   }`
-  const result = await graphql(query)
-  expect(result).toMatchSnapshot()
+  return sequence([query], vars)
 })
 
 test('edge cursor', async () => {
-  const query = `query TestQuery($time: Int) {
+  const query = `query Test ($time: Int) {
     people(
       order: name_desc,
       filter: {
@@ -66,67 +90,63 @@ test('edge cursor', async () => {
       }
     }
   }`
-  const result = await graphql(query)
+  const result = await graphql(query, vars)
   expect(result.data.people.edges[0].cursor).toEqual(
     result.data.people.edges[0].node.id
   )
 })
 
 test('first n edges', async () => {
-  const first = 2
-  const query = `query TestQuery($time: Int) {
-      people(
-        order: name_desc,
-        filter: {
-          time_eq: $time
-        },
-        first: ${first}
-      ) {
-        edges {
-          node {
-            name
-          }
+  const query = `query Test ($time: Int) {
+    people(
+      order: name_desc,
+      filter: {
+        time_eq: $time
+      },
+      first: 2
+    ) {
+      edges {
+        node {
+          name
         }
       }
-    }`
-  const result = await graphql(query)
-  expect(result.data.people.edges.length).toEqual(first)
+    }
+  }`
+  return sequence([query], vars)
 })
 
 test('queries connection count ignoring first', async () => {
-  const query = `query TestQuery($time: Int) {
+  const query = `query Test ($time: Int) {
       people(
         filter: {
           time_eq: $time
         },
-        first: 2
+        first: 1
       ) {
         count
       }
     }`
-  const result = await graphql(query)
-  expect(result.data.people.count).toEqual(5)
+  return sequence([query], vars)
 })
 
 test('queries connection pageInfo.hasNextPage', async () => {
-  const query = `query TestQuery($time: Int) {
+  const query = `query Test ($time: Int) {
       people(
         filter: {
           time_eq: $time
         },
-        first: 2
+        first: 1
       ) {
         pageInfo {
           hasNextPage
         }
       }
     }`
-  const result = await graphql(query)
-  expect(result.data.people.pageInfo.hasNextPage).toEqual(true)
+  return sequence([query], vars)
 })
 
 test('pageInfo.hasNextPage indicates availability of next page', async () => {
-  const query = `query TestQuery($time: Int) {
+  const query = `query Test ($time: Int) {
       people(
         filter: {
           time_eq: $time
@@ -138,12 +158,11 @@ test('pageInfo.hasNextPage indicates availability of next page', async () => {
         }
       }
     }`
-  const result = await graphql(query)
-  expect(result.data.people.pageInfo.hasNextPage).toEqual(false)
+  return sequence([query], vars)
 })
 
 test('queries connection pageInfo.hasPreviousPage', async () => {
-  const query = `query TestQuery($time: Int) {
+  const query = `query Test ($time: Int) {
       people(
         filter: {
           time_eq: $time
@@ -155,12 +174,11 @@ test('queries connection pageInfo.hasPreviousPage', async () => {
         }
       }
     }`
-  const result = await graphql(query)
-  expect(result.data.people.pageInfo.hasPreviousPage).toEqual(false)
+  return sequence([query], vars)
 })
 
 test('pageInfo.hasPreviousPage indicates availability of previous page', async () => {
-  const query = `query TestQuery($time: Int) {
+  const query = `query Test ($time: Int) {
       people(
         filter: {
           time_eq: $time
@@ -172,9 +190,9 @@ test('pageInfo.hasPreviousPage indicates availability of previous page', async (
         }
       }
     }`
-  const result = await graphql(query)
+  const result = await graphql(query, vars)
   const firstId = result.data.people.pageInfo.endCursor
-  const afterQuery = `query TestQuery($time: Int) {
+  const afterQuery = `query Test ($time: Int) {
       people(
         filter: {
           time_eq: $time
@@ -186,12 +204,12 @@ test('pageInfo.hasPreviousPage indicates availability of previous page', async (
         }
       }
     }`
-  const afterQueryResult = await graphql(afterQuery)
+  const afterQueryResult = await graphql(afterQuery, vars)
   expect(afterQueryResult.data.people.pageInfo.hasPreviousPage).toEqual(true)
 })
 
 test('pageInfo endCursor returns last cursor in query', async () => {
-  const query = `query TestQuery($time: Int) {
+  const query = `query Test ($time: Int) {
       people(
         filter: {
           time_eq: $time
@@ -206,14 +224,14 @@ test('pageInfo endCursor returns last cursor in query', async () => {
         }
       }
     }`
-  const result = await graphql(query)
+  const result = await graphql(query, vars)
   expect(result.data.people.pageInfo.endCursor).toEqual(
     result.data.people.edges[result.data.people.edges.length - 1].cursor
   )
 })
 
 test('pageInfo startCursor returns first cursor in query', async () => {
-  const query = `query TestQuery($time: Int) {
+  const query = `query Test ($time: Int) {
       people(
         filter: {
           time_eq: $time
@@ -228,7 +246,7 @@ test('pageInfo startCursor returns first cursor in query', async () => {
         }
       }
     }`
-  const result = await graphql(query)
+  const result = await graphql(query, vars)
   expect(result.data.people.pageInfo.startCursor).toEqual(
     result.data.people.edges[0].cursor
   )
@@ -236,13 +254,12 @@ test('pageInfo startCursor returns first cursor in query', async () => {
 
 test('passes clientMutationId from input to payload ', async () => {
   const query = `mutation {
-    createPerson(input: {name: "Bane", clientMutationId:"123"}) {
+    createPerson(input: {name: "Bane", clientMutationId: "123"}) {
       person {
         name
       }
       clientMutationId
     }
   }`
-  const result = await graphql(query)
-  expect(result).toMatchSnapshot()
+  return sequence([query])
 })

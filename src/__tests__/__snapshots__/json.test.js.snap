@@ -6,11 +6,11 @@ Object {
     "createPerson": Object {
       "person": Object {
         "config": Object {
-          "baz": Array [
-            1,
-            null,
-            1.2,
-          ],
+          "baz": Object {
+            "0": 1,
+            "1": null,
+            "2": 1.2,
+          },
           "foo": "bar",
         },
       },
