@@ -4,21 +4,19 @@ title: Getting Started
 
 Install DgraphQL from npm
 
+With yarn:
+
 ```sh
 yarn add dgraphql
 ```
 
-The entry point to the library is `buildSchema`
+The entry point to the library is `Client`
 
 ```javascript
 import { graphql } from 'graphql'
-import { buildSchema } from 'dgraphql'
+import { Client } from 'dgraphql'
 
-const config = {
-  server: 'http://localhost:8080/query'
-}
-
-const source = `
+const schema = `
 type Person {
   id: ID!
   name: String @filter(types: [EQUALITY])
@@ -26,18 +24,25 @@ type Person {
   parents: [Person!]! @reverse(name: "children")
 }`
 
-const schema = buildSchema(source, config)
-
 const mutation = `
 mutation {
   createPerson(input: { name: "David" }) {
     person {
       id
+      name
     }
   }
 }`
 
-graphql(schema, mutation).then(result => {
-  console.log(result);
+const client = new Client({ debug: false })
+
+client.updateSchema(schema).then(() => {
+  graphql({
+    schema: client.schema,
+    source: mutation,
+    contextValue: client.getContext()
+  }).then(result => {
+    console.log(JSON.stringify(result, null, '  '))
+  })
 })
 ```
