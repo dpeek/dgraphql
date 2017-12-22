@@ -25,7 +25,8 @@
     "start": "yarn run dgraph:init && babel-node example",
     "dgraph:start": "docker-compose up -d",
     "dgraph:stop": "docker-compose down",
-    "dgraph:init": "babel-node init.js ./src/__tests__/schema.graphql"
+    "dgraph:init":
+      "babel-node src/cli.js update -s ./src/__tests__/schema.graphql"
   },
   "dependencies": {
     "dgraph-js": "0.9.4-beta.1",
