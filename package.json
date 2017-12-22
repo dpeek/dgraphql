@@ -3,6 +3,9 @@
   "version": "0.6.0",
   "description": "Generate graphql schema for dgraph.",
   "main": "lib/index.js",
+  "bin": {
+    "dgraphql": "lib/cli.js"
+  },
   "homepage": "https://github.com/dpeek/dgraphql",
   "bugs": {
     "url": "https://github.com/dpeek/dgraphql/issues"
@@ -18,8 +21,7 @@
     "test:watch": "yarn run dgraph:init && jest --watch",
     "check": "flow",
     "lint": "eslint",
-    "prepublish":
-      "babel src --optional runtime --ignore __tests__ --out-dir lib/",
+    "prepublish": "babel src --optional runtime --ignore __tests__ --out-dir lib/",
     "start": "yarn run dgraph:init && babel-node example",
     "dgraph:start": "docker-compose up -d",
     "dgraph:stop": "docker-compose down",
@@ -35,11 +37,13 @@
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-eslint": "^8.0.3",
+    "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-flow": "^6.23.0",
     "babel-preset-stage-0": "^6.24.1",
     "codecov": "^3.0.0",
+    "commander": "^2.12.2",
     "eslint": "^4.13.0",
     "eslint-config-standard-flow": "^1.0.1",
     "eslint-plugin-babel": "^4.1.2",
@@ -50,18 +54,31 @@
     "jest": "^20.0.4"
   },
   "babel": {
-    "presets": ["env", "stage-0", "flow"]
+    "presets": [
+      "env",
+      "stage-0",
+      "flow"
+    ]
   },
   "eslintConfig": {
-    "extends": ["standard", "standard-flow"],
+    "extends": [
+      "standard",
+      "standard-flow"
+    ],
     "parser": "babel-eslint",
-    "plugins": ["babel", "jest"],
+    "plugins": [
+      "babel",
+      "jest"
+    ],
     "env": {
       "jest/globals": true
     }
   },
   "jest": {
     "testRegex": "\\.test\\.js$",
-    "coveragePathIgnorePatterns": ["/node_modules/", "__tests__"]
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "__tests__"
+    ]
   }
 }
