@@ -21,7 +21,7 @@
     "test:watch": "yarn run dgraph:init && jest --watch",
     "check": "flow",
     "lint": "eslint",
-    "prepublish": "babel src --optional runtime --ignore __tests__ --out-dir lib/",
+    "prepare": "babel src --optional runtime --ignore __tests__ --out-dir lib/",
     "start": "yarn run dgraph:init && babel-node example",
     "dgraph:start": "docker-compose up -d",
     "dgraph:stop": "docker-compose down",
@@ -54,31 +54,18 @@
     "jest": "^20.0.4"
   },
   "babel": {
-    "presets": [
-      "env",
-      "stage-0",
-      "flow"
-    ]
+    "presets": ["env", "stage-0", "flow"]
   },
   "eslintConfig": {
-    "extends": [
-      "standard",
-      "standard-flow"
-    ],
+    "extends": ["standard", "standard-flow"],
     "parser": "babel-eslint",
-    "plugins": [
-      "babel",
-      "jest"
-    ],
+    "plugins": ["babel", "jest"],
     "env": {
       "jest/globals": true
     }
   },
   "jest": {
     "testRegex": "\\.test\\.js$",
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "__tests__"
-    ]
+    "coveragePathIgnorePatterns": ["/node_modules/", "__tests__"]
   }
 }
