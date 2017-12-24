@@ -1,8 +1,5 @@
 #! /usr/bin/env node
 
-require('babel-core/register')
-require('babel-polyfill')
-
 const fs = require('fs')
 const program = require('commander')
 
