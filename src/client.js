@@ -100,11 +100,22 @@ export class Client {
       .newTxn()
       .query(gql)
       .then(res => {
-        return JSON.parse(new Buffer(res.getJson_asU8()).toString())
+        const data = JSON.parse(new Buffer(res.getJson_asU8()).toString())
+        if (this._debug) {
+          console.log(gql, '-->', JSON.stringify(data, null, '  '))
+        }
+        return data
       })
   }
   mutate (mutation: *) {
     mutation.setCommitNow(true)
+    mutation.setIgnoreIndexConflict(true)
+    if (this._debug) {
+      const deletes = new Buffer(mutation.getDelNquads_asU8()).toString()
+      if (deletes) console.log(`{ delete {\n${deletes} }}`)
+      const sets = new Buffer(mutation.getSetNquads_asU8()).toString()
+      if (sets) console.log(`{ set {\n${sets} }}`)
+    }
     const txn = client.newTxn()
     return txn.mutate(mutation)
   }
