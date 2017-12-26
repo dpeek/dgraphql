@@ -1,6 +1,6 @@
 {
   "name": "dgraphql",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Generate graphql schema for dgraph.",
   "main": "lib/index.js",
   "bin": {
@@ -25,8 +25,7 @@
     "start": "yarn run dgraph:init && babel-node example",
     "dgraph:start": "docker-compose up -d",
     "dgraph:stop": "docker-compose down",
-    "dgraph:init":
-      "babel-node src/cli.js update -s ./src/__tests__/schema.graphql"
+    "dgraph:init": "babel-node src/cli.js update -s ./src/__tests__/schema.graphql"
   },
   "dependencies": {
     "babel-runtime": "^6.26.0",
@@ -55,19 +54,34 @@
     "jest": "^22.0.0"
   },
   "babel": {
-    "presets": ["flow", "env", "stage-0"],
-    "plugins": ["transform-runtime"]
+    "presets": [
+      "flow",
+      "env",
+      "stage-0"
+    ],
+    "plugins": [
+      "transform-runtime"
+    ]
   },
   "eslintConfig": {
-    "extends": ["standard", "standard-flow"],
+    "extends": [
+      "standard",
+      "standard-flow"
+    ],
     "parser": "babel-eslint",
-    "plugins": ["babel", "jest"],
+    "plugins": [
+      "babel",
+      "jest"
+    ],
     "env": {
       "jest/globals": true
     }
   },
   "jest": {
     "testRegex": "\\.test\\.js$",
-    "coveragePathIgnorePatterns": ["/node_modules/", "__tests__"]
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "__tests__"
+    ]
   }
 }
