@@ -25,13 +25,14 @@
     "start": "yarn run dgraph:init && babel-node example",
     "dgraph:start": "docker-compose up -d",
     "dgraph:stop": "docker-compose down",
-    "dgraph:init": "babel-node src/cli.js update -s ./src/__tests__/schema.graphql"
+    "dgraph:init":
+      "babel-node src/cli.js update -s ./src/__tests__/schema.graphql"
   },
   "dependencies": {
     "babel-runtime": "^6.26.0",
-    "dgraph-js": "0.9.4-beta.1",
-    "graphql": "^0.10.3",
-    "graphql-tools": "^1.1.0",
+    "dgraph-js": "^1.0.0",
+    "graphql": "^0.12.0",
+    "graphql-tools": "^2.14.0",
     "invariant": "^2.2.2",
     "pluralize": "^5.0.0"
   },
@@ -51,37 +52,22 @@
     "express": "^4.15.3",
     "express-graphql": "^0.6.6",
     "flow-bin": "^0.49.1",
-    "jest": "^20.0.4"
+    "jest": "^22.0.0"
   },
   "babel": {
-    "presets": [
-      "flow",
-      "env",
-      "stage-0"
-    ],
-    "plugins": [
-      "transform-runtime"
-    ]
+    "presets": ["flow", "env", "stage-0"],
+    "plugins": ["transform-runtime"]
   },
   "eslintConfig": {
-    "extends": [
-      "standard",
-      "standard-flow"
-    ],
+    "extends": ["standard", "standard-flow"],
     "parser": "babel-eslint",
-    "plugins": [
-      "babel",
-      "jest"
-    ],
+    "plugins": ["babel", "jest"],
     "env": {
       "jest/globals": true
     }
   },
   "jest": {
     "testRegex": "\\.test\\.js$",
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "__tests__"
-    ]
+    "coveragePathIgnorePatterns": ["/node_modules/", "__tests__"]
   }
 }
