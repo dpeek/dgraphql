@@ -2,3 +2,4 @@ dgraph
 lib
 node_modules
 coverage
+data

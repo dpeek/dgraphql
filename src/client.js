@@ -122,11 +122,6 @@ export class Client {
   getContext (language?: string = 'en'): Context {
     return { client: this, language }
   }
-  dropAll () {
-    const op = new Operation()
-    op.setDropAll(true)
-    return client.alter(op)
-  }
 }
 
 export type Context = {
